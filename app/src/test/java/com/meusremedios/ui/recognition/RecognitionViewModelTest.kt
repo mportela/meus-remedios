@@ -1,5 +1,6 @@
 package com.meusremedios.ui.recognition
 
+import android.net.Uri
 import com.meusremedios.MainDispatcherRule
 import com.meusremedios.data.ml.PhotoFeatures
 import com.meusremedios.domain.model.Medication
@@ -86,5 +87,20 @@ class RecognitionViewModelTest {
 
         assertEquals(RecognitionPhase.IDLE, vm.uiState.value.phase)
         assertTrue(imageStore.deleted.isNotEmpty())
+    }
+
+    @Test
+    fun `imagem da galeria leva a resultado com medicamento`() = runTest {
+        val id = seedMatchingMedication()
+        val vm = viewModel()
+
+        vm.onGalleryPicked(Uri.parse("content://test/foto.jpg"))
+        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+
+        val state = vm.uiState.value
+        assertEquals(RecognitionPhase.RESULT, state.phase)
+        val outcome = state.outcome
+        assertTrue(outcome is RecognitionOutcome.Confident)
+        assertEquals(id, (outcome as RecognitionOutcome.Confident).best.medicationId)
     }
 }

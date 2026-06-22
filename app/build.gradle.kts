@@ -23,8 +23,14 @@ android {
     }
 
     buildTypes {
+        debug {
+            // Recursos de desenvolvimento (ex.: escolher foto da galeria no
+            // reconhecimento para testes). Sempre desligado em release.
+            buildConfigField("boolean", "DEV_TOOLS_ENABLED", "true")
+        }
         release {
             isMinifyEnabled = false
+            buildConfigField("boolean", "DEV_TOOLS_ENABLED", "false")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -45,6 +51,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     testOptions {

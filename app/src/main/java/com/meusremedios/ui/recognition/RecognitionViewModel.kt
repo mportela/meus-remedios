@@ -53,6 +53,26 @@ class RecognitionViewModel @Inject constructor(
         analyze()
     }
 
+    /**
+     * Usa uma imagem escolhida da galeria como foto de consulta (recurso de
+     * desenvolvimento). Copia a [uri] para a área privada e dispara a análise,
+     * reaproveitando o mesmo fluxo da câmera.
+     */
+    fun onGalleryPicked(uri: Uri) {
+        _uiState.update { it.copy(phase = RecognitionPhase.ANALYZING) }
+        viewModelScope.launch {
+            val staged = runCatching { imageStore.stage(uri) }.getOrNull()
+            if (staged == null) {
+                _uiState.update {
+                    it.copy(phase = RecognitionPhase.ERROR, outcome = null, canAddSecondPhoto = false)
+                }
+                return@launch
+            }
+            queryPaths += staged
+            analyze()
+        }
+    }
+
     private fun analyze() {
         _uiState.update { it.copy(phase = RecognitionPhase.ANALYZING) }
         viewModelScope.launch {

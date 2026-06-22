@@ -1,6 +1,8 @@
 package com.meusremedios.ui.recognition
 
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.meusremedios.BuildConfig
 import com.meusremedios.R
 import com.meusremedios.domain.model.RecognitionCandidate
 import com.meusremedios.domain.model.RecognitionOutcome
@@ -55,6 +58,20 @@ fun RecognitionScreen(
     }
     val capture: () -> Unit = {
         viewModel.prepareCapture { uri -> cameraLauncher.launch(uri) }
+    }
+    val galleryLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia(),
+    ) { uri: Uri? ->
+        if (uri != null) viewModel.onGalleryPicked(uri)
+    }
+    val pickFromGallery: (() -> Unit)? = if (BuildConfig.DEV_TOOLS_ENABLED) {
+        {
+            galleryLauncher.launch(
+                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+            )
+        }
+    } else {
+        null
     }
 
     Scaffold(
@@ -80,12 +97,16 @@ fun RecognitionScreen(
             verticalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterVertically),
         ) {
             when (uiState.phase) {
-                RecognitionPhase.IDLE -> IdleContent(onCapture = capture)
+                RecognitionPhase.IDLE -> IdleContent(
+                    onCapture = capture,
+                    onPickFromGallery = pickFromGallery,
+                )
                 RecognitionPhase.ANALYZING -> AnalyzingContent()
                 RecognitionPhase.RESULT -> ResultContent(
                     outcome = uiState.outcome,
                     canAddSecondPhoto = uiState.canAddSecondPhoto,
                     onCapture = capture,
+                    onPickFromGallery = pickFromGallery,
                     onReset = viewModel::reset,
                 )
                 RecognitionPhase.ERROR -> ErrorContent(onReset = viewModel::reset)
@@ -95,13 +116,26 @@ fun RecognitionScreen(
 }
 
 @Composable
-private fun IdleContent(onCapture: () -> Unit) {
+private fun IdleContent(onCapture: () -> Unit, onPickFromGallery: (() -> Unit)?) {
     Text(
         text = stringResource(R.string.recognition_intro),
         style = MaterialTheme.typography.titleLarge,
         textAlign = TextAlign.Center,
     )
     BigConfirmButton(onClick = onCapture)
+    if (onPickFromGallery != null) {
+        GalleryDevButton(onClick = onPickFromGallery)
+    }
+}
+
+@Composable
+private fun GalleryDevButton(onClick: () -> Unit) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Text(stringResource(R.string.recognition_gallery_dev_button))
+    }
 }
 
 @Composable
@@ -140,6 +174,7 @@ private fun ResultContent(
     outcome: RecognitionOutcome?,
     canAddSecondPhoto: Boolean,
     onCapture: () -> Unit,
+    onPickFromGallery: (() -> Unit)?,
     onReset: () -> Unit,
 ) {
     when (outcome) {
@@ -148,6 +183,7 @@ private fun ResultContent(
             outcome = outcome,
             canAddSecondPhoto = canAddSecondPhoto,
             onCapture = onCapture,
+            onPickFromGallery = onPickFromGallery,
         )
         RecognitionOutcome.NoMatch -> MessageResult(stringResource(R.string.recognition_no_match))
         RecognitionOutcome.NoPhotosRegistered ->
@@ -190,6 +226,7 @@ private fun AmbiguousResult(
     outcome: RecognitionOutcome.Ambiguous,
     canAddSecondPhoto: Boolean,
     onCapture: () -> Unit,
+    onPickFromGallery: (() -> Unit)?,
 ) {
     Text(
         text = stringResource(R.string.recognition_ambiguous),
@@ -213,6 +250,9 @@ private fun AmbiguousResult(
                 text = stringResource(R.string.recognition_second_photo_button),
                 modifier = Modifier.padding(start = 12.dp),
             )
+        }
+        if (onPickFromGallery != null) {
+            GalleryDevButton(onClick = onPickFromGallery)
         }
     }
     Text(

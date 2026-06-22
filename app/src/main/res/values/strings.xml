@@ -92,6 +92,7 @@
     <string name="recognition_no_photos">Você ainda não cadastrou fotos dos remédios. Adicione fotos para usar a confirmação.</string>
     <string name="recognition_error">Não foi possível analisar a foto. Tente novamente.</string>
     <string name="recognition_restart">Recomeçar</string>
+    <string name="recognition_gallery_dev_button">Usar foto da galeria (teste)</string>
 
     <!-- Tela Hoje (relatório do dia) -->
     <string name="today_title">Hoje</string>

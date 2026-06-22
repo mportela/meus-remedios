@@ -108,4 +108,12 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
     fluxo de 2ª foto em caso de dúvida e lista de candidatos; acessível para idosos.
   - Testes determinísticos de scoring (vetores sintéticos), decisão por
     limiar/margem, agregação por medicamento e do `RecognitionViewModel`.
+- **Ferramenta de desenvolvimento — escolher foto da galeria no reconhecimento**
+  (change `add-dev-gallery-pick`):
+  - Flag de build `BuildConfig.DEV_TOOLS_ENABLED` (true em `debug`, false em
+    `release`) para habilitar recursos de depuração sem vazar para produção.
+  - Na tela **Confirmar**, em builds de debug, botão "Usar foto da galeria (teste)"
+    (tela inicial e fluxo de 2ª foto) que materializa a imagem via `stage(uri)` e
+    executa o mesmo engine de reconhecimento da câmera; em release, apenas câmera.
+  - `docs/README.md` documenta a flag e o fluxo de depuração com `make push-photos`.
 

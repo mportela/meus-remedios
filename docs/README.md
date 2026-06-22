@@ -58,6 +58,21 @@ Variáveis úteis: `CAMERA_BACK` (`webcam0` padrão; use `emulated` para a câme
 `SRC` (origem das fotos, padrão `~/Downloads`) e `DEVICE_DIR` (destino, padrão
 `/sdcard/Pictures`). O macOS pede permissão de câmera ao emulador na primeira captura.
 
+### Depurar o reconhecimento com imagens de teste
+A tela **Confirmar** captura a foto pela câmera. Em builds de **debug**
+(`BuildConfig.DEV_TOOLS_ENABLED = true`), aparece também o botão **"Usar foto da galeria
+(teste)"**, que permite escolher uma imagem já existente na galeria como foto de consulta —
+útil para validar de forma repetível se uma imagem dá match com algo cadastrado.
+
+Fluxo sugerido:
+1. `make push-photos SRC=~/Downloads` envia suas imagens de teste para a galeria do emulador.
+2. Na tela **Confirmar**, toque em **"Usar foto da galeria (teste)"** e escolha a imagem.
+3. O resultado (confiante/ambíguo/sem match) usa o mesmo engine da câmera.
+
+A opção é controlada exclusivamente pela flag de build: em `release`
+(`DEV_TOOLS_ENABLED = false`) o botão não existe e a confirmação é apenas por câmera. Para
+desligar o recurso permanentemente, basta remover a flag/botão.
+
 Pré-requisitos: JDK 17 e Android SDK (com `emulator` e a imagem de sistema). O Makefile
 usa `ANDROID_HOME`/`JAVA_HOME` (com fallback automático) e sempre
 `--no-configuration-cache`. Para uso direto: `./gradlew test`, `./gradlew connectedCheck`,
