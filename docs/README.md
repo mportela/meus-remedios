@@ -27,6 +27,27 @@ pré-cadastrado é o comprimido em mãos — pensado para idosos.
 ## Implementação (SDD)
 - [Plano OpenSpec SDD](openspec-plan.md)
 
+## Desenvolvimento local
+Os fluxos de build, teste e execução no emulador estão automatizados no
+[`Makefile`](../Makefile) na raiz do projeto. Rode `make help` para ver todos os alvos.
+
+| Comando | Descrição |
+|---------|-----------|
+| `make run` | Sobe o emulador, aguarda o boot, builda, instala e abre o app |
+| `make reopen` | Recompila, reinstala e reabre o app (ciclo rápido de dev) |
+| `make build` · `make test` · `make check` | Compila o APK · testes JVM · ambos |
+| `make connected` | Testes instrumentados (requer emulador/device) |
+| `make emulator` · `make wait-boot` · `make kill-emulator` | Controle do emulador |
+| `make ime-fix` | Habilita o teclado virtual com teclado físico conectado |
+| `make install` · `make open` · `make uninstall` | Gerência do app no device |
+| `make logcat` · `make screenshot` · `make devices` | Diagnóstico |
+| `make avd-create` | (Re)cria o AVD usado nos testes locais |
+
+Pré-requisitos: JDK 17 e Android SDK (com `emulator` e a imagem de sistema). O Makefile
+usa `ANDROID_HOME`/`JAVA_HOME` (com fallback automático) e sempre
+`--no-configuration-cache`. Para uso direto: `./gradlew test`, `./gradlew connectedCheck`,
+`./gradlew assembleDebug`.
+
 ## Decisões-chave
 - **Stack:** Kotlin + Jetpack Compose (Material 3), Hilt, Room, CameraX, TensorFlow Lite.
 - **Reconhecimento:** híbrido on-device = embeddings TFLite + cor (Lab) + forma/tamanho.

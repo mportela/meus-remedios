@@ -11,6 +11,9 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - `Makefile` helper com atalhos de build/teste e execução local no emulador
   (`make run`, `make reopen`, `make emulator`, `make logcat`, `make screenshot`,
   `make ime-fix`, entre outros).
+- Seção "Desenvolvimento local" no [`docs/README.md`](docs/README.md) e referências ao
+  `Makefile` em [`AGENTS.md`](AGENTS.md) e
+  [`.github/copilot-instructions.md`](.github/copilot-instructions.md).
 - Documentação de produto: ONE PAGER e PRDs 1–6 (cadastro, consulta/relatórios,
   reconhecimento, lembretes, registro de tomadas, configurações).
 - Documentação técnica: arquitetura, modelo de dados, engine de reconhecimento,

@@ -35,6 +35,8 @@ on-device. Detalhes em
   determinísticos), agenda/lembretes e retenção.
 - UI crítica com Compose tests e fakes via Hilt.
 - Rodar `./gradlew test` (e `connectedCheck` quando aplicável) antes de concluir.
+- Atalhos no [`Makefile`](../Makefile): `make test`, `make check`, `make run`, `make reopen`
+  (rode `make help` para a lista).
 
 ## Fluxo de trabalho (OpenSpec SDD)
 - Especificar antes de codar: criar/atualizar a change em `openspec/changes/` e validar com

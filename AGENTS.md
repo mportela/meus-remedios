@@ -43,7 +43,7 @@ Detalhes em [`docs/technical/tech-1-arquitetura.md`](docs/technical/tech-1-arqui
   determinísticos), agenda/lembretes, retenção. JUnit + MockK + Turbine + coroutines-test.
 - **DB:** Room in-memory (Robolectric/instrumented).
 - **UI:** Compose UI tests dos fluxos críticos com fakes via Hilt.
-- Rodar: `./gradlew test` e `./gradlew connectedCheck`.
+- Rodar: `./gradlew test` e `./gradlew connectedCheck` (ou `make test` / `make connected`).
 - Ver [`docs/technical/tech-5-estrategia-testes.md`](docs/technical/tech-5-estrategia-testes.md).
 
 ## Fluxo OpenSpec SDD
@@ -56,6 +56,8 @@ Detalhes em [`docs/technical/tech-1-arquitetura.md`](docs/technical/tech-1-arqui
 ## Regras para o agente
 - **Sempre** atualizar o [`CHANGELOG.md`](CHANGELOG.md) quando fizer mudanças relevantes
   (seção "Não lançado").
+- Para build/teste/execução local use os atalhos do [`Makefile`](Makefile)
+  (`make run`, `make reopen`, `make test`, `make check`); rode `make help` para a lista.
 - Manter este `AGENTS.md` e o [`.github/copilot-instructions.md`](.github/copilot-instructions.md)
   sincronizados quando convenções/arquitetura mudarem.
 - Não introduzir dependências de rede nem chamadas externas.
