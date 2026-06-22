@@ -15,6 +15,9 @@ class ScheduleRepositoryImpl @Inject constructor(
     override fun observeByMedication(medicationId: Long): Flow<List<ScheduleTime>> =
         scheduleTimeDao.observeByMedication(medicationId).map { entities -> entities.map { it.toDomain() } }
 
+    override fun observeAll(): Flow<List<ScheduleTime>> =
+        scheduleTimeDao.observeAll().map { entities -> entities.map { it.toDomain() } }
+
     override suspend fun getAll(): List<ScheduleTime> =
         scheduleTimeDao.getAll().map { it.toDomain() }
 

@@ -72,4 +72,46 @@
 
     <!-- Comum -->
     <string name="action_back">Voltar</string>
+
+    <!-- Navegação por abas -->
+    <string name="nav_today">Hoje</string>
+    <string name="nav_medications">Meus remédios</string>
+
+    <!-- Tela Hoje (relatório do dia) -->
+    <string name="today_title">Hoje</string>
+    <string name="today_previous_day">Dia anterior</string>
+    <string name="today_next_day">Próximo dia</string>
+    <string name="today_empty">Nenhuma dose prevista para este dia.</string>
+    <string name="today_summary_taken">Tomados</string>
+    <string name="today_summary_pending">Pendentes</string>
+    <string name="today_summary_late">Atrasados</string>
+
+    <!-- Períodos do dia -->
+    <string name="period_morning">Manhã</string>
+    <string name="period_afternoon">Tarde</string>
+    <string name="period_night">Noite</string>
+
+    <!-- Status da dose -->
+    <string name="dose_status_taken">Tomado</string>
+    <string name="dose_status_pending">Pendente</string>
+    <string name="dose_status_late">Atrasado</string>
+    <string name="dose_status_skipped">Ignorado</string>
+
+    <!-- Detalhe do medicamento -->
+    <string name="medication_detail_title">Detalhe do remédio</string>
+    <string name="medication_detail_edit">Editar</string>
+    <string name="medication_detail_dosage">Dosagem</string>
+    <string name="medication_detail_notes">Observações</string>
+    <string name="medication_detail_period">Período de uso</string>
+    <string name="medication_detail_period_continuous">Contínuo</string>
+    <string name="medication_detail_period_ranged">De %1$s até %2$s</string>
+    <string name="medication_detail_reminders">Lembretes</string>
+    <string name="medication_detail_reminders_on">Ativados</string>
+    <string name="medication_detail_reminders_off">Desativados</string>
+    <string name="medication_detail_photos">Fotos</string>
+    <string name="medication_detail_schedules">Horários</string>
+    <string name="medication_detail_history">Histórico recente</string>
+    <string name="medication_detail_history_empty">Nenhum registro de tomada ainda.</string>
+    <string name="medication_detail_not_found">Remédio não encontrado.</string>
+    <string name="weekdays_all">Todos os dias</string>
 </resources>

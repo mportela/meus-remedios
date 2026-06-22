@@ -76,3 +76,20 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
     acessibilidade.
   - Testes determinísticos de conversão de cor (`LabColorTest`) e dos use cases de
     fotos com fakes de store/extrator/repositório.
+- **F3 — Consulta e relatórios** (change `add-reporting-and-browsing`):
+  telas de consulta para o dia a dia, com navegação por abas (Hoje · Meus remédios).
+  - Tela **Hoje**: relatório do dia com doses derivadas dos horários cadastrados,
+    agrupadas por período (manhã/tarde/noite), resumo de tomados/pendentes/atrasados
+    e timeline navegável por dia da semana. Status sem registro é derivado por
+    horário (pendente/atrasado); a marcação real de tomadas chega na F5.
+  - Tela de **detalhe do medicamento**: dados, fotos, horários e histórico recente
+    limitado pelo período de retenção configurado; ação de editar e fluxo
+    lista→detalhe→edição.
+  - Domínio: modelos `DayPeriod`, `DoseStatus`, `ScheduledDose`, `DailyReport`,
+    `MedicationDetail`; use cases `ObserveDailyReportUseCase` e
+    `ObserveMedicationDetailUseCase` (determinísticos via `Clock` injetável).
+  - Dados/DI: `ScheduleRepository.observeAll()` para reatividade do relatório e
+    `TimeModule` provendo `java.time.Clock`.
+  - Navegação por `NavigationBar` (Hoje · Meus remédios) e testes determinísticos de
+    derivação de status, retenção e ViewModels.
+

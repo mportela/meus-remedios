@@ -24,6 +24,9 @@ interface ScheduleTimeDao {
     @Query("SELECT * FROM schedule_times WHERE medication_id = :medicationId ORDER BY time_of_day ASC")
     fun observeByMedication(medicationId: Long): Flow<List<ScheduleTimeEntity>>
 
+    @Query("SELECT * FROM schedule_times ORDER BY time_of_day ASC")
+    fun observeAll(): Flow<List<ScheduleTimeEntity>>
+
     @Query("SELECT * FROM schedule_times")
     suspend fun getAll(): List<ScheduleTimeEntity>
 }
