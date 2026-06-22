@@ -1,0 +1,32 @@
+# Gradle
+.gradle/
+build/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/**/build/
+
+# Android / IntelliJ / Android Studio
+*.iml
+.idea/
+captures/
+.externalNativeBuild/
+.cxx/
+local.properties
+
+# Keystore / segredos
+*.jks
+*.keystore
+keystore.properties
+secrets.properties
+
+# Logs e arquivos temporários
+*.log
+*.hprof
+.DS_Store
+
+# Saídas de build
+*.apk
+*.aab
+*.ap_
+*.dex
+output.json

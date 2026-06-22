@@ -1,0 +1,43 @@
+schema: spec-driven
+
+context: |
+  Produto: Meus Remédios — app Android 100% offline que confirma visualmente, pela câmera,
+  qual remédio pré-cadastrado é o comprimido em mãos. Público idoso. Compara a foto da câmera
+  apenas com as fotos cadastradas do próprio usuário (sem internet, sem base externa).
+
+  Stack: Kotlin, Jetpack Compose (Material 3), Hilt, Room, CameraX, TensorFlow Lite,
+  Coroutines/Flow, WorkManager, AlarmManager. minSdk 24 (Android 7.0).
+
+  Arquitetura: MVVM + camadas, módulo único `app` (ui/<feature>, domain/model, domain/usecase,
+  data/local Room, data/repository, data/ml TFLite+cor/forma, data/media, notifications/, di/).
+  Fluxo unidirecional StateFlow -> UI; eventos -> ViewModel -> UseCase -> Repository.
+
+  Convenções: identificadores em inglês, textos de UI em pt-BR; DI via Hilt (fakes em testes);
+  lógica em use cases puros/determinísticos; acessibilidade é requisito (fontes/botões grandes,
+  alto contraste, TalkBack).
+
+  Restrições inegociáveis: 100% offline (sem permissão INTERNET, sem chamadas de rede); sem
+  login/nuvem/anúncios; dados e fotos em armazenamento privado; segurança no reconhecimento
+  (nunca afirmar com baixa confiança — pedir 2ª foto ou mostrar candidatos).
+
+  Reconhecimento: score = w1*cos(embedding) + w2*sim(cor Lab) + w3*sim(forma); confirma quando
+  top1 >= THRESHOLD_CONFIDENT e (top1 - top2) >= MARGIN; senão fluxo de 2ª foto.
+
+  Testes: JUnit, MockK, Turbine, kotlinx-coroutines-test, Room in-memory, Compose UI tests.
+  Comandos: ./gradlew test, ./gradlew connectedCheck, ./gradlew assembleDebug.
+
+  Documentação: docs/ (ONE PAGER, PRD-1..6, TECH-1..6) e docs/openspec-plan.md.
+  Capabilities: medication-catalog, medication-photos, visual-recognition,
+  scheduling-reminders, intake-tracking, reporting, app-settings, accessibility-ui.
+
+  Sempre manter CHANGELOG.md, AGENTS.md e .github/copilot-instructions.md atualizados.
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
