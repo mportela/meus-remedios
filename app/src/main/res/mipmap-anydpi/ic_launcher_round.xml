@@ -1,0 +1,24 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Fallback round (API 24-25): ícone completo com fundo + cápsula. -->
+    <path
+        android:fillColor="#1565C0"
+        android:pathData="M0,0 h108 v108 h-108 z" />
+    <group
+        android:pivotX="54"
+        android:pivotY="54"
+        android:rotation="-45">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M38,42 m0,0 a14,14 0 0 1 14,14 l0,8 a14,14 0 0 1 -28,0 l0,-8 a14,14 0 0 1 14,-14 z" />
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M70,42 m0,0 a14,14 0 0 1 14,14 l0,8 a14,14 0 0 1 -28,0 l0,-8 a14,14 0 0 1 14,-14 z" />
+        <path
+            android:fillColor="#90CAF9"
+            android:pathData="M24,56 l60,0 l0,8 a14,14 0 0 1 -28,0 l0,0 a14,14 0 0 1 -28,0 z" />
+    </group>
+</vector>

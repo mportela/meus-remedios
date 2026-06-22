@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Meus Remédios</string>
+    <string name="home_placeholder_message">Aplicativo em construção. Em breve você poderá cadastrar seus remédios e confirmá-los pela câmera.</string>
+</resources>
