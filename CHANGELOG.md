@@ -29,3 +29,15 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   - Base de testes (JUnit, MockK, Turbine, coroutines-test, Robolectric, Compose UI
     test) com smoke test JVM e teste de UI da tela inicial.
   - Workflow de CI (`.github/workflows/ci.yml`) executando `test` e `assembleDebug`.
+- **F1 — Camada de dados local** (change `add-local-data-layer`):
+  persistência offline com Room (versão 1, `exportSchema=false`).
+  - Modelos de domínio (`Medication`, `MedicationPhoto`, `ScheduleTime`,
+    `IntakeLog`, `AppSettings`) e enums (`PeriodType`, `PhotoSide`, `IntakeStatus`).
+  - Entidades Room com índices e chaves estrangeiras (`CASCADE`/`SET NULL`),
+    `Converters` (datas ISO, `FloatArray`↔BLOB, enums) e mapeadores entidade↔domínio.
+  - DAOs reativos (`Flow`) para medicamentos, fotos, horários, registros de tomada
+    e configurações (singleton com valores padrão).
+  - Repositórios expondo modelos de domínio e módulos Hilt (`DatabaseModule`,
+    `RepositoryModule`).
+  - Testes de converters, DAOs (Room in-memory via Robolectric, cobrindo CRUD,
+    cascade, consultas e fluxo reativo com Turbine) e repositórios.
