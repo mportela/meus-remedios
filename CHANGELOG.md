@@ -8,6 +8,9 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 ## [Não lançado]
 
 ### Adicionado
+- `Makefile` helper com atalhos de build/teste e execução local no emulador
+  (`make run`, `make reopen`, `make emulator`, `make logcat`, `make screenshot`,
+  `make ime-fix`, entre outros).
 - Documentação de produto: ONE PAGER e PRDs 1–6 (cadastro, consulta/relatórios,
   reconhecimento, lembretes, registro de tomadas, configurações).
 - Documentação técnica: arquitetura, modelo de dados, engine de reconhecimento,
