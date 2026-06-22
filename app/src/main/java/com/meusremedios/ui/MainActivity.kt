@@ -5,13 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.meusremedios.ui.home.HomeScreen
+import com.meusremedios.ui.navigation.MeusRemediosNavHost
 import com.meusremedios.ui.theme.MeusRemediosTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -36,9 +34,7 @@ private fun MeusRemediosApp() {
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background,
         ) {
-            Scaffold { innerPadding ->
-                HomeScreen(modifier = Modifier.padding(innerPadding))
-            }
+            MeusRemediosNavHost()
         }
     }
 }

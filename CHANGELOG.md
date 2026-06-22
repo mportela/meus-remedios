@@ -41,3 +41,14 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
     `RepositoryModule`).
   - Testes de converters, DAOs (Room in-memory via Robolectric, cobrindo CRUD,
     cascade, consultas e fluxo reativo com Turbine) e repositórios.
+- **F2 — Catálogo de medicamentos** (change `add-medication-catalog`):
+  cadastro, edição, exclusão, listagem e busca de remédios com horários.
+  - Use cases de catálogo (`Observe`, `Search`, `Get`, `Save`, `Delete`) com
+    validações de regra de negócio (nome obrigatório; término ≥ início).
+  - UI Jetpack Compose acessível: lista com busca e estado vazio, formulário de
+    cadastro/edição (período, datas, horários com dias da semana, toggle
+    "avise-me") e exclusão com confirmação.
+  - Navegação via Navigation Compose (`MeusRemediosNavHost`) substituindo a tela
+    inicial placeholder.
+  - ViewModels MVVM (`StateFlow`) e testes determinísticos de use cases e
+    ViewModels com fakes de repositório.

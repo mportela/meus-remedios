@@ -1,5 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Meus Remédios</string>
-    <string name="home_placeholder_message">Aplicativo em construção. Em breve você poderá cadastrar seus remédios e confirmá-los pela câmera.</string>
+
+    <!-- Lista de medicamentos -->
+    <string name="medications_title">Meus remédios</string>
+    <string name="medications_search_label">Buscar por nome</string>
+    <string name="medications_search_clear">Limpar busca</string>
+    <string name="medications_add">Adicionar remédio</string>
+    <string name="medications_empty">Você ainda não cadastrou remédios. Toque em \"Adicionar remédio\" para começar.</string>
+    <string name="medications_empty_search">Nenhum remédio encontrado para a busca.</string>
+    <string name="medications_item_no_schedule">Sem horário definido</string>
+    <string name="medications_reminders_off">Lembretes desligados</string>
+
+    <!-- Formulário de medicamento -->
+    <string name="medication_form_title_new">Novo remédio</string>
+    <string name="medication_form_title_edit">Editar remédio</string>
+    <string name="medication_form_name_label">Nome do remédio</string>
+    <string name="medication_form_name_help">Obrigatório. Ex.: Losartana.</string>
+    <string name="medication_form_dosage_label">Dosagem (opcional)</string>
+    <string name="medication_form_dosage_help">Ex.: 50 mg.</string>
+    <string name="medication_form_notes_label">Observações (opcional)</string>
+    <string name="medication_form_period_label">Período de uso</string>
+    <string name="medication_form_period_continuous">Contínuo</string>
+    <string name="medication_form_period_ranged">Por período</string>
+    <string name="medication_form_start_date_label">Data de início</string>
+    <string name="medication_form_end_date_label">Data de término</string>
+    <string name="medication_form_date_clear">Limpar data</string>
+    <string name="medication_form_date_not_set">Não definida</string>
+    <string name="medication_form_reminders_label">Avise-me nos horários</string>
+    <string name="medication_form_schedules_label">Horários</string>
+    <string name="medication_form_add_schedule">Adicionar horário</string>
+    <string name="medication_form_remove_schedule">Remover horário</string>
+    <string name="medication_form_no_schedules">Nenhum horário adicionado.</string>
+    <string name="medication_form_save">Salvar</string>
+    <string name="medication_form_delete">Excluir</string>
+    <string name="medication_form_saved">Remédio salvo.</string>
+
+    <!-- Dias da semana (abreviações) -->
+    <string name="weekday_monday">Seg</string>
+    <string name="weekday_tuesday">Ter</string>
+    <string name="weekday_wednesday">Qua</string>
+    <string name="weekday_thursday">Qui</string>
+    <string name="weekday_friday">Sex</string>
+    <string name="weekday_saturday">Sáb</string>
+    <string name="weekday_sunday">Dom</string>
+
+    <!-- Exclusão -->
+    <string name="medication_delete_title">Excluir remédio?</string>
+    <string name="medication_delete_message">Esta ação não pode ser desfeita. Os horários deste remédio também serão removidos.</string>
+    <string name="medication_delete_confirm">Excluir</string>
+    <string name="medication_delete_cancel">Cancelar</string>
+
+    <!-- Erros de validação -->
+    <string name="error_name_required">Informe o nome do remédio.</string>
+    <string name="error_end_before_start">A data de término deve ser igual ou posterior à data de início.</string>
+
+    <!-- Comum -->
+    <string name="action_back">Voltar</string>
 </resources>
