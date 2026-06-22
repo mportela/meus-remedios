@@ -74,8 +74,24 @@
     <string name="action_back">Voltar</string>
 
     <!-- Navegação por abas -->
+    <string name="nav_recognition">Confirmar</string>
     <string name="nav_today">Hoje</string>
     <string name="nav_medications">Meus remédios</string>
+
+    <!-- Reconhecimento visual -->
+    <string name="recognition_title">Confirmar remédio</string>
+    <string name="recognition_intro">Aponte a câmera para o comprimido e toque no botão para confirmar qual remédio é.</string>
+    <string name="recognition_confirm_button">Confirmar remédio</string>
+    <string name="recognition_analyzing">Analisando a foto…</string>
+    <string name="recognition_confident_prefix">Este remédio é:</string>
+    <string name="recognition_ambiguous">Não tenho certeza de qual remédio é.</string>
+    <string name="recognition_second_photo_hint">Tire uma foto do outro lado do comprimido para ajudar a identificar.</string>
+    <string name="recognition_second_photo_button">Tirar foto do verso</string>
+    <string name="recognition_candidates">Pode ser um destes:</string>
+    <string name="recognition_no_match">Não reconheci este comprimido entre os seus remédios.</string>
+    <string name="recognition_no_photos">Você ainda não cadastrou fotos dos remédios. Adicione fotos para usar a confirmação.</string>
+    <string name="recognition_error">Não foi possível analisar a foto. Tente novamente.</string>
+    <string name="recognition_restart">Recomeçar</string>
 
     <!-- Tela Hoje (relatório do dia) -->
     <string name="today_title">Hoje</string>

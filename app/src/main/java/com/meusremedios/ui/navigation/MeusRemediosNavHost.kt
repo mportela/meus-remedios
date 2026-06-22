@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -27,6 +28,7 @@ import com.meusremedios.R
 import com.meusremedios.ui.medications.detail.MedicationDetailScreen
 import com.meusremedios.ui.medications.form.MedicationFormScreen
 import com.meusremedios.ui.medications.list.MedicationListScreen
+import com.meusremedios.ui.recognition.RecognitionScreen
 import com.meusremedios.ui.today.TodayScreen
 
 /** Destinos exibidos na barra de navegação inferior. */
@@ -35,6 +37,7 @@ private enum class TopLevelDestination(
     val icon: ImageVector,
     val labelRes: Int,
 ) {
+    RECOGNITION(Routes.RECOGNITION, Icons.Default.Search, R.string.nav_recognition),
     TODAY(Routes.TODAY, Icons.Default.DateRange, R.string.nav_today),
     MEDICATIONS(Routes.MEDICATIONS_LIST, Icons.AutoMirrored.Filled.List, R.string.nav_medications),
 }
@@ -78,11 +81,14 @@ fun MeusRemediosNavHost(modifier: Modifier = Modifier) {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Routes.TODAY,
+            startDestination = Routes.RECOGNITION,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding),
         ) {
+            composable(Routes.RECOGNITION) {
+                RecognitionScreen()
+            }
             composable(Routes.TODAY) {
                 TodayScreen(
                     onOpenMedication = { id -> navController.navigate(Routes.medicationDetail(id)) },

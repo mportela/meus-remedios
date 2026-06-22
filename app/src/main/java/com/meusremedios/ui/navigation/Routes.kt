@@ -2,7 +2,10 @@ package com.meusremedios.ui.navigation
 
 /** Rotas de navegação do app. */
 object Routes {
-    /** Aba inicial: relatório do dia. */
+    /** Tela principal: reconhecimento visual do comprimido. */
+    const val RECOGNITION = "recognition"
+
+    /** Aba: relatório do dia. */
     const val TODAY = "today"
 
     const val MEDICATIONS_LIST = "medications"

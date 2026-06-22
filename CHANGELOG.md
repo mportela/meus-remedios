@@ -92,4 +92,20 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
     `TimeModule` provendo `java.time.Clock`.
   - Navegação por `NavigationBar` (Hoje · Meus remédios) e testes determinísticos de
     derivação de status, retenção e ViewModels.
+- **F4 — Reconhecimento visual** (change `add-visual-recognition`):
+  confirmação visual on-device de qual remédio cadastrado é o comprimido em mãos,
+  comparando a foto da câmera apenas com as fotos do próprio usuário.
+  - Engine de scoring determinístico (`data/ml`): `RecognitionScorer` combina
+    embedding (cosseno), cor (ΔE no espaço Lab) e forma (razão de aspecto) com pesos
+    em `RecognitionParams`; o score é normalizado pelos componentes disponíveis
+    (sem embedding nesta fase, usa cor+forma). `RecognitionEngine` aplica decisão
+    conservadora por limiar e margem (confiante / ambíguo / sem correspondência).
+  - Domínio: `RecognitionCandidate` e `RecognitionOutcome` (`Confident`, `Ambiguous`,
+    `NoMatch`, `NoPhotosRegistered`); use case `RecognizeMedicationUseCase` que agrega
+    o melhor score por medicamento e suporta combinar até duas fotos (frente/verso).
+  - UI **Confirmar** (nova aba inicial): captura por câmera via `TakePicture` +
+    FileProvider (sem permissão de câmera/internet), resultado em letras grandes,
+    fluxo de 2ª foto em caso de dúvida e lista de candidatos; acessível para idosos.
+  - Testes determinísticos de scoring (vetores sintéticos), decisão por
+    limiar/margem, agregação por medicamento e do `RecognitionViewModel`.
 
