@@ -52,3 +52,20 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
     inicial placeholder.
   - ViewModels MVVM (`StateFlow`) e testes determinísticos de use cases e
     ViewModels com fakes de repositório.
+- **F2 — Fotos dos medicamentos** (change `add-medication-photos`):
+  captura por câmera e seleção da galeria de fotos de frente/verso, com
+  armazenamento privado e extração de features para o reconhecimento futuro.
+  - Camada de mídia (`data/media`): `MedicationImageStore`/`FileMedicationImageStore`
+    salvando arquivos em área privada do app (temporários em `cacheDir`,
+    definitivos em `filesDir/medication_photos/<id>`); `FileProvider` configurado
+    para a câmera (`@xml/file_paths`).
+  - Extração de features on-device (`data/ml`): cor dominante em espaço Lab
+    (`LabColor`, conversão sRGB→XYZ→Lab D65), proporção e downsample da imagem
+    (`DefaultFeatureExtractor`/`PhotoFeatures`); embedding reservado para a F4.
+  - Use cases de fotos (`AddMedicationPhoto`, `RemoveMedicationPhoto`,
+    `ObserveMedicationPhotos`) e módulo Hilt `MediaModule`.
+  - Formulário de medicamento integrando fotos: miniaturas, adição via
+    câmera/galeria com escolha de lado (frente/verso) e remoção, com semântica de
+    acessibilidade.
+  - Testes determinísticos de conversão de cor (`LabColorTest`) e dos use cases de
+    fotos com fakes de store/extrator/repositório.

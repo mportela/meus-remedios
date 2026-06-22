@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Arquivos temporários de captura de câmera em cache privado do app. -->
+    <cache-path
+        name="medication_photos_tmp"
+        path="medication_photos_tmp/" />
+</paths>

@@ -5,11 +5,17 @@ import app.cash.turbine.test
 import com.meusremedios.MainDispatcherRule
 import com.meusremedios.domain.model.Medication
 import com.meusremedios.domain.model.PeriodType
+import com.meusremedios.domain.usecase.AddMedicationPhotoUseCase
 import com.meusremedios.domain.usecase.DeleteMedicationUseCase
+import com.meusremedios.domain.usecase.FakeFeatureExtractor
+import com.meusremedios.domain.usecase.FakeMedicationImageStore
+import com.meusremedios.domain.usecase.FakeMedicationPhotoRepository
 import com.meusremedios.domain.usecase.FakeMedicationRepository
 import com.meusremedios.domain.usecase.FakeScheduleRepository
 import com.meusremedios.domain.usecase.GetMedicationUseCase
 import com.meusremedios.domain.usecase.MedicationValidationError
+import com.meusremedios.domain.usecase.ObserveMedicationPhotosUseCase
+import com.meusremedios.domain.usecase.RemoveMedicationPhotoUseCase
 import com.meusremedios.domain.usecase.SaveMedicationUseCase
 import com.meusremedios.ui.navigation.Routes
 import java.time.LocalDate
@@ -28,6 +34,8 @@ class MedicationFormViewModelTest {
 
     private val medicationRepository = FakeMedicationRepository()
     private val scheduleRepository = FakeScheduleRepository()
+    private val photoRepository = FakeMedicationPhotoRepository()
+    private val imageStore = FakeMedicationImageStore()
 
     private fun viewModel(id: Long = 0L): MedicationFormViewModel =
         MedicationFormViewModel(
@@ -35,6 +43,14 @@ class MedicationFormViewModelTest {
             getMedication = GetMedicationUseCase(medicationRepository, scheduleRepository),
             saveMedication = SaveMedicationUseCase(medicationRepository, scheduleRepository),
             deleteMedication = DeleteMedicationUseCase(medicationRepository),
+            observeMedicationPhotos = ObserveMedicationPhotosUseCase(photoRepository),
+            addMedicationPhoto = AddMedicationPhotoUseCase(
+                imageStore,
+                FakeFeatureExtractor(),
+                photoRepository,
+            ),
+            removeMedicationPhoto = RemoveMedicationPhotoUseCase(imageStore, photoRepository),
+            imageStore = imageStore,
         )
 
     @Test

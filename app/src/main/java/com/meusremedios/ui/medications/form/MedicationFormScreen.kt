@@ -1,13 +1,22 @@
 package com.meusremedios.ui.medications.form
 
+import android.graphics.BitmapFactory
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -28,6 +37,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -43,6 +53,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -50,7 +63,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.meusremedios.R
+import com.meusremedios.domain.model.MedicationPhoto
 import com.meusremedios.domain.model.PeriodType
+import com.meusremedios.domain.model.PhotoSide
 import com.meusremedios.domain.model.ScheduleTime
 import com.meusremedios.domain.usecase.MedicationValidationError
 import java.time.Instant
@@ -74,6 +89,18 @@ fun MedicationFormScreen(
     }
 
     var showDeleteDialog by remember { mutableStateOf(false) }
+    var pendingSide by remember { mutableStateOf(PhotoSide.FRONT) }
+
+    val galleryLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia(),
+    ) { uri: Uri? ->
+        if (uri != null) viewModel.onGalleryPicked(uri, pendingSide)
+    }
+    val cameraLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.TakePicture(),
+    ) { success: Boolean ->
+        if (success) viewModel.onCameraCaptured(pendingSide)
+    }
 
     Scaffold(
         modifier = modifier,
@@ -157,6 +184,25 @@ fun MedicationFormScreen(
                 onAddSchedule = viewModel::addSchedule,
                 onRemoveSchedule = viewModel::removeSchedule,
                 onUpdateDays = viewModel::updateScheduleDays,
+            )
+
+            PhotosSection(
+                photos = uiState.photos,
+                pendingPhotos = uiState.pendingPhotos,
+                onRemovePhoto = viewModel::removePhoto,
+                onRemovePendingPhoto = viewModel::removePendingPhoto,
+                onPickCamera = { side ->
+                    pendingSide = side
+                    viewModel.prepareCameraCapture { uri -> cameraLauncher.launch(uri) }
+                },
+                onPickGallery = { side ->
+                    pendingSide = side
+                    galleryLauncher.launch(
+                        PickVisualMediaRequest(
+                            ActivityResultContracts.PickVisualMedia.ImageOnly,
+                        ),
+                    )
+                },
             )
 
             Row(
@@ -465,6 +511,181 @@ private fun DeleteConfirmationDialog(
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text(stringResource(R.string.medication_delete_cancel))
+            }
+        },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+private fun PhotosSection(
+    photos: List<MedicationPhoto>,
+    pendingPhotos: List<PendingPhoto>,
+    onRemovePhoto: (MedicationPhoto) -> Unit,
+    onRemovePendingPhoto: (Int) -> Unit,
+    onPickCamera: (PhotoSide) -> Unit,
+    onPickGallery: (PhotoSide) -> Unit,
+) {
+    var showChooser by remember { mutableStateOf(false) }
+    var chosenSide by remember { mutableStateOf<PhotoSide?>(null) }
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = stringResource(R.string.medication_form_photos_label),
+            style = MaterialTheme.typography.titleMedium,
+        )
+        Text(
+            text = stringResource(R.string.medication_form_photos_help),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.outline,
+        )
+
+        if (photos.isEmpty() && pendingPhotos.isEmpty()) {
+            Text(
+                text = stringResource(R.string.medication_form_no_photos),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.outline,
+            )
+        }
+
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            photos.forEach { photo ->
+                PhotoThumbnail(
+                    path = photo.filePath,
+                    side = photo.side,
+                    onRemove = { onRemovePhoto(photo) },
+                )
+            }
+            pendingPhotos.forEachIndexed { index, pending ->
+                PhotoThumbnail(
+                    path = pending.tempPath,
+                    side = pending.side,
+                    onRemove = { onRemovePendingPhoto(index) },
+                )
+            }
+        }
+
+        OutlinedButton(onClick = { showChooser = true }) {
+            Icon(Icons.Default.Add, contentDescription = null)
+            Text(
+                text = stringResource(R.string.medication_form_add_photo),
+                modifier = Modifier.padding(start = 8.dp),
+            )
+        }
+    }
+
+    if (showChooser && chosenSide == null) {
+        SideChooserDialog(
+            onSelect = { chosenSide = it },
+            onDismiss = { showChooser = false },
+        )
+    }
+
+    chosenSide?.let { side ->
+        SourceChooserDialog(
+            onCamera = {
+                onPickCamera(side)
+                chosenSide = null
+                showChooser = false
+            },
+            onGallery = {
+                onPickGallery(side)
+                chosenSide = null
+                showChooser = false
+            },
+            onDismiss = {
+                chosenSide = null
+                showChooser = false
+            },
+        )
+    }
+}
+
+@Composable
+private fun PhotoThumbnail(
+    path: String,
+    side: PhotoSide,
+    onRemove: () -> Unit,
+) {
+    val bitmap = remember(path) { BitmapFactory.decodeFile(path) }
+    val sideDesc = stringResource(
+        if (side == PhotoSide.FRONT) {
+            R.string.medication_form_photo_front_desc
+        } else {
+            R.string.medication_form_photo_back_desc
+        },
+    )
+    Box {
+        if (bitmap != null) {
+            Image(
+                bitmap = bitmap.asImageBitmap(),
+                contentDescription = sideDesc,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(96.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+            )
+        } else {
+            Surface(
+                modifier = Modifier
+                    .size(96.dp)
+                    .clip(RoundedCornerShape(8.dp)),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+            ) {}
+        }
+        Surface(
+            color = MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(bottomStart = 8.dp),
+            modifier = Modifier.align(Alignment.TopEnd),
+        ) {
+            IconButton(onClick = onRemove, modifier = Modifier.size(36.dp)) {
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = stringResource(R.string.medication_form_remove_photo),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SideChooserDialog(
+    onSelect: (PhotoSide) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.medication_form_photo_choose_side)) },
+        confirmButton = {
+            TextButton(onClick = { onSelect(PhotoSide.FRONT) }) {
+                Text(stringResource(R.string.medication_form_photo_side_front))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = { onSelect(PhotoSide.BACK) }) {
+                Text(stringResource(R.string.medication_form_photo_side_back))
+            }
+        },
+    )
+}
+
+@Composable
+private fun SourceChooserDialog(
+    onCamera: () -> Unit,
+    onGallery: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.medication_form_photo_choose_source)) },
+        confirmButton = {
+            TextButton(onClick = onCamera) {
+                Text(stringResource(R.string.medication_form_photo_camera))
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onGallery) {
+                Text(stringResource(R.string.medication_form_photo_gallery))
             }
         },
     )

@@ -36,6 +36,21 @@
     <string name="medication_form_delete">Excluir</string>
     <string name="medication_form_saved">Remédio salvo.</string>
 
+    <!-- Fotos do medicamento -->
+    <string name="medication_form_photos_label">Fotos do comprimido</string>
+    <string name="medication_form_photos_help">Adicione fotos da frente e do verso para o reconhecimento pela câmera.</string>
+    <string name="medication_form_add_photo">Adicionar foto</string>
+    <string name="medication_form_photo_camera">Câmera</string>
+    <string name="medication_form_photo_gallery">Galeria</string>
+    <string name="medication_form_photo_side_front">Frente</string>
+    <string name="medication_form_photo_side_back">Verso</string>
+    <string name="medication_form_photo_choose_side">Qual lado é esta foto?</string>
+    <string name="medication_form_photo_choose_source">Adicionar foto de</string>
+    <string name="medication_form_remove_photo">Remover foto</string>
+    <string name="medication_form_no_photos">Nenhuma foto adicionada.</string>
+    <string name="medication_form_photo_front_desc">Foto da frente do comprimido</string>
+    <string name="medication_form_photo_back_desc">Foto do verso do comprimido</string>
+
     <!-- Dias da semana (abreviações) -->
     <string name="weekday_monday">Seg</string>
     <string name="weekday_tuesday">Ter</string>
