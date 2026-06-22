@@ -14,6 +14,7 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 - Seção "Desenvolvimento local" no [`docs/README.md`](docs/README.md) e referências ao
   `Makefile` em [`AGENTS.md`](AGENTS.md) e
   [`.github/copilot-instructions.md`](.github/copilot-instructions.md).
+- `README.md` na raiz com visão geral, início rápido e referências à documentação.
 - Documentação de produto: ONE PAGER e PRDs 1–6 (cadastro, consulta/relatórios,
   reconhecimento, lembretes, registro de tomadas, configurações).
 - Documentação técnica: arquitetura, modelo de dados, engine de reconhecimento,

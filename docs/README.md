@@ -3,8 +3,8 @@
 App Android **100% offline** que confirma visualmente, pela câmera, qual remédio
 pré-cadastrado é o comprimido em mãos — pensado para idosos.
 
-> Estado: **documentação de projeto**. A implementação será feita em outra sessão usando
-> **OpenSpec SDD** (ver [openspec-plan.md](openspec-plan.md)).
+> Visão geral e início rápido no [README da raiz](../README.md). Este índice reúne a
+> documentação detalhada de produto e técnica.
 
 ## Produto
 - [ONE PAGER](product/one-pager.md)

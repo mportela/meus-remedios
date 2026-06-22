@@ -1,6 +1,7 @@
 # AGENTS.md
 
 Guia para agentes de IA e pessoas contribuindo no **Meus Remédios**.
+Visão geral e início rápido no [`README.md`](README.md) da raiz.
 
 ## O que é o projeto
 App Android **100% offline** que confirma visualmente, pela câmera, qual remédio
