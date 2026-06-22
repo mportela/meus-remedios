@@ -30,3 +30,7 @@ secrets.properties
 *.ap_
 *.dex
 output.json
+
+# Imagens de teste locais (fotos de remédios para o emulador)
+/frente.jpeg
+/verso.jpeg

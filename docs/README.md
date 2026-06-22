@@ -43,6 +43,21 @@ Os fluxos de build, teste e execução no emulador estão automatizados no
 | `make logcat` · `make screenshot` · `make devices` | Diagnóstico |
 | `make avd-create` | (Re)cria o AVD usado nos testes locais |
 
+### Câmera e fotos no emulador
+Para testar o reconhecimento com a câmera real do Mac e enviar imagens para a galeria:
+
+| Comando | Descrição |
+|---------|-----------|
+| `make run-cam` | Igual ao `make run`, mas usa a webcam do Mac como câmera traseira |
+| `make emulator-cam` | Só inicia o emulador com a webcam (`CAMERA_BACK=webcam0`) |
+| `make push-photo FILE=~/Downloads/foto.jpg` | Envia uma foto para a galeria e reindexa |
+| `make push-photos SRC=~/Downloads` | Envia todas as imagens (jpg/jpeg/png/webp) da pasta |
+| `make scan-media` | Força a reindexação da galeria do device |
+
+Variáveis úteis: `CAMERA_BACK` (`webcam0` padrão; use `emulated` para a câmera simulada),
+`SRC` (origem das fotos, padrão `~/Downloads`) e `DEVICE_DIR` (destino, padrão
+`/sdcard/Pictures`). O macOS pede permissão de câmera ao emulador na primeira captura.
+
 Pré-requisitos: JDK 17 e Android SDK (com `emulator` e a imagem de sistema). O Makefile
 usa `ANDROID_HOME`/`JAVA_HOME` (com fallback automático) e sempre
 `--no-configuration-cache`. Para uso direto: `./gradlew test`, `./gradlew connectedCheck`,

@@ -18,6 +18,15 @@ AVD_NAME    ?= meus_remedios_pixel6
 AVD_DEVICE  ?= pixel_6
 SYSTEM_IMAGE?= system-images;android-35;google_apis;arm64-v8a
 
+# Câmera traseira do emulador: webcam0 = webcam do Mac; emulated = simulada.
+CAMERA_BACK ?= webcam0
+# Modo de GPU do emulador: host (acelerada, recomendado no Mac) ou swiftshader_indirect (software).
+GPU_MODE    ?= host
+# Origem padrão das fotos a enviar para a galeria (ex.: make push-photos SRC=~/Downloads).
+SRC         ?= $(HOME)/Downloads
+# Pasta de destino na galeria do device.
+DEVICE_DIR  ?= /sdcard/Pictures
+
 APP_ID    := com.meusremedios
 MAIN_ACT  := $(APP_ID)/.ui.MainActivity
 APK_DEBUG := app/build/outputs/apk/debug/app-debug.apk
@@ -69,13 +78,24 @@ avd-create: ## Cria o AVD ($(AVD_NAME)) se não existir
 	@echo no | "$(AVDMANAGER)" create avd -n $(AVD_NAME) -k "$(SYSTEM_IMAGE)" -d $(AVD_DEVICE) --force
 
 .PHONY: emulator
-emulator: ## Inicia o emulador em background (desacoplado, render por software)
+emulator: ## Inicia o emulador em background (desacoplado, GPU acelerada)
 	@if "$(ADB)" get-state >/dev/null 2>&1; then \
 		echo "Emulador já está rodando."; \
 	else \
-		echo "Iniciando emulador $(AVD_NAME)..."; \
+		echo "Iniciando emulador $(AVD_NAME) (gpu $(GPU_MODE))..."; \
 		nohup "$(EMULATOR)" -avd $(AVD_NAME) -no-snapshot -no-boot-anim \
-			-gpu swiftshader_indirect > /tmp/emulator_meus_remedios.log 2>&1 & \
+			-gpu $(GPU_MODE) > /tmp/emulator_meus_remedios.log 2>&1 & \
+		echo "Emulador iniciado (log: /tmp/emulator_meus_remedios.log)."; \
+	fi
+
+.PHONY: emulator-cam
+emulator-cam: ## Inicia o emulador usando a webcam do Mac como câmera traseira
+	@if "$(ADB)" get-state >/dev/null 2>&1; then \
+		echo "Emulador já está rodando. Use 'make kill-emulator' antes para aplicar a câmera."; \
+	else \
+		echo "Iniciando emulador $(AVD_NAME) com câmera traseira '$(CAMERA_BACK)' (gpu $(GPU_MODE))..."; \
+		nohup "$(EMULATOR)" -avd $(AVD_NAME) -no-snapshot-load -no-boot-anim \
+			-camera-back $(CAMERA_BACK) -gpu $(GPU_MODE) > /tmp/emulator_meus_remedios.log 2>&1 & \
 		echo "Emulador iniciado (log: /tmp/emulator_meus_remedios.log)."; \
 	fi
 
@@ -117,6 +137,44 @@ uninstall: ## Remove o app do emulador
 # --- Debug / Diagnóstico ---------------------------------------------------
 .PHONY: run
 run: emulator wait-boot ime-fix build install open ## Sobe emulador, builda, instala e abre o app
+
+.PHONY: run-cam
+run-cam: emulator-cam wait-boot ime-fix build install open ## Igual ao 'run', mas com a webcam do Mac como câmera
+
+# --- Galeria / Fotos -------------------------------------------------------
+.PHONY: push-photo
+push-photo: ## Envia uma foto para a galeria (uso: make push-photo FILE=~/Downloads/foto.jpg)
+	@test -n "$(FILE)" || { echo "Informe o arquivo: make push-photo FILE=~/Downloads/foto.jpg"; exit 1; }
+	@test -f "$(FILE)" || { echo "Arquivo não encontrado: $(FILE)"; exit 1; }
+	@"$(ADB)" shell mkdir -p $(DEVICE_DIR)
+	@"$(ADB)" push "$(FILE)" $(DEVICE_DIR)/
+	@$(MAKE) --no-print-directory scan-media
+	@echo "Foto enviada para $(DEVICE_DIR) e galeria reindexada."
+
+.PHONY: push-photos
+push-photos: ## Envia todas as imagens de uma pasta (uso: make push-photos SRC=~/Downloads)
+	@test -d "$(SRC)" || { echo "Pasta não encontrada: $(SRC)"; exit 1; }
+	@"$(ADB)" shell mkdir -p $(DEVICE_DIR)
+	@found=0; \
+	for f in "$(SRC)"/*.jpg "$(SRC)"/*.jpeg "$(SRC)"/*.png "$(SRC)"/*.webp; do \
+		[ -e "$$f" ] || continue; \
+		"$(ADB)" push "$$f" $(DEVICE_DIR)/ && found=1; \
+	done; \
+	if [ "$$found" = "1" ]; then \
+		$(MAKE) --no-print-directory scan-media; \
+		echo "Imagens de '$(SRC)' enviadas para $(DEVICE_DIR) e galeria reindexada."; \
+	else \
+		echo "Nenhuma imagem (jpg/jpeg/png/webp) encontrada em '$(SRC)'."; \
+	fi
+
+.PHONY: scan-media
+scan-media: ## Força o Android a reindexar a galeria ($(DEVICE_DIR))
+	@"$(ADB)" shell content call --uri content://media/external/file \
+		--method scan_volume --arg external_primary >/dev/null 2>&1 \
+		|| "$(ADB)" shell am broadcast \
+			-a android.intent.action.MEDIA_SCANNER_SCAN_FILE \
+			-d file://$(DEVICE_DIR) >/dev/null 2>&1
+	@echo "Galeria reindexada."
 
 .PHONY: logcat
 logcat: ## Mostra o logcat filtrado pelo app
