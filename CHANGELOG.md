@@ -8,6 +8,17 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 ## [Não lançado]
 
 ### Adicionado
+- **F4.4 — OCR de imprint on-device** (change `add-imprint-ocr`): leitura do texto gravado
+  no comprimido via **ML Kit Text Recognition Latin _bundled_** (modelo embarcado no APK, sem
+  rede, sem Play Services em runtime). Novo campo `imprintText` em `MedicationPhoto`,
+  `MedicationPhotoEntity` (coluna `imprint_text TEXT`) e `PhotoFeatures`/`FeatureSet`.
+  `ImprintReader` / `MlKitImprintReader` (@Singleton) + helper puro `ImprintMatch` (normalização
+  e similaridade Jaccard+edição). `RecognitionScorer` ganhou `textSimilarity()` e o novo peso
+  `W_IMPRINT = 0.2` entra no score apenas quando **ambas** as fotos têm imprint.
+  Migração Room v1→v2 (`MIGRATION_1_2`) adiciona a coluna de forma aditiva e é registrada em
+  `DatabaseModule`. Guard offline: `INTERNET` removida via `tools:node="remove"` no manifest
+  e confirmada ausente no manifesto mergeado. Fallback gracioso: OCR falho/vazio → `null` →
+  componente ignorado; reconhecimento segue com embedding + cor + forma.
 - **F4.3 — Embedding TFLite on-device** (change `add-tflite-embedding`): ativa o núcleo de
   inteligência do reconhecimento. Embarca `mobilenet_v3_small.tflite` (MobileNetV3-Small,
   entrada `224×224×3`, saída `1024`, float32, ~4,1 MB) em `app/src/main/assets/` e implementa

@@ -33,8 +33,9 @@ principal do app.
   apresentar opções — segurança acima de conveniência.
 - **RN-3.2** Apenas remédios com foto cadastrada entram na comparação.
 - **RN-3.3** Todo processamento é local; nenhuma imagem sai do dispositivo.
-- **RN-3.4** Score = `w1·cos(embedding) + w2·sim(cor) + w3·sim(forma)`; pesos e limiares são
-  configuráveis no código e cobertos por testes.
+- **RN-3.4** Score = `w1·cos(embedding) + w2·sim(cor) + w3·sim(forma) + w4·sim(imprint)`;
+  `w4` entra apenas quando ambas as fotos têm imprint. Pesos e limiares são configuráveis no
+  código e cobertos por testes.
 
 ## Fluxos
 Home → botão → câmera → (auto)captura → análise → resultado confiante **OU** pedido de 2ª foto
@@ -53,4 +54,5 @@ instrução clara para a 2ª foto.
 F1, F2 (fotos + features), CameraX, `data/ml` (TFLite embedder).
 
 ## Fora de escopo
-Identificar remédios não cadastrados; OCR de texto do comprimido (possível refinamento).
+Identificar remédios não cadastrados. OCR de inscrição do comprimido (imprint) está **ativo
+desde F4.4** como sinal auxiliar do reconhecimento.

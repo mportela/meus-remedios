@@ -18,6 +18,13 @@ object RecognitionParams {
     const val W_SHAPE: Float = 0.1f
 
     /**
+     * Peso da similaridade de imprint (texto gravado). Entra no score apenas
+     * quando ambas as fotos (consulta e cadastrada) tiverem imprint não nulo.
+     * Calibração fina de todos os pesos na F4.5.
+     */
+    const val W_IMPRINT: Float = 0.2f
+
+    /**
      * Score mínimo do top-1 para afirmar a identidade.
      *
      * Provisoriamente elevado (F4.1 `harden-recognition-thresholds`) enquanto o

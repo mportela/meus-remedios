@@ -7,11 +7,14 @@ package com.meusremedios.data.ml
  *   reconhecimento (F4) preenchê-lo.
  * @param dominantColorLab cor dominante em espaço Lab `[L, a, b]`.
  * @param aspectRatio proporção largura/altura da imagem.
+ * @param imprintText texto gravado no comprimido (imprint), normalizado; `null`
+ *   quando ausente ou quando o OCR não encontrou texto.
  */
 data class PhotoFeatures(
     val embedding: FloatArray? = null,
     val dominantColorLab: FloatArray,
     val aspectRatio: Float,
+    val imprintText: String? = null,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -23,13 +26,15 @@ data class PhotoFeatures(
             return false
         }
         return dominantColorLab.contentEquals(other.dominantColorLab) &&
-            aspectRatio == other.aspectRatio
+            aspectRatio == other.aspectRatio &&
+            imprintText == other.imprintText
     }
 
     override fun hashCode(): Int {
         var result = embedding?.contentHashCode() ?: 0
         result = 31 * result + dominantColorLab.contentHashCode()
         result = 31 * result + aspectRatio.hashCode()
+        result = 31 * result + (imprintText?.hashCode() ?: 0)
         return result
     }
 }

@@ -3,6 +3,8 @@ package com.meusremedios.di
 import com.meusremedios.data.media.FileMedicationImageStore
 import com.meusremedios.data.media.MedicationImageStore
 import com.meusremedios.data.ml.FeatureExtractor
+import com.meusremedios.data.ml.ImprintReader
+import com.meusremedios.data.ml.MlKitImprintReader
 import com.meusremedios.data.ml.TfliteFeatureExtractor
 import dagger.Binds
 import dagger.Module
@@ -22,4 +24,8 @@ abstract class MediaModule {
     @Binds
     @Singleton
     abstract fun bindFeatureExtractor(impl: TfliteFeatureExtractor): FeatureExtractor
+
+    @Binds
+    @Singleton
+    abstract fun bindImprintReader(impl: MlKitImprintReader): ImprintReader
 }

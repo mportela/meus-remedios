@@ -16,7 +16,8 @@ class TfliteFeatureExtractorTest {
 
     private val base = mockk<DefaultFeatureExtractor>()
     private val embedder = mockk<TfliteEmbedder>()
-    private val extractor = TfliteFeatureExtractor(base, embedder)
+    private val imprintReader = mockk<ImprintReader>()
+    private val extractor = TfliteFeatureExtractor(base, embedder, imprintReader)
 
     private val baseFeatures = PhotoFeatures(
         embedding = null,
@@ -25,25 +26,52 @@ class TfliteFeatureExtractorTest {
     )
 
     @Test
-    fun `embedding ausente preserva as features de base`() = runTest {
+    fun `embedding ausente e imprint nulo preserva features de base`() = runTest {
         coEvery { base.extract(any()) } returns baseFeatures
         every { embedder.embed(any()) } returns null
+        coEvery { imprintReader.read(any()) } returns null
 
         val result = extractor.extract("qualquer.jpg")
 
         assertNull(result.embedding)
+        assertNull(result.imprintText)
         assertEquals(baseFeatures, result)
     }
 
     @Test
-    fun `embedding calculado e anexado as features de base`() = runTest {
+    fun `embedding calculado e imprint nulo sao anexados`() = runTest {
         coEvery { base.extract(any()) } returns baseFeatures
         every { embedder.embed(any()) } returns floatArrayOf(0.1f, 0.2f, 0.3f)
+        coEvery { imprintReader.read(any()) } returns null
 
         val result = extractor.extract("qualquer.jpg")
 
         assertArrayEquals(floatArrayOf(0.1f, 0.2f, 0.3f), result.embedding, 0f)
         assertArrayEquals(baseFeatures.dominantColorLab, result.dominantColorLab, 0f)
         assertEquals(baseFeatures.aspectRatio, result.aspectRatio, 0f)
+        assertNull(result.imprintText)
+    }
+
+    @Test
+    fun `imprint lido pelo reader e anexado ao resultado`() = runTest {
+        coEvery { base.extract(any()) } returns baseFeatures
+        every { embedder.embed(any()) } returns null
+        coEvery { imprintReader.read(any()) } returns "ABC 123"
+
+        val result = extractor.extract("qualquer.jpg")
+
+        assertEquals("ABC 123", result.imprintText)
+    }
+
+    @Test
+    fun `falha do imprint reader retorna null sem propagar excecao`() = runTest {
+        coEvery { base.extract(any()) } returns baseFeatures
+        every { embedder.embed(any()) } returns null
+        coEvery { imprintReader.read(any()) } returns null
+
+        val result = extractor.extract("qualquer.jpg")
+
+        assertNull(result.imprintText)
+        assertArrayEquals(baseFeatures.dominantColorLab, result.dominantColorLab, 0f)
     }
 }

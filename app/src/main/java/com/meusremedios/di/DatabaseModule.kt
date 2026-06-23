@@ -28,7 +28,7 @@ object DatabaseModule {
         context,
         MeusRemediosDatabase::class.java,
         MeusRemediosDatabase.DATABASE_NAME,
-    ).build()
+    ).addMigrations(MeusRemediosDatabase.MIGRATION_1_2).build()
 
     @Provides
     fun provideMedicationDao(db: MeusRemediosDatabase): MedicationDao = db.medicationDao()

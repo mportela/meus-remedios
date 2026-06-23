@@ -12,6 +12,8 @@ import java.time.Instant
  * @param embedding vetor de embedding (preenchido na fase de reconhecimento).
  * @param dominantColorLab cor dominante em espaço Lab (L, a, b).
  * @param aspectRatio proporção (largura/altura) do recorte.
+ * @param imprintText texto gravado no comprimido (imprint), normalizado; `null`
+ *   quando ausente ou quando o OCR não encontrou texto.
  * @param createdAt instante de criação.
  */
 data class MedicationPhoto(
@@ -22,6 +24,7 @@ data class MedicationPhoto(
     val embedding: FloatArray? = null,
     val dominantColorLab: FloatArray? = null,
     val aspectRatio: Float? = null,
+    val imprintText: String? = null,
     val createdAt: Instant = Instant.now(),
 ) {
     override fun equals(other: Any?): Boolean {
@@ -34,6 +37,7 @@ data class MedicationPhoto(
             embedding.contentEqualsNullable(other.embedding) &&
             dominantColorLab.contentEqualsNullable(other.dominantColorLab) &&
             aspectRatio == other.aspectRatio &&
+            imprintText == other.imprintText &&
             createdAt == other.createdAt
     }
 
@@ -45,6 +49,7 @@ data class MedicationPhoto(
         result = 31 * result + (embedding?.contentHashCode() ?: 0)
         result = 31 * result + (dominantColorLab?.contentHashCode() ?: 0)
         result = 31 * result + (aspectRatio?.hashCode() ?: 0)
+        result = 31 * result + (imprintText?.hashCode() ?: 0)
         result = 31 * result + createdAt.hashCode()
         return result
     }

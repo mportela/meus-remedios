@@ -46,6 +46,7 @@ fun MedicationPhotoEntity.toDomain(): MedicationPhoto = MedicationPhoto(
     embedding = embedding,
     dominantColorLab = dominantColorLab,
     aspectRatio = aspectRatio,
+    imprintText = imprintText,
     createdAt = Instant.parse(createdAt),
 )
 
@@ -57,6 +58,7 @@ fun MedicationPhoto.toEntity(): MedicationPhotoEntity = MedicationPhotoEntity(
     embedding = embedding,
     dominantColorLab = dominantColorLab,
     aspectRatio = aspectRatio,
+    imprintText = imprintText,
     createdAt = createdAt.toString(),
 )
 

@@ -36,6 +36,8 @@ data class MedicationPhotoEntity(
     val dominantColorLab: FloatArray?,
     @ColumnInfo(name = "aspect_ratio")
     val aspectRatio: Float?,
+    @ColumnInfo(name = "imprint_text")
+    val imprintText: String? = null,
     @ColumnInfo(name = "created_at")
     val createdAt: String,
 ) {
@@ -49,6 +51,7 @@ data class MedicationPhotoEntity(
             embedding.contentEqualsNullable(other.embedding) &&
             dominantColorLab.contentEqualsNullable(other.dominantColorLab) &&
             aspectRatio == other.aspectRatio &&
+            imprintText == other.imprintText &&
             createdAt == other.createdAt
     }
 
@@ -60,6 +63,7 @@ data class MedicationPhotoEntity(
         result = 31 * result + (embedding?.contentHashCode() ?: 0)
         result = 31 * result + (dominantColorLab?.contentHashCode() ?: 0)
         result = 31 * result + (aspectRatio?.hashCode() ?: 0)
+        result = 31 * result + (imprintText?.hashCode() ?: 0)
         result = 31 * result + createdAt.hashCode()
         return result
     }

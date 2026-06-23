@@ -4,7 +4,8 @@
 - **`Medication`**(id, name, dosage?, notes?, periodType[continuous|ranged], startDate?,
   endDate?, remindersEnabled, createdAt)
 - **`MedicationPhoto`**(id, medicationId→FK, filePath, side[front|back], embedding(BLOB /
-  Float[] serializado), dominantColorLab(3 floats), aspectRatio, createdAt)
+  Float[] serializado), dominantColorLab(3 floats), aspectRatio, imprintText?, createdAt)
+  — `imprintText` adicionado na schema v2 (F4.4)
 - **`ScheduleTime`**(id, medicationId→FK, timeOfDay[HH:mm], daysOfWeekMask[bitmask 7])
 - **`IntakeLog`**(id, medicationId→FK, scheduleTimeId?→FK, date, scheduledAt, takenAt?,
   status[pending|taken|skipped|late])
@@ -27,7 +28,9 @@
 - `Medication(name)` para busca.
 
 ## Migrações
-Versionamento Room desde a v1; testes de migração quando o schema evoluir.
+| Versão | Change | SQL |
+|--------|--------|-----|
+| v1→v2 | F4.4 `add-imprint-ocr` | `ALTER TABLE medication_photos ADD COLUMN imprint_text TEXT` |
 
 ## Diagrama (ER simplificado)
 ```mermaid

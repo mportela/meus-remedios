@@ -5,7 +5,12 @@
     <!--
       Restrição inegociável: app 100% offline.
       NÃO declarar android.permission.INTERNET nem ACCESS_NETWORK_STATE.
+      A remoção explícita abaixo garante que nenhuma lib (ex.: ML Kit) injete a
+      permissão via manifest merge.
     -->
+    <uses-permission
+        android:name="android.permission.INTERNET"
+        tools:node="remove" />
 
     <application
         android:name=".MeusRemediosApplication"

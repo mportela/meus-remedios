@@ -34,6 +34,7 @@ class AddMedicationPhotoUseCase @Inject constructor(
                 embedding = features.embedding,
                 dominantColorLab = features.dominantColorLab,
                 aspectRatio = features.aspectRatio,
+                imprintText = features.imprintText,
             ),
         )
     }

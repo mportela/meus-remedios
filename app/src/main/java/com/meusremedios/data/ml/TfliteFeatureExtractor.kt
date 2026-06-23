@@ -8,21 +8,27 @@ import kotlinx.coroutines.withContext
 
 /**
  * [FeatureExtractor] que decora o [DefaultFeatureExtractor] (cor + forma) e
- * acrescenta o `embedding` de imagem calculado on-device por [TfliteEmbedder].
+ * acrescenta o `embedding` calculado on-device por [TfliteEmbedder] e o
+ * `imprintText` lido on-device por [ImprintReader].
  *
- * Se o embedder não estiver disponível ou falhar, o embedding fica `null` e as
- * features de cor/forma são preservadas.
+ * Se qualquer componente falhar, o respectivo campo fica `null` e as demais
+ * features são preservadas (fallback gracioso).
  */
 @Singleton
 class TfliteFeatureExtractor @Inject constructor(
     private val base: DefaultFeatureExtractor,
     private val embedder: TfliteEmbedder,
+    private val imprintReader: ImprintReader,
 ) : FeatureExtractor {
 
     override suspend fun extract(imagePath: String): PhotoFeatures {
         val baseFeatures = base.extract(imagePath)
         val embedding = withContext(Dispatchers.Default) { computeEmbedding(imagePath) }
-        return if (embedding == null) baseFeatures else baseFeatures.copy(embedding = embedding)
+        val imprintText = imprintReader.read(imagePath)
+        return baseFeatures.copy(
+            embedding = embedding ?: baseFeatures.embedding,
+            imprintText = imprintText,
+        )
     }
 
     private fun computeEmbedding(imagePath: String): FloatArray? {

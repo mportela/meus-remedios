@@ -15,11 +15,15 @@ Comparar a foto da câmera com as fotos cadastradas e responder com confiança, 
      Quantização int8 e orçamento de APK ficam para a F4.7.
    - `cor dominante` em espaço **Lab** (robusto a brilho).
    - `forma/tamanho`: aspect ratio + descritor simples de contorno.
+   - `imprintText`: texto gravado no comprimido lido pelo **ML Kit Text Recognition Latin
+     _bundled_** (on-device, sem rede). Ativo em **F4.4** (`add-imprint-ocr`). Fallback
+     gracioso: OCR falho/vazio → `null` → componente ignorado.
 4. **Scoring** por foto cadastrada:
    ```
-   score = w1·cosine(embedding) + w2·colorSim(Lab) + w3·shapeSim(aspect)
+   score = w1·cosine(embedding) + w2·colorSim(Lab) + w3·shapeSim(aspect) + w4·imprintSim(OCR)
    ```
-   (pesos default no código; cobertos por testes).
+   Componentes ausentes são ignorados e o score é renormalizado.
+   (pesos em `RecognitionParams`; cobertos por testes; calibração final na F4.5).
 5. **Decisão**:
    - `top1 ≥ THRESHOLD_CONFIDENT` **e** `(top1 − top2) ≥ MARGIN` → **confirma**.
    - caso contrário → **ambíguo**: pedir 2ª foto (verso) e recombinar; ou listar candidatos.
@@ -30,7 +34,8 @@ Agrega scores das fotos frente/verso (ex.: máximo por remédio ou média ponder
 desambiguar pílulas com gravação só de um lado.
 
 ## Constantes / parâmetros
-`THRESHOLD_CONFIDENT`, `MARGIN`, `w1, w2, w3`, tamanho do embedding — centralizados e testados.
+`THRESHOLD_CONFIDENT`, `MARGIN`, `w1, w2, w3, w4`, tamanho do embedding — centralizados em
+`RecognitionParams` e cobertos por testes. Calibração fina dos pesos na F4.5.
 
 ## Considerações
 - **Determinismo**: dado um conjunto de embeddings, o ranking é determinístico → testável.

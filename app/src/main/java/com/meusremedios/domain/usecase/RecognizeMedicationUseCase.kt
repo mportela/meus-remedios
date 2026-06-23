@@ -35,6 +35,7 @@ class RecognizeMedicationUseCase @Inject constructor(
                     embedding = features.embedding,
                     colorLab = features.dominantColorLab,
                     aspectRatio = features.aspectRatio,
+                    imprintText = features.imprintText,
                 )
             }
         }
@@ -61,5 +62,6 @@ class RecognizeMedicationUseCase @Inject constructor(
         embedding = embedding,
         colorLab = dominantColorLab,
         aspectRatio = aspectRatio,
+        imprintText = imprintText,
     )
 }

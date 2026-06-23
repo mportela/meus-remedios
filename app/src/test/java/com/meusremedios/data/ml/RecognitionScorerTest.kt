@@ -69,4 +69,49 @@ class RecognitionScorerTest {
     fun `score zero quando nenhum componente comparavel`() {
         assertEquals(0f, RecognitionScorer.score(FeatureSet(), FeatureSet()), 1e-4f)
     }
+
+    @Test
+    fun `textSimilarity retorna nulo quando algum imprint e null`() {
+        assertNull(RecognitionScorer.textSimilarity(null, "ABC"))
+        assertNull(RecognitionScorer.textSimilarity("ABC", null))
+        assertNull(RecognitionScorer.textSimilarity(null, null))
+    }
+
+    @Test
+    fun `textSimilarity strings iguais retorna 1`() {
+        assertEquals(1f, RecognitionScorer.textSimilarity("ABC 10", "ABC 10")!!, 1e-4f)
+    }
+
+    @Test
+    fun `score com imprint identico e maior que sem imprint`() {
+        val base = FeatureSet(colorLab = floatArrayOf(50f, 0f, 0f), aspectRatio = 1f)
+        val scoreBase = RecognitionScorer.score(base, base)
+
+        val withImprint = base.copy(imprintText = "ABC 10")
+        val scoreWithImprint = RecognitionScorer.score(withImprint, withImprint)
+
+        // Ambos são 1.0 quando tudo idêntico; o score com imprint deve ser >= ao sem.
+        assertTrue(scoreWithImprint >= scoreBase)
+        assertEquals(1f, scoreWithImprint, 1e-4f)
+    }
+
+    @Test
+    fun `score ignora imprint quando ausente em um dos lados`() {
+        val query = FeatureSet(colorLab = floatArrayOf(50f, 0f, 0f), aspectRatio = 1f, imprintText = "ABC")
+        val candidate = FeatureSet(colorLab = floatArrayOf(50f, 0f, 0f), aspectRatio = 1f, imprintText = null)
+        // imprintText ausente no candidato → componente ignorado → score = 1 (cor+forma idênticos)
+        assertEquals(1f, RecognitionScorer.score(query, candidate), 1e-4f)
+    }
+
+    @Test
+    fun `score com imprints divergentes e menor que com imprints identicos`() {
+        val base = FeatureSet(colorLab = floatArrayOf(50f, 0f, 0f), aspectRatio = 1f)
+        val sameImprint = base.copy(imprintText = "ABC")
+        val diffImprint = FeatureSet(colorLab = floatArrayOf(50f, 0f, 0f), aspectRatio = 1f, imprintText = "XYZ")
+
+        val scoreSame = RecognitionScorer.score(sameImprint, sameImprint)
+        val scoreDiff = RecognitionScorer.score(sameImprint, diffImprint)
+
+        assertTrue("Score com imprint igual deve ser > divergente", scoreSame > scoreDiff)
+    }
 }

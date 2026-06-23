@@ -79,23 +79,27 @@ score = w1·cosine(embedding) + w2·colorSim(Lab) + w3·shapeSim(forma) + w4·im
   - Segmentação/detecção do comprimido (TFLite detector ou ML Kit Subject Segmentation);
     define a ROI que alimenta embedding/OCR/cor/forma.
   - Corrige o descritor de **forma** para ser do comprimido (contorno/eixo), não da foto.
-  - **Tarefa obrigatória — tamanho:** embarcar o modelo de segmentação **quantizado int8**
-    (não usar float32) e registrar o ganho de tamanho no orçamento de APK (F4.7).
+  - **Tamanho:** preferir um modelo de segmentação leve e **avaliar quantização int8** se
+    o ganho de precisão↔tamanho compensar (float32 é aceitável quando couber no orçamento);
+    registrar o tamanho no orçamento de APK (F4.7).
   - Aplica-se ao **cadastro** (F2) e à **consulta** (F4). Capabilities: `medication-photos`,
     `visual-recognition`.
 - **F4.3** → `add-tflite-embedding` — **núcleo de inteligência**. ✅ feito
   - Embarcar MobileNetV3 em `assets/`; `FeatureExtractor` real preenche `embedding` no
     cadastro e na consulta (sobre a imagem; a ROI segmentada é melhoria futura da F4.2).
   - **Entregue:** `mobilenet_v3_small.tflite` (MobileNetV3-Small, `224×224×3`→`1024`,
-    float32, ~4,1 MB), L2-normalizado, fallback gracioso. **int8** adiado para a F4.7 (não
-    há variante int8 publicada deste embedder); validar acurácia no golden set (F4.5).
+    float32, ~4,1 MB), L2-normalizado, fallback gracioso. **float32 é o padrão** (prioriza
+    precisão numa tarefa sensível); int8 fica como **avaliação opcional** na F4.7 (não há
+    variante int8 publicada deste embedder e ~4,1 MB num APK de ~33 MB não é gargalo).
+    Validar acurácia no golden set (F4.5).
   - Ativa `W_EMBEDDING` (já reservado = 0.6). Capabilities: `medication-photos`,
     `visual-recognition`.
-- **F4.4** → `add-imprint-ocr` — **letras/números gravados**.
-  - ML Kit Text Recognition *bundled* (offline) lê inscrições na ROI; normaliza o texto.
-  - Novo campo `MedicationPhoto.imprintText`; nova similaridade `imprintSim` (token/edit
-    distance) e peso `w4`. Capabilities: `pill-imprint-ocr`, `medication-photos`,
-    `visual-recognition`.
+- **F4.4** → `add-imprint-ocr` — **letras/números gravados**. ✅ feito
+  - ML Kit Text Recognition *bundled* (offline) lê inscrições; normaliza o texto.
+  - Novo campo `MedicationPhoto.imprintText`; nova similaridade `imprintSim` (Jaccard de tokens
+    + edit distance) e peso `W_IMPRINT = 0.2`; schema Room v2 + `MIGRATION_1_2`.
+  - Guard offline: `INTERNET` removida no merge e confirmada ausente no manifesto mergeado.
+  - Capabilities: `pill-imprint-ocr`, `medication-photos`, `visual-recognition`.
 - **F4.5** → `recalibrate-recognition` — **calibração final multimodal**.
   - Reequilibrar `W_*` e limiares com um **conjunto de referência** (positivos + controles
     negativos), agora com embedding+OCR disponíveis; relaxar o endurecimento provisório da
@@ -108,7 +112,8 @@ score = w1·cosine(embedding) + w2·colorSim(Lab) + w3·shapeSim(forma) + w4·im
   - Capability: `medication-photos`.
 - **F4.7** → `enforce-apk-size-budget` — **orçamento de tamanho de APK**.
   - Definir um **orçamento explícito** de tamanho (modelos em `assets/` + libs) e falhar o
-    build/CI se exceder; preferir modelos **int8**, e avaliar download opcional do modelo
+    build/CI se exceder; **avaliar** quantização int8 caso o orçamento aperte (mantendo
+    float32 como padrão por precisão), e avaliar download opcional do modelo
     no primeiro uso **só** se permanecer 100% offline (ex.: via app bundle/asset pack, sem
     rede). Documentar tamanhos por modelo. Capability: transversal (tooling/CI).
 
@@ -120,8 +125,9 @@ score = w1·cosine(embedding) + w2·colorSim(Lab) + w3·shapeSim(forma) + w4·im
   da segmentação); `embedding` (BLOB) já existe.
 - **Offline (NFR):** confirmar a cada change que **nenhuma** dependência exige rede e que o
   manifest **não** ganha `INTERNET`; modelos versionados em `assets/`.
-- **Tamanho do APK (obrigatório):** todos os modelos embarcados **quantizados int8** para não
-  estourar espaço; orçamento explícito e gate de CI na F4.7 (`enforce-apk-size-budget`).
+- **Tamanho do APK:** **float32 é o padrão** (precisão); manter orçamento explícito e gate de
+  CI na F4.7 (`enforce-apk-size-budget`), e **avaliar int8** por modelo só se o orçamento
+  apertar — sem sacrificar acurácia numa tarefa sensível.
 - **Acessibilidade/UX:** manter decisão conservadora — em dúvida, pedir 2ª foto ou listar
   candidatos; nunca afirmar identidade com baixa confiança.
 - **Docs a sincronizar quando estas fases entrarem:** PRD-3, TECH-2, TECH-3 (fórmula com
@@ -131,8 +137,9 @@ score = w1·cosine(embedding) + w2·colorSim(Lab) + w3·shapeSim(forma) + w4·im
 - **OCR:** ML Kit Text Recognition *bundled* (offline, melhor precisão em inscrições do que
   Tesseract). Reavaliar Tesseract se quisermos zero dependência do Google.
 - **Segmentação:** usar modelo (mais robusto a fundos reais) em vez de heurística de contorno.
-- **Embedding:** MobileNetV3 genérico (ImageNet) **quantizado int8** agora; **fine-tune
-  específico de comprimidos** fica como tarefa futura (TODO no README): treinar/ajustar com as
+- **Embedding:** MobileNetV3 genérico (ImageNet) em **float32** agora (precisão; int8
+  opcional na F4.7); **fine-tune específico de comprimidos** fica como tarefa futura (TODO
+  no README): treinar/ajustar com as
   **fotos reais do cadastro** de devices controlados (já temos imagens + nome do remédio como
   rótulo), mantendo o pipeline offline.
 - **Fotos antigas:** **migração automática** (reprocessamento), sem exigir recadastro.

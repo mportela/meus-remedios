@@ -10,6 +10,7 @@ data class FeatureSet(
     val embedding: FloatArray? = null,
     val colorLab: FloatArray? = null,
     val aspectRatio: Float? = null,
+    val imprintText: String? = null,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -24,13 +25,14 @@ data class FeatureSet(
         } else if (other.colorLab != null) {
             return false
         }
-        return aspectRatio == other.aspectRatio
+        return aspectRatio == other.aspectRatio && imprintText == other.imprintText
     }
 
     override fun hashCode(): Int {
         var result = embedding?.contentHashCode() ?: 0
         result = 31 * result + (colorLab?.contentHashCode() ?: 0)
         result = 31 * result + (aspectRatio?.hashCode() ?: 0)
+        result = 31 * result + (imprintText?.hashCode() ?: 0)
         return result
     }
 }
@@ -90,6 +92,15 @@ object RecognitionScorer {
     }
 
     /**
+     * Similaridade de imprint delegada para [ImprintMatch.similarity]. Entra no
+     * score apenas quando **ambos** os lados possuírem imprint não nulo.
+     */
+    fun textSimilarity(a: String?, b: String?): Float? {
+        if (a == null || b == null) return null
+        return ImprintMatch.similarity(a, b)
+    }
+
+    /**
      * Score ponderado entre [query] e [candidate], normalizado pelos
      * componentes disponíveis. Retorna `0` quando nenhum componente é comparável.
      */
@@ -108,6 +119,10 @@ object RecognitionScorer {
         shapeSimilarity(query.aspectRatio, candidate.aspectRatio)?.let { sim ->
             weighted += RecognitionParams.W_SHAPE * sim
             totalWeight += RecognitionParams.W_SHAPE
+        }
+        textSimilarity(query.imprintText, candidate.imprintText)?.let { sim ->
+            weighted += RecognitionParams.W_IMPRINT * sim
+            totalWeight += RecognitionParams.W_IMPRINT
         }
 
         return if (totalWeight > 0f) weighted / totalWeight else 0f

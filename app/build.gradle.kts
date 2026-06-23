@@ -109,6 +109,9 @@ dependencies {
     implementation(libs.tensorflow.lite)
     implementation(libs.tensorflow.lite.support)
 
+    // Machine Learning - ML Kit Text Recognition bundled (offline, no Play Services)
+    implementation(libs.mlkit.text.recognition)
+
     // Concurrency
     implementation(libs.kotlinx.coroutines.android)
 
