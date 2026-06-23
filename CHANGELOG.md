@@ -9,13 +9,18 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ### Adicionado
 - Replanejamento do **reconhecimento inteligente (TF)** em
-  [`docs/openspec-plan.md`](docs/openspec-plan.md): fases faltantes F4.1–F4.6
+  [`docs/openspec-plan.md`](docs/openspec-plan.md): fases faltantes F4.1–F4.7
   (`harden-recognition-thresholds`, `add-pill-segmentation`, `add-tflite-embedding`,
-  `add-imprint-ocr`, `recalibrate-recognition`, `migrate-existing-photo-features`),
-  nova capability `pill-imprint-ocr`, fórmula de score com inscrição (OCR) e decisões
-  de arquitetura (MobileNetV3 + ML Kit Text Recognition bundled + segmentação),
-  tudo on-device/offline. Documenta o falso positivo do controle negativo
-  (`frente-druse`, score 0.822 vs. limiar 0.82) que motiva o endurecimento imediato.
+  `add-imprint-ocr`, `recalibrate-recognition`, `migrate-existing-photo-features`,
+  `enforce-apk-size-budget`), nova capability `pill-imprint-ocr`, fórmula de score com
+  inscrição (OCR) e decisões de arquitetura (MobileNetV3 + ML Kit Text Recognition
+  bundled + segmentação), tudo on-device/offline. Modelos embarcados **quantizados int8**
+  com orçamento de tamanho de APK (gate de CI na F4.7). Documenta o falso positivo do
+  controle negativo (`frente-druse`, score 0.822 vs. limiar 0.82) que motiva o
+  endurecimento imediato.
+- TODO de **fine-tuning futuro** de modelo de comprimidos no
+  [`docs/README.md`](docs/README.md): treinar com as fotos reais do cadastro de devices
+  controlados (imagem→nome do remédio como rótulo), mantendo o app 100% offline.
 - `Makefile` helper com atalhos de build/teste e execução local no emulador
   (`make run`, `make reopen`, `make emulator`, `make logcat`, `make screenshot`,
   `make ime-fix`, entre outros).

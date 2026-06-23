@@ -77,11 +77,16 @@ score = w1·cosine(embedding) + w2·colorSim(Lab) + w3·shapeSim(forma) + w4·im
   - Segmentação/detecção do comprimido (TFLite detector ou ML Kit Subject Segmentation);
     define a ROI que alimenta embedding/OCR/cor/forma.
   - Corrige o descritor de **forma** para ser do comprimido (contorno/eixo), não da foto.
+  - **Tarefa obrigatória — tamanho:** embarcar o modelo de segmentação **quantizado int8**
+    (não usar float32) e registrar o ganho de tamanho no orçamento de APK (F4.7).
   - Aplica-se ao **cadastro** (F2) e à **consulta** (F4). Capabilities: `medication-photos`,
     `visual-recognition`.
 - **F4.3** → `add-tflite-embedding` — **núcleo de inteligência**.
   - Embarcar MobileNetV3 em `assets/`; `FeatureExtractor` real preenche `embedding` no
     cadastro e na consulta, sobre a ROI segmentada (F4.2).
+  - **Tarefa obrigatória — tamanho:** usar MobileNetV3 **quantizado int8** (~1/4 do float32);
+    validar que a perda de acurácia é aceitável no golden set (F4.5) e registrar o delta de
+    tamanho no orçamento de APK (F4.7).
   - Ativa `W_EMBEDDING` (já reservado = 0.6). Capabilities: `medication-photos`,
     `visual-recognition`.
 - **F4.4** → `add-imprint-ocr` — **letras/números gravados**.
@@ -99,6 +104,11 @@ score = w1·cosine(embedding) + w2·colorSim(Lab) + w3·shapeSim(forma) + w4·im
   - Migração automática: reabrir fotos cadastradas antes e gerar
     segmentação/embedding/inscrição faltantes (rotina no startup/WorkManager, idempotente).
   - Capability: `medication-photos`.
+- **F4.7** → `enforce-apk-size-budget` — **orçamento de tamanho de APK**.
+  - Definir um **orçamento explícito** de tamanho (modelos em `assets/` + libs) e falhar o
+    build/CI se exceder; preferir modelos **int8**, e avaliar download opcional do modelo
+    no primeiro uso **só** se permanecer 100% offline (ex.: via app bundle/asset pack, sem
+    rede). Documentar tamanhos por modelo. Capability: transversal (tooling/CI).
 
 ### Dependências e impacto técnico
 - **Novas libs (todas on-device/offline):** TensorFlow Lite runtime + support/task-vision;
@@ -107,8 +117,9 @@ score = w1·cosine(embedding) + w2·colorSim(Lab) + w3·shapeSim(forma) + w4·im
 - **Modelo de dados (TECH-2):** `MedicationPhoto` ganha `imprintText` (e, se útil, bbox/ROI
   da segmentação); `embedding` (BLOB) já existe.
 - **Offline (NFR):** confirmar a cada change que **nenhuma** dependência exige rede e que o
-  manifest **não** ganha `INTERNET`; modelos versionados em `assets/` (atenção ao tamanho do
-  APK — avaliar quantização int8 dos modelos).
+  manifest **não** ganha `INTERNET`; modelos versionados em `assets/`.
+- **Tamanho do APK (obrigatório):** todos os modelos embarcados **quantizados int8** para não
+  estourar espaço; orçamento explícito e gate de CI na F4.7 (`enforce-apk-size-budget`).
 - **Acessibilidade/UX:** manter decisão conservadora — em dúvida, pedir 2ª foto ou listar
   candidatos; nunca afirmar identidade com baixa confiança.
 - **Docs a sincronizar quando estas fases entrarem:** PRD-3, TECH-2, TECH-3 (fórmula com
@@ -118,9 +129,10 @@ score = w1·cosine(embedding) + w2·colorSim(Lab) + w3·shapeSim(forma) + w4·im
 - **OCR:** ML Kit Text Recognition *bundled* (offline, melhor precisão em inscrições do que
   Tesseract). Reavaliar Tesseract se quisermos zero dependência do Google.
 - **Segmentação:** usar modelo (mais robusto a fundos reais) em vez de heurística de contorno.
-- **Embedding:** MobileNetV3 genérico (ImageNet) agora; **fine-tune específico de
-  comprimidos** fica como tarefa futura (exige dataset rotulado e treino — fora do escopo
-  offline imediato).
+- **Embedding:** MobileNetV3 genérico (ImageNet) **quantizado int8** agora; **fine-tune
+  específico de comprimidos** fica como tarefa futura (TODO no README): treinar/ajustar com as
+  **fotos reais do cadastro** de devices controlados (já temos imagens + nome do remédio como
+  rótulo), mantendo o pipeline offline.
 - **Fotos antigas:** **migração automática** (reprocessamento), sem exigir recadastro.
 
 
@@ -173,6 +185,7 @@ flowchart TD
   E --> O[F4.4 add-imprint-ocr]
   O --> C[F4.5 recalibrate-recognition]
   C --> M[F4.6 migrate-existing-photo-features]
-  M --> F5[F5 add-intake-tracking]
+  M --> B2[F4.7 enforce-apk-size-budget]
+  B2 --> F5[F5 add-intake-tracking]
 ```
 

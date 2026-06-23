@@ -80,14 +80,30 @@ usa `ANDROID_HOME`/`JAVA_HOME` (com fallback automático) e sempre
 
 ## Decisões-chave
 - **Stack:** Kotlin + Jetpack Compose (Material 3), Hilt, Room, CameraX, TensorFlow Lite.
-- **Reconhecimento:** híbrido on-device = embeddings TFLite + cor (Lab) + forma/tamanho.
+- **Reconhecimento:** híbrido on-device = embeddings TFLite (MobileNetV3) + inscrições (OCR
+  ML Kit) + cor (Lab) + forma, com segmentação do comprimido para ignorar o fundo. Modelos
+  embarcados quantizados **int8**. Ver fases F4.1–F4.7 em
+  [`openspec-plan.md`](openspec-plan.md).
 - **Acessibilidade:** prioridade (fontes/botões grandes, alto contraste, pt-BR, TalkBack).
 - **Lembretes:** alarmes exatos (AlarmManager) + reagendamento no boot.
 - **Restrições:** 100% offline, sem login/nuvem/ads, `minSdk 24`, dados privados no app.
 
 ## Roadmap (fases)
 F0 Scaffolding · F1 Dados · F2 Cadastro · F3 Consulta/Relatórios · F4 Reconhecimento ·
-F5 Registro de tomadas · F6 Lembretes · F7 Configurações · F8 Acessibilidade · F9 Testes/CI.
+**F4.1–F4.7 Reconhecimento inteligente (TF)** · F5 Registro de tomadas · F6 Lembretes ·
+F7 Configurações · F8 Acessibilidade · F9 Testes/CI.
+
+## TODO — modelo treinado de comprimidos (fine-tuning futuro)
+- Hoje o embedding usa **MobileNetV3 genérico (ImageNet), quantizado int8**, on-device.
+- **Futuro:** gerar um modelo **fine-tuned em comprimidos reais** para discriminar melhor
+  pílulas parecidas (forma/cor/inscrições).
+  - **Dados:** usar as **fotos do cadastro real** de devices controlados — já temos as
+    imagens e o **nome do remédio** como rótulo (par imagem→rótulo pronto para treino).
+  - **Como:** coletar/exportar esse conjunto (com consentimento), treinar/fine-tunar offline
+    e reembarcar o `.tflite` int8, reaproveitando o golden set de testes (F4.5) para validar
+    ganho de acurácia sem regressão de tamanho (F4.7).
+  - **Privacidade:** coleta apenas de devices controlados e com consentimento; nada sai do
+    device do usuário final em produção (o app permanece 100% offline).
 
 ## Referência visual
 - [Imagem de inspiração](inspiracao.jpeg) — porta-comprimidos com pílulas variadas.
