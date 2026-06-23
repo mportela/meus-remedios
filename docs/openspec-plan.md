@@ -9,6 +9,10 @@
 - **Produto**: Meus Remédios — confirmação visual de comprimidos, 100% offline, foco idoso.
 - **Stack**: Kotlin, Jetpack Compose + Material 3, Hilt, Room, CameraX, TensorFlow Lite,
   Coroutines/Flow, WorkManager, AlarmManager. `minSdk 24`.
+  - **Reconhecimento (on-device, offline)**: MobileNetV3 (embedding TFLite) + ML Kit Text
+    Recognition *bundled* (OCR de inscrições) + segmentação/detecção do comprimido (TFLite/
+    ML Kit Subject Segmentation) + cor (Lab) + forma. Todos os modelos embarcados em
+    `assets/`/lib; nenhuma chamada de rede; sem permissão `INTERNET`.
 - **Convenções**: MVVM + camadas (ui/domain/data); DI via Hilt; nomes em inglês no código,
   textos de UI em pt-BR; testes com JUnit/MockK/Turbine/coroutines-test/Robolectric/Compose
   test; sem rede; manter CHANGELOG.
@@ -20,8 +24,9 @@
 | Capability | Descrição | PRDs |
 |------------|-----------|------|
 | `medication-catalog` | cadastro/edição/listagem/busca de remédios | PRD-1, PRD-2 |
-| `medication-photos` | fotos do comprimido + extração/persistência de features | PRD-1 |
-| `visual-recognition` | captura, scoring e decisão de identificação | PRD-3 |
+| `medication-photos` | fotos do comprimido + extração/persistência de features (embedding, cor, forma, inscrição) | PRD-1 |
+| `visual-recognition` | captura, segmentação, scoring multimodal e decisão de identificação | PRD-3 |
+| `pill-imprint-ocr` | leitura on-device de letras/números gravados no comprimido (ML Kit bundled) | PRD-3 |
 | `scheduling-reminders` | horários, alarmes exatos, reagendamento no boot | PRD-4 |
 | `intake-tracking` | marcar/registrar tomadas e pendentes | PRD-5 |
 | `reporting` | relatório do dia, timeline, histórico | PRD-2 |
@@ -30,16 +35,94 @@
 
 ## Mapeamento Fases → OpenSpec changes
 Sugestão de change-ids (verbo + escopo), criados na ordem de dependência:
-- **F0** → `add-project-scaffolding` (tooling/estrutura; doc + tasks).
-- **F1** → `add-local-data-layer` (Room, entidades, repos, settings).
-- **F2** → `add-medication-catalog` + `add-medication-photos` (capabilities 1 e 2).
-- **F3** → `add-reporting-and-browsing` (capabilities 2/6).
-- **F4** → `add-visual-recognition` (capability 3) + `design.md` detalhado do engine.
+- **F0** → `add-project-scaffolding` (tooling/estrutura; doc + tasks). ✅ feito
+- **F1** → `add-local-data-layer` (Room, entidades, repos, settings). ✅ feito
+- **F2** → `add-medication-catalog` + `add-medication-photos` (capabilities 1 e 2). ✅ feito
+- **F3** → `add-reporting-and-browsing` (capabilities 2/6). ✅ feito
+- **F4** → `add-visual-recognition` (capability 3) + `design.md` detalhado do engine. ✅ feito
+  (engine cor+forma; `embedding`/OCR ainda **não** plugados — ver F4.1–F4.6 abaixo).
+- **F4.1–F4.6** → **Reconhecimento inteligente (TF)** — objetivo core; detalhado na seção
+  seguinte. **Prioridade imediata, antes de F5.**
 - **F5** → `add-intake-tracking` (capability 5).
 - **F6** → `add-scheduling-reminders` (capability 4).
 - **F7** → `add-app-settings-and-retention` (capability 7).
 - **F8** → `add-accessibility-baseline` (capability 8).
 - **F9** → `add-test-automation` (estratégia de testes + CI).
+
+## Reconhecimento inteligente (TF) — fases faltantes (objetivo core)
+> **Motivação.** A F4 entregou o engine, mas com `embedding == null` o score usa só cor+forma.
+> Isso (a) reintroduz "ambíguo" em pílulas parecidas e (b) gera **falsos positivos** — um
+> controle negativo real (`frente-druse.jpeg`, remédio diferente) foi reconhecido como
+> CONFIANTE com score 0.822 (limiar 0.82), porque a cor dominava e a "forma" era só o aspect
+> ratio da foto inteira. Um falso positivo em remédio é **risco de segurança**. Estas fases
+> entregam a inteligência prevista no PRD-3/TECH-3: identificar o **comprimido** (não a foto)
+> pela **aparência (embedding), inscrições (OCR), cor e forma**, ignorando o fundo.
+
+### Fórmula de score (alvo, ao fim destas fases)
+```
+score = w1·cosine(embedding) + w2·colorSim(Lab) + w3·shapeSim(forma) + w4·imprintSim(OCR)
+```
+- `w1` (embedding) é o componente dominante; `w4` (inscrição) desempata letras/números.
+- Componentes ausentes são ignorados e o score é renormalizado (mantém retrocompat. da F4).
+- Pesos/limiares em `RecognitionParams`, calibrados na F4.5 com conjunto de referência.
+
+### Changes (ordem de dependência)
+- **F4.1** → `harden-recognition-thresholds` — **segurança imediata** (sem novas deps).
+  - Endurecer `THRESHOLD_CONFIDENT`/`MARGIN` enquanto não há embedding/OCR, de modo que o
+    controle negativo **não** seja afirmado como confiante.
+  - Promover os testes de controle a permanentes: **positivo** (verso do mesmo remédio,
+    score ~0.958 → confiante) e **negativo** (`frente-druse` → nunca confiante).
+  - Capability: `visual-recognition`.
+- **F4.2** → `add-pill-segmentation` — **isolar o comprimido, ignorar o fundo**.
+  - Segmentação/detecção do comprimido (TFLite detector ou ML Kit Subject Segmentation);
+    define a ROI que alimenta embedding/OCR/cor/forma.
+  - Corrige o descritor de **forma** para ser do comprimido (contorno/eixo), não da foto.
+  - Aplica-se ao **cadastro** (F2) e à **consulta** (F4). Capabilities: `medication-photos`,
+    `visual-recognition`.
+- **F4.3** → `add-tflite-embedding` — **núcleo de inteligência**.
+  - Embarcar MobileNetV3 em `assets/`; `FeatureExtractor` real preenche `embedding` no
+    cadastro e na consulta, sobre a ROI segmentada (F4.2).
+  - Ativa `W_EMBEDDING` (já reservado = 0.6). Capabilities: `medication-photos`,
+    `visual-recognition`.
+- **F4.4** → `add-imprint-ocr` — **letras/números gravados**.
+  - ML Kit Text Recognition *bundled* (offline) lê inscrições na ROI; normaliza o texto.
+  - Novo campo `MedicationPhoto.imprintText`; nova similaridade `imprintSim` (token/edit
+    distance) e peso `w4`. Capabilities: `pill-imprint-ocr`, `medication-photos`,
+    `visual-recognition`.
+- **F4.5** → `recalibrate-recognition` — **calibração final multimodal**.
+  - Reequilibrar `W_*` e limiares com um **conjunto de referência** (positivos + controles
+    negativos), agora com embedding+OCR disponíveis; relaxar o endurecimento provisório da
+    F4.1 sem reabrir falsos positivos.
+  - Golden set determinístico de testes (vetores/imagens fixas). Capability:
+    `visual-recognition`.
+- **F4.6** → `migrate-existing-photo-features` — **reprocessar fotos antigas**.
+  - Migração automática: reabrir fotos cadastradas antes e gerar
+    segmentação/embedding/inscrição faltantes (rotina no startup/WorkManager, idempotente).
+  - Capability: `medication-photos`.
+
+### Dependências e impacto técnico
+- **Novas libs (todas on-device/offline):** TensorFlow Lite runtime + support/task-vision;
+  ML Kit Text Recognition *bundled* (modelo embarcado, sem Play Services em runtime);
+  segmentação (ML Kit Subject Segmentation **ou** detector TFLite próprio).
+- **Modelo de dados (TECH-2):** `MedicationPhoto` ganha `imprintText` (e, se útil, bbox/ROI
+  da segmentação); `embedding` (BLOB) já existe.
+- **Offline (NFR):** confirmar a cada change que **nenhuma** dependência exige rede e que o
+  manifest **não** ganha `INTERNET`; modelos versionados em `assets/` (atenção ao tamanho do
+  APK — avaliar quantização int8 dos modelos).
+- **Acessibilidade/UX:** manter decisão conservadora — em dúvida, pedir 2ª foto ou listar
+  candidatos; nunca afirmar identidade com baixa confiança.
+- **Docs a sincronizar quando estas fases entrarem:** PRD-3, TECH-2, TECH-3 (fórmula com
+  `w4`/OCR e segmentação), README/AGENTS e CHANGELOG.
+
+### Decisões adotadas (autônomas, revisáveis)
+- **OCR:** ML Kit Text Recognition *bundled* (offline, melhor precisão em inscrições do que
+  Tesseract). Reavaliar Tesseract se quisermos zero dependência do Google.
+- **Segmentação:** usar modelo (mais robusto a fundos reais) em vez de heurística de contorno.
+- **Embedding:** MobileNetV3 genérico (ImageNet) agora; **fine-tune específico de
+  comprimidos** fica como tarefa futura (exige dataset rotulado e treino — fora do escopo
+  offline imediato).
+- **Fotos antigas:** **migração automática** (reprocessamento), sem exigir recadastro.
+
 
 ## Exemplo de delta de spec (capability `visual-recognition`)
 ```
@@ -80,3 +163,16 @@ flowchart LR
   CAP --> CH[Changes F0-F9]
   CH --> IMPL[Implementação + Testes]
 ```
+
+## Reconhecimento inteligente — ordem das changes
+```mermaid
+flowchart TD
+  F4[F4 add-visual-recognition ✅ cor+forma] --> H[F4.1 harden-recognition-thresholds]
+  H --> S[F4.2 add-pill-segmentation]
+  S --> E[F4.3 add-tflite-embedding]
+  E --> O[F4.4 add-imprint-ocr]
+  O --> C[F4.5 recalibrate-recognition]
+  C --> M[F4.6 migrate-existing-photo-features]
+  M --> F5[F5 add-intake-tracking]
+```
+
