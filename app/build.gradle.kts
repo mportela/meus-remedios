@@ -54,6 +54,11 @@ android {
         buildConfig = true
     }
 
+    androidResources {
+        // Modelos TFLite devem ficar sem compressão para serem mapeados em memória.
+        noCompress += "tflite"
+    }
+
     testOptions {
         unitTests {
             isIncludeAndroidResources = true

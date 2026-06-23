@@ -8,6 +8,16 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 ## [Não lançado]
 
 ### Adicionado
+- **F4.3 — Embedding TFLite on-device** (change `add-tflite-embedding`): ativa o núcleo de
+  inteligência do reconhecimento. Embarca `mobilenet_v3_small.tflite` (MobileNetV3-Small,
+  entrada `224×224×3`, saída `1024`, float32, ~4,1 MB) em `app/src/main/assets/` e implementa
+  um `FeatureExtractor` real (`TfliteEmbedder` + `TfliteFeatureExtractor`) que roda a
+  inferência 100% on-device e preenche `embedding` no cadastro e na consulta, com vetor
+  L2-normalizado (`EmbeddingMath`). Carregamento preguiçoso/thread-safe e **fallback gracioso**
+  (falha de carga/inferência → embedding ausente, reconhecimento segue com cor + forma).
+  Ativa o peso `W_EMBEDDING` (0.6) já reservado. `noCompress` para `.tflite`. Continua 100%
+  offline (sem permissão `INTERNET`). Quantização **int8** e orçamento de APK ficam para a F4.7;
+  a fase de **segmentação (F4.2)** foi adiada.
 - **F4.1 — Endurecimento dos limiares de reconhecimento** (change
   `harden-recognition-thresholds`): correção de segurança provisória contra falso positivo
   enquanto o embedding TFLite não está plugado. `THRESHOLD_CONFIDENT` elevado de `0.82` para

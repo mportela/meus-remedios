@@ -8,7 +8,11 @@ Comparar a foto da câmera com as fotos cadastradas e responder com confiança, 
 2. **Pré-processo**: recorte central/ROI, normalização de iluminação simples, resize para a
    entrada do modelo.
 3. **Extração de features** (no cadastro e na consulta):
-   - `embedding`: vetor do modelo MobileNet TFLite embarcado em `assets/`.
+   - `embedding`: vetor do modelo MobileNet TFLite embarcado em `assets/`. **Ativo (F4.3):**
+     `mobilenet_v3_small.tflite` (MobileNetV3-Small, entrada `224×224×3`, saída `1024`,
+     float32), inferência on-device e vetor L2-normalizado. Falha de carga/inferência →
+     `embedding` ausente e o reconhecimento segue com cor + forma (fallback gracioso).
+     Quantização int8 e orçamento de APK ficam para a F4.7.
    - `cor dominante` em espaço **Lab** (robusto a brilho).
    - `forma/tamanho`: aspect ratio + descritor simples de contorno.
 4. **Scoring** por foto cadastrada:

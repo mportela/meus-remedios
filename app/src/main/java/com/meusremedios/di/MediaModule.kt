@@ -2,8 +2,8 @@ package com.meusremedios.di
 
 import com.meusremedios.data.media.FileMedicationImageStore
 import com.meusremedios.data.media.MedicationImageStore
-import com.meusremedios.data.ml.DefaultFeatureExtractor
 import com.meusremedios.data.ml.FeatureExtractor
+import com.meusremedios.data.ml.TfliteFeatureExtractor
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -21,5 +21,5 @@ abstract class MediaModule {
 
     @Binds
     @Singleton
-    abstract fun bindFeatureExtractor(impl: DefaultFeatureExtractor): FeatureExtractor
+    abstract fun bindFeatureExtractor(impl: TfliteFeatureExtractor): FeatureExtractor
 }

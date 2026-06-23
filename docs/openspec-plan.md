@@ -73,7 +73,9 @@ score = w1·cosine(embedding) + w2·colorSim(Lab) + w3·shapeSim(forma) + w4·im
   - Promover os testes de controle a permanentes: **positivo** (verso do mesmo remédio,
     score ~0.958 → confiante) e **negativo** (`frente-druse` → nunca confiante).
   - Capability: `visual-recognition`.
-- **F4.2** → `add-pill-segmentation` — **isolar o comprimido, ignorar o fundo**.
+- **F4.2** → `add-pill-segmentation` — **isolar o comprimido, ignorar o fundo**. ⏸️ adiada
+  (decisão: priorizar o embedding na F4.3; segmentação entra depois). Não há modelo de
+  segmentação offline pronto, e ML Kit Subject Segmentation exige download (viola offline).
   - Segmentação/detecção do comprimido (TFLite detector ou ML Kit Subject Segmentation);
     define a ROI que alimenta embedding/OCR/cor/forma.
   - Corrige o descritor de **forma** para ser do comprimido (contorno/eixo), não da foto.
@@ -81,12 +83,12 @@ score = w1·cosine(embedding) + w2·colorSim(Lab) + w3·shapeSim(forma) + w4·im
     (não usar float32) e registrar o ganho de tamanho no orçamento de APK (F4.7).
   - Aplica-se ao **cadastro** (F2) e à **consulta** (F4). Capabilities: `medication-photos`,
     `visual-recognition`.
-- **F4.3** → `add-tflite-embedding` — **núcleo de inteligência**.
+- **F4.3** → `add-tflite-embedding` — **núcleo de inteligência**. ✅ feito
   - Embarcar MobileNetV3 em `assets/`; `FeatureExtractor` real preenche `embedding` no
-    cadastro e na consulta, sobre a ROI segmentada (F4.2).
-  - **Tarefa obrigatória — tamanho:** usar MobileNetV3 **quantizado int8** (~1/4 do float32);
-    validar que a perda de acurácia é aceitável no golden set (F4.5) e registrar o delta de
-    tamanho no orçamento de APK (F4.7).
+    cadastro e na consulta (sobre a imagem; a ROI segmentada é melhoria futura da F4.2).
+  - **Entregue:** `mobilenet_v3_small.tflite` (MobileNetV3-Small, `224×224×3`→`1024`,
+    float32, ~4,1 MB), L2-normalizado, fallback gracioso. **int8** adiado para a F4.7 (não
+    há variante int8 publicada deste embedder); validar acurácia no golden set (F4.5).
   - Ativa `W_EMBEDDING` (já reservado = 0.6). Capabilities: `medication-photos`,
     `visual-recognition`.
 - **F4.4** → `add-imprint-ocr` — **letras/números gravados**.
