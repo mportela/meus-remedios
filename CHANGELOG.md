@@ -8,6 +8,14 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 ## [Não lançado]
 
 ### Adicionado
+- **F4.1 — Endurecimento dos limiares de reconhecimento** (change
+  `harden-recognition-thresholds`): correção de segurança provisória contra falso positivo
+  enquanto o embedding TFLite não está plugado. `THRESHOLD_CONFIDENT` elevado de `0.82` para
+  `0.90`, rejeitando o controle negativo real (`frente-druse`, score 0.822) sem perder o
+  match legítimo (0.958). Testes de controle determinísticos permanentes (positivo + negativo)
+  usando as features medidas das imagens reais como fixtures, executáveis em CI sem depender
+  dos arquivos. Reforça a decisão conservadora na spec `visual-recognition`. Recalibração
+  definitiva planejada para F4.5.
 - Replanejamento do **reconhecimento inteligente (TF)** em
   [`docs/openspec-plan.md`](docs/openspec-plan.md): fases faltantes F4.1–F4.7
   (`harden-recognition-thresholds`, `add-pill-segmentation`, `add-tflite-embedding`,

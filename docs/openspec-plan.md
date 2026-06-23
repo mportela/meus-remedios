@@ -40,9 +40,9 @@ Sugestão de change-ids (verbo + escopo), criados na ordem de dependência:
 - **F2** → `add-medication-catalog` + `add-medication-photos` (capabilities 1 e 2). ✅ feito
 - **F3** → `add-reporting-and-browsing` (capabilities 2/6). ✅ feito
 - **F4** → `add-visual-recognition` (capability 3) + `design.md` detalhado do engine. ✅ feito
-  (engine cor+forma; `embedding`/OCR ainda **não** plugados — ver F4.1–F4.6 abaixo).
-- **F4.1–F4.6** → **Reconhecimento inteligente (TF)** — objetivo core; detalhado na seção
-  seguinte. **Prioridade imediata, antes de F5.**
+  (engine cor+forma; `embedding`/OCR ainda **não** plugados — ver F4.1–F4.7 abaixo).
+- **F4.1–F4.7** → **Reconhecimento inteligente (TF)** — objetivo core; detalhado na seção
+  seguinte. **Prioridade imediata, antes de F5.** (F4.1 ✅ feito)
 - **F5** → `add-intake-tracking` (capability 5).
 - **F6** → `add-scheduling-reminders` (capability 4).
 - **F7** → `add-app-settings-and-retention` (capability 7).
@@ -67,7 +67,7 @@ score = w1·cosine(embedding) + w2·colorSim(Lab) + w3·shapeSim(forma) + w4·im
 - Pesos/limiares em `RecognitionParams`, calibrados na F4.5 com conjunto de referência.
 
 ### Changes (ordem de dependência)
-- **F4.1** → `harden-recognition-thresholds` — **segurança imediata** (sem novas deps).
+- **F4.1** → `harden-recognition-thresholds` — **segurança imediata** (sem novas deps). ✅ feito
   - Endurecer `THRESHOLD_CONFIDENT`/`MARGIN` enquanto não há embedding/OCR, de modo que o
     controle negativo **não** seja afirmado como confiante.
   - Promover os testes de controle a permanentes: **positivo** (verso do mesmo remédio,
