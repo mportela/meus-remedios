@@ -3,6 +3,9 @@ package com.meusremedios.ui.today
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.meusremedios.domain.model.DailyReport
+import com.meusremedios.domain.model.ScheduledDose
+import com.meusremedios.domain.usecase.MarkIntakeSkippedUseCase
+import com.meusremedios.domain.usecase.MarkIntakeTakenUseCase
 import com.meusremedios.domain.usecase.ObserveDailyReportUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -13,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.time.Clock
 import java.time.LocalDate
 import javax.inject.Inject
@@ -26,6 +30,8 @@ data class TodayUiState(
 @HiltViewModel
 class TodayViewModel @Inject constructor(
     observeDailyReport: ObserveDailyReportUseCase,
+    private val markIntakeTakenUseCase: MarkIntakeTakenUseCase,
+    private val markIntakeSkippedUseCase: MarkIntakeSkippedUseCase,
     clock: Clock,
 ) : ViewModel() {
 
@@ -54,5 +60,13 @@ class TodayViewModel @Inject constructor(
 
     fun goToNextDay() {
         selectedDate.value = selectedDate.value.plusDays(1)
+    }
+
+    fun markTaken(dose: ScheduledDose) {
+        viewModelScope.launch { markIntakeTakenUseCase(dose, selectedDate.value) }
+    }
+
+    fun markSkipped(dose: ScheduledDose) {
+        viewModelScope.launch { markIntakeSkippedUseCase(dose, selectedDate.value) }
     }
 }

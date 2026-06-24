@@ -21,12 +21,16 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -42,6 +46,12 @@ import com.meusremedios.BuildConfig
 import com.meusremedios.R
 import com.meusremedios.domain.model.RecognitionCandidate
 import com.meusremedios.domain.model.RecognitionOutcome
+import com.meusremedios.domain.model.ScheduledDose
+import kotlinx.coroutines.launch
+import java.time.format.DateTimeFormatter
+import java.util.Locale
+
+private val TIME_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm", Locale("pt", "BR"))
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
@@ -50,6 +60,8 @@ fun RecognitionScreen(
     viewModel: RecognitionViewModel = hiltViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val coroutineScope = rememberCoroutineScope()
 
     val cameraLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.TakePicture(),
@@ -105,12 +117,29 @@ fun RecognitionScreen(
                 RecognitionPhase.RESULT -> ResultContent(
                     outcome = uiState.outcome,
                     canAddSecondPhoto = uiState.canAddSecondPhoto,
+                    intakeRegistered = uiState.intakeRegistered,
                     onCapture = capture,
                     onPickFromGallery = pickFromGallery,
                     onReset = viewModel::reset,
+                    onMarkTaken = viewModel::markTakenFromRecognition,
                 )
                 RecognitionPhase.ERROR -> ErrorContent(onReset = viewModel::reset)
             }
+        }
+    }
+
+    if (uiState.pendingDosesToday.size > 1) {
+        ModalBottomSheet(
+            onDismissRequest = { coroutineScope.launch { sheetState.hide() } },
+            sheetState = sheetState,
+        ) {
+            DosePickerSheet(
+                doses = uiState.pendingDosesToday,
+                onDoseSelected = { dose ->
+                    coroutineScope.launch { sheetState.hide() }
+                    viewModel.markTakenForDose(dose)
+                },
+            )
         }
     }
 }
@@ -173,12 +202,18 @@ private fun AnalyzingContent() {
 private fun ResultContent(
     outcome: RecognitionOutcome?,
     canAddSecondPhoto: Boolean,
+    intakeRegistered: Boolean,
     onCapture: () -> Unit,
     onPickFromGallery: (() -> Unit)?,
     onReset: () -> Unit,
+    onMarkTaken: () -> Unit,
 ) {
     when (outcome) {
-        is RecognitionOutcome.Confident -> ConfidentResult(outcome)
+        is RecognitionOutcome.Confident -> ConfidentResult(
+            outcome = outcome,
+            intakeRegistered = intakeRegistered,
+            onMarkTaken = onMarkTaken,
+        )
         is RecognitionOutcome.Ambiguous -> AmbiguousResult(
             outcome = outcome,
             canAddSecondPhoto = canAddSecondPhoto,
@@ -199,7 +234,11 @@ private fun ResultContent(
 }
 
 @Composable
-private fun ConfidentResult(outcome: RecognitionOutcome.Confident) {
+private fun ConfidentResult(
+    outcome: RecognitionOutcome.Confident,
+    intakeRegistered: Boolean,
+    onMarkTaken: () -> Unit,
+) {
     Icon(
         Icons.Default.CheckCircle,
         contentDescription = null,
@@ -219,6 +258,52 @@ private fun ConfidentResult(outcome: RecognitionOutcome.Confident) {
         textAlign = TextAlign.Center,
         modifier = Modifier.semantics { heading() },
     )
+    if (intakeRegistered) {
+        Text(
+            text = stringResource(R.string.recognition_intake_registered),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.primary,
+            textAlign = TextAlign.Center,
+        )
+    } else {
+        Button(
+            onClick = onMarkTaken,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(R.string.recognition_action_taken))
+        }
+    }
+}
+
+@Composable
+private fun DosePickerSheet(
+    doses: List<ScheduledDose>,
+    onDoseSelected: (ScheduledDose) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.recognition_dose_picker_title),
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+        )
+        doses.forEach { dose ->
+            TextButton(
+                onClick = { onDoseSelected(dose) },
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text(
+                    text = dose.time.format(TIME_FORMAT),
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f),
+                )
+            }
+        }
+    }
 }
 
 @Composable

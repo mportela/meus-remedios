@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.combine
 import java.time.Clock
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 import javax.inject.Inject
 
 /**
@@ -61,6 +62,7 @@ class ObserveDailyReportUseCase @Inject constructor(
                 medicationName = medication.name,
                 scheduleTimeId = schedule.id,
                 time = schedule.timeOfDay,
+                scheduledAt = LocalDateTime.of(date, schedule.timeOfDay).toInstant(ZoneOffset.UTC),
                 status = status,
             )
         }.sortedBy { it.time }

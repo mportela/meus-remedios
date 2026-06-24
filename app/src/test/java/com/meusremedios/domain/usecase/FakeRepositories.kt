@@ -113,6 +113,14 @@ class FakeIntakeLogRepository : IntakeLogRepository {
         items.value = items.value.filterNot { it.date.isBefore(thresholdDate) }
         return before - items.value.size
     }
+
+    override suspend fun getByMedicationScheduleAndDate(
+        medicationId: Long,
+        scheduleTimeId: Long,
+        date: LocalDate,
+    ): IntakeLog? = items.value.firstOrNull {
+        it.medicationId == medicationId && it.scheduleTimeId == scheduleTimeId && it.date == date
+    }
 }
 
 /** Fake in-memory de [SettingsRepository] para testes determinísticos. */

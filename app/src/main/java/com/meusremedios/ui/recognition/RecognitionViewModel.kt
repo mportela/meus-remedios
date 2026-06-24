@@ -5,6 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.meusremedios.data.media.MedicationImageStore
 import com.meusremedios.domain.model.RecognitionOutcome
+import com.meusremedios.domain.model.ScheduledDose
+import com.meusremedios.domain.usecase.GetPendingDosesTodayForMedicationUseCase
+import com.meusremedios.domain.usecase.MarkIntakeTakenUseCase
 import com.meusremedios.domain.usecase.RecognizeMedicationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,6 +15,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.time.Clock
+import java.time.LocalDate
 import javax.inject.Inject
 
 /** Fase do fluxo de reconhecimento. */
@@ -22,12 +27,19 @@ data class RecognitionUiState(
     val outcome: RecognitionOutcome? = null,
     /** Indica se já há uma 1ª foto e o resultado ambíguo permite tentar a 2ª. */
     val canAddSecondPhoto: Boolean = false,
+    /** Doses pendentes de hoje para o medicamento reconhecido (preenchido quando N > 1). */
+    val pendingDosesToday: List<ScheduledDose> = emptyList(),
+    /** Verdadeiro após o usuário registrar uma tomada bem-sucedida. */
+    val intakeRegistered: Boolean = false,
 )
 
 @HiltViewModel
 class RecognitionViewModel @Inject constructor(
     private val imageStore: MedicationImageStore,
     private val recognizeMedication: RecognizeMedicationUseCase,
+    private val getPendingDosesForMedication: GetPendingDosesTodayForMedicationUseCase,
+    private val markIntakeTakenUseCase: MarkIntakeTakenUseCase,
+    private val clock: Clock,
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(RecognitionUiState())
@@ -91,6 +103,46 @@ class RecognitionViewModel @Inject constructor(
                     _uiState.update { state ->
                         state.copy(phase = RecognitionPhase.ERROR, outcome = null, canAddSecondPhoto = false)
                     }
+                }
+        }
+    }
+
+    /**
+     * Chamado pelo botão "Tomei" na tela de resultado confiante.
+     * Determina quantas doses estão pendentes hoje e age conforme:
+     * - 0 → registra tomada ad-hoc
+     * - 1 → marca a dose diretamente
+     * - N > 1 → popula [RecognitionUiState.pendingDosesToday] para exibir seletor na UI
+     */
+    fun markTakenFromRecognition() {
+        val medicationId = (uiState.value.outcome as? RecognitionOutcome.Confident)
+            ?.best?.medicationId ?: return
+        val today = LocalDate.now(clock)
+        viewModelScope.launch {
+            runCatching { getPendingDosesForMedication(medicationId) }
+                .onSuccess { doses ->
+                    when (doses.size) {
+                        0 -> {
+                            markIntakeTakenUseCase(medicationId, today)
+                            _uiState.update { it.copy(intakeRegistered = true) }
+                        }
+                        1 -> {
+                            markIntakeTakenUseCase(doses.first(), today)
+                            _uiState.update { it.copy(intakeRegistered = true) }
+                        }
+                        else -> _uiState.update { it.copy(pendingDosesToday = doses) }
+                    }
+                }
+        }
+    }
+
+    /** Chamado quando o usuário escolhe um horário no seletor (caso N > 1 doses). */
+    fun markTakenForDose(dose: ScheduledDose) {
+        val today = LocalDate.now(clock)
+        viewModelScope.launch {
+            runCatching { markIntakeTakenUseCase(dose, today) }
+                .onSuccess {
+                    _uiState.update { it.copy(pendingDosesToday = emptyList(), intakeRegistered = true) }
                 }
         }
     }

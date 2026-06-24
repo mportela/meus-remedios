@@ -27,6 +27,9 @@ interface IntakeLogDao {
     @Query("SELECT * FROM intake_logs WHERE medication_id = :medicationId ORDER BY scheduled_at DESC")
     fun observeByMedication(medicationId: Long): Flow<List<IntakeLogEntity>>
 
+    @Query("SELECT * FROM intake_logs WHERE medication_id = :medicationId AND schedule_time_id = :scheduleTimeId AND date = :date LIMIT 1")
+    suspend fun getByMedicationScheduleDate(medicationId: Long, scheduleTimeId: Long, date: String): IntakeLogEntity?
+
     @Query("DELETE FROM intake_logs WHERE date < :thresholdDate")
     suspend fun deleteOlderThan(thresholdDate: String): Int
 }

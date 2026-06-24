@@ -15,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -22,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -105,6 +107,8 @@ fun TodayScreen(
                             period = period,
                             doses = doses,
                             onOpenMedication = onOpenMedication,
+                            onMarkTaken = viewModel::markTaken,
+                            onMarkSkipped = viewModel::markSkipped,
                         )
                     }
                 }
@@ -224,6 +228,12 @@ private fun SummaryRow(report: DailyReport) {
             color = StatusColors.late(),
             modifier = Modifier.weight(1f),
         )
+        SummaryCard(
+            value = report.skippedCount,
+            label = stringResource(R.string.today_summary_skipped),
+            color = StatusColors.skipped(),
+            modifier = Modifier.weight(1f),
+        )
     }
 }
 
@@ -262,6 +272,8 @@ private fun PeriodSection(
     period: DayPeriod,
     doses: List<ScheduledDose>,
     onOpenMedication: (Long) -> Unit,
+    onMarkTaken: (ScheduledDose) -> Unit,
+    onMarkSkipped: (ScheduledDose) -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
@@ -271,7 +283,12 @@ private fun PeriodSection(
             modifier = Modifier.semantics { heading() },
         )
         doses.forEach { dose ->
-            DoseCard(dose = dose, onClick = { onOpenMedication(dose.medicationId) })
+            DoseCard(
+                dose = dose,
+                onOpenMedication = { onOpenMedication(dose.medicationId) },
+                onMarkTaken = { onMarkTaken(dose) },
+                onMarkSkipped = { onMarkSkipped(dose) },
+            )
         }
     }
 }
@@ -279,30 +296,61 @@ private fun PeriodSection(
 @Composable
 private fun DoseCard(
     dose: ScheduledDose,
-    onClick: () -> Unit,
+    onOpenMedication: () -> Unit,
+    onMarkTaken: () -> Unit,
+    onMarkSkipped: () -> Unit,
 ) {
     Card(
-        onClick = onClick,
+        onClick = onOpenMedication,
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(horizontal = 16.dp, vertical = 12.dp),
         ) {
-            Text(
-                text = dose.time.format(TIME_FORMAT),
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-            )
-            Text(
-                text = dose.medicationName,
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.weight(1f),
-            )
-            DoseStatusBadge(status = dose.status)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Text(
+                    text = dose.time.format(TIME_FORMAT),
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                )
+                Text(
+                    text = dose.medicationName,
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.weight(1f),
+                )
+                DoseStatusBadge(status = dose.status)
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                when (dose.status) {
+                    DoseStatus.PENDING, DoseStatus.LATE -> {
+                        TextButton(onClick = onMarkSkipped) {
+                            Text(stringResource(R.string.today_action_skip))
+                        }
+                        Button(onClick = onMarkTaken) {
+                            Text(stringResource(R.string.today_action_taken))
+                        }
+                    }
+                    DoseStatus.TAKEN -> {
+                        TextButton(onClick = onMarkTaken) {
+                            Text(stringResource(R.string.today_action_undo))
+                        }
+                    }
+                    DoseStatus.SKIPPED -> {
+                        TextButton(onClick = onMarkSkipped) {
+                            Text(stringResource(R.string.today_action_undo))
+                        }
+                    }
+                }
+            }
         }
     }
 }

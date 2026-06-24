@@ -17,6 +17,16 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   F4.6 (`migrate-existing-photo-features`) atualizado para excluir segmentação do escopo.
 
 ### Adicionado
+- **F5 — Registro de tomadas** (change `add-intake-tracking`):
+  registro de doses como TAKEN ou SKIPPED direto na tela Hoje, com toggle idempotente
+  (mesmo status → desfaz; status diferente → atualiza; ausente → insere). Cada `DoseCard`
+  exibe botões "Tomei" e "Pular" para doses PENDING/LATE, ou "Desfazer" para TAKEN/SKIPPED.
+  O sumário do dia ganhou coluna "Puladas". A tela de reconhecimento confiante passa a exibir
+  botão "Tomei" que registra a tomada diretamente: 1 dose pendente → marca direto;
+  N > 1 doses → exibe seletor de horário; 0 doses → registra tomada ad-hoc (sem horário).
+  Novos use cases: `MarkIntakeTakenUseCase`, `MarkIntakeSkippedUseCase`,
+  `GetPendingDosesTodayForMedicationUseCase`. Nova query DAO:
+  `getByMedicationScheduleDate`. Campo `scheduledAt: Instant` adicionado a `ScheduledDose`.
 - **F4.6 — Migração automática de features ausentes** (change `migrate-existing-photo-features`):
   fotos cadastradas antes da F4.3/F4.4 tinham `embedding = null` e `imprintText = null`,
   degradando o reconhecimento para apenas cor+forma. Ao iniciar o app, `MigratePhotoFeaturesUseCase`

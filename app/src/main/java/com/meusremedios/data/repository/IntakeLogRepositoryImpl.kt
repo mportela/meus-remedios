@@ -30,4 +30,12 @@ class IntakeLogRepositoryImpl @Inject constructor(
 
     override suspend fun deleteOlderThan(thresholdDate: LocalDate): Int =
         intakeLogDao.deleteOlderThan(thresholdDate.toString())
+
+    override suspend fun getByMedicationScheduleAndDate(
+        medicationId: Long,
+        scheduleTimeId: Long,
+        date: LocalDate,
+    ): IntakeLog? = intakeLogDao
+        .getByMedicationScheduleDate(medicationId, scheduleTimeId, date.toString())
+        ?.toDomain()
 }

@@ -12,4 +12,5 @@ interface IntakeLogRepository {
     suspend fun update(log: IntakeLog)
     suspend fun delete(log: IntakeLog)
     suspend fun deleteOlderThan(thresholdDate: LocalDate): Int
+    suspend fun getByMedicationScheduleAndDate(medicationId: Long, scheduleTimeId: Long, date: LocalDate): IntakeLog?
 }

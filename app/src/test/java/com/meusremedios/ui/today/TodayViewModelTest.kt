@@ -2,13 +2,19 @@ package com.meusremedios.ui.today
 
 import app.cash.turbine.test
 import com.meusremedios.MainDispatcherRule
-import com.meusremedios.domain.model.DoseStatus
 import com.meusremedios.domain.model.Medication
 import com.meusremedios.domain.model.ScheduleTime
+import com.meusremedios.domain.model.DoseStatus
+import com.meusremedios.domain.model.IntakeStatus
 import com.meusremedios.domain.usecase.FakeIntakeLogRepository
 import com.meusremedios.domain.usecase.FakeMedicationRepository
 import com.meusremedios.domain.usecase.FakeScheduleRepository
+import com.meusremedios.domain.usecase.MarkIntakeSkippedUseCase
+import com.meusremedios.domain.usecase.MarkIntakeTakenUseCase
 import com.meusremedios.domain.usecase.ObserveDailyReportUseCase
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -37,8 +43,10 @@ class TodayViewModelTest {
     private val intakeLogs = FakeIntakeLogRepository()
 
     private fun viewModel(): TodayViewModel {
-        val useCase = ObserveDailyReportUseCase(medications, schedules, intakeLogs, clock)
-        return TodayViewModel(useCase, clock)
+        val observeUseCase = ObserveDailyReportUseCase(medications, schedules, intakeLogs, clock)
+        val markTaken = MarkIntakeTakenUseCase(intakeLogs, clock)
+        val markSkipped = MarkIntakeSkippedUseCase(intakeLogs, clock)
+        return TodayViewModel(observeUseCase, markTaken, markSkipped, clock)
     }
 
     @Test
@@ -70,5 +78,48 @@ class TodayViewModelTest {
         vm.goToPreviousDay()
         vm.goToPreviousDay()
         assertEquals(date.minusDays(1), vm.selectedDateState.value)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `markTaken dispara registro TAKEN para a data selecionada`() = runTest {
+        val id = medications.add(Medication(name = "Losartana"))
+        schedules.add(ScheduleTime(medicationId = id, timeOfDay = LocalTime.of(8, 0)))
+        val vm = viewModel()
+
+        // aguarda o relatório carregar e obtém a dose
+        vm.uiState.test {
+            var state = awaitItem()
+            while (state.isLoading || state.report == null) state = awaitItem()
+            val dose = state.report!!.doses.single()
+            cancelAndIgnoreRemainingEvents()
+
+            vm.markTaken(dose)
+            advanceUntilIdle()
+
+            val log = intakeLogs.observeByDate(date).first().singleOrNull()
+            assertEquals(IntakeStatus.TAKEN, log?.status)
+        }
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `markSkipped dispara registro SKIPPED para a data selecionada`() = runTest {
+        val id = medications.add(Medication(name = "Losartana"))
+        schedules.add(ScheduleTime(medicationId = id, timeOfDay = LocalTime.of(8, 0)))
+        val vm = viewModel()
+
+        vm.uiState.test {
+            var state = awaitItem()
+            while (state.isLoading || state.report == null) state = awaitItem()
+            val dose = state.report!!.doses.single()
+            cancelAndIgnoreRemainingEvents()
+
+            vm.markSkipped(dose)
+            advanceUntilIdle()
+
+            val log = intakeLogs.observeByDate(date).first().singleOrNull()
+            assertEquals(IntakeStatus.SKIPPED, log?.status)
+        }
     }
 }

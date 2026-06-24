@@ -93,6 +93,9 @@
     <string name="recognition_error">Não foi possível analisar a foto. Tente novamente.</string>
     <string name="recognition_restart">Recomeçar</string>
     <string name="recognition_gallery_dev_button">Usar foto da galeria (teste)</string>
+    <string name="recognition_action_taken">Tomei</string>
+    <string name="recognition_intake_registered">Registrado</string>
+    <string name="recognition_dose_picker_title">Qual horário você tomou?</string>
 
     <!-- Tela Hoje (relatório do dia) -->
     <string name="today_title">Hoje</string>
@@ -102,6 +105,10 @@
     <string name="today_summary_taken">Tomados</string>
     <string name="today_summary_pending">Pendentes</string>
     <string name="today_summary_late">Atrasados</string>
+    <string name="today_summary_skipped">Puladas</string>
+    <string name="today_action_taken">Tomei</string>
+    <string name="today_action_skip">Pular</string>
+    <string name="today_action_undo">Desfazer</string>
 
     <!-- Períodos do dia -->
     <string name="period_morning">Manhã</string>
