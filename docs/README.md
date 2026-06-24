@@ -23,6 +23,7 @@ pré-cadastrado é o comprimido em mãos — pensado para idosos.
 - [TECH-5 — Estratégia de Testes](technical/tech-5-estrategia-testes.md)
 - [TECH-6 — NFRs, Privacidade e Offline](technical/tech-6-nfr-privacidade-offline.md)
 - [Glossário](technical/glossario.md)
+- [Dívida Técnica](technical/tech-debt.md)
 
 ## Implementação (SDD)
 - [Plano OpenSpec SDD](openspec-plan.md)

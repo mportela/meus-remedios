@@ -92,6 +92,11 @@ Detalhes em [`docs/technical/tech-1-arquitetura.md`](docs/technical/tech-1-arqui
    - A suspend function que usa a biblioteca declara `withContext` adequado?
    - O warm-up em `MeusRemediosApplication` cobre a nova biblioteca?
 
+## Dívida técnica conhecida
+
+Lista rastreada em [`docs/technical/tech-debt.md`](docs/technical/tech-debt.md).
+Ao implementar um item, referenciar `TD-N` no commit e remover/marcar o item do arquivo.
+
 ## Mapa de fases
 F0 Scaffolding · F1 Dados · F2 Cadastro · F3 Consulta/Relatórios · F4 Reconhecimento ·
 F5 Registro de tomadas · F6 Lembretes · F7 Configurações · F8 Acessibilidade · F9 Testes/CI.
