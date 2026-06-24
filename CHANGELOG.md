@@ -38,19 +38,6 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   os modos de componente. Todos os comentários "provisório/F4.1/Será recalibrado" removidos de
   `RecognitionParams`. Extração via `RealPillFeatureExtractorTest` (androidTest) — re-executar
   com `make connected` se o modelo TFLite mudar.
-
-### Corrigido
-- **Performance no cadastro — inicialização de ML fora da main thread**: o
-  `MlKitImprintReader` inicializava `TextRecognition.getClient()` de forma eager no
-  construtor, bloqueando a main thread na primeira injeção (Hilt) ao navegar para "Novo
-  remédio". Corrigido com `by lazy` no `recognizer` e `withContext(Dispatchers.IO)` em
-  `read()`, garantindo que a inicialização do client ML Kit e a leitura de arquivo nunca
-  ocorram na main thread. Adicionado warm-up do `TfliteEmbedder` em
-  `MeusRemediosApplication.onCreate()` via `Dispatchers.Default`, eliminando a carga de
-  `libtensorflowlite.so` no momento do primeiro cadastro. Efeito observado: redução de
-  "Davey!" de até 2644 ms e "Skipped frames" de até 175 durante a abertura do formulário.
-
-### Adicionado
 - **F4.4 — OCR de imprint on-device** (change `add-imprint-ocr`): leitura do texto gravado
   no comprimido via **ML Kit Text Recognition Latin _bundled_** (modelo embarcado no APK, sem
   rede, sem Play Services em runtime). Novo campo `imprintText` em `MedicationPhoto`,
@@ -202,3 +189,13 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
     executa o mesmo engine de reconhecimento da câmera; em release, apenas câmera.
   - `docs/README.md` documenta a flag e o fluxo de depuração com `make push-photos`.
 
+### Corrigido
+- **Performance no cadastro — inicialização de ML fora da main thread**: o
+  `MlKitImprintReader` inicializava `TextRecognition.getClient()` de forma eager no
+  construtor, bloqueando a main thread na primeira injeção (Hilt) ao navegar para "Novo
+  remédio". Corrigido com `by lazy` no `recognizer` e `withContext(Dispatchers.IO)` em
+  `read()`, garantindo que a inicialização do client ML Kit e a leitura de arquivo nunca
+  ocorram na main thread. Adicionado warm-up do `TfliteEmbedder` em
+  `MeusRemediosApplication.onCreate()` via `Dispatchers.Default`, eliminando a carga de
+  `libtensorflowlite.so` no momento do primeiro cadastro. Efeito observado: redução de
+  "Davey!" de até 2644 ms e "Skipped frames" de até 175 durante a abertura do formulário.
