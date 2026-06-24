@@ -7,6 +7,15 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Decisões de arquitetura
+- **F4.2 cancelada — segmentação de comprimido descartada**: a calibração empírica da F4.5
+  confirmou que a limitação do reconhecimento está na **identidade do embedding** (MobileNetV3
+  genérico não discrimina pills visualmente idênticos), não no ruído de fundo. O usuário
+  fotografa o comprimido isolado, tornando segmentação desnecessária para o caso de uso real.
+  ML Kit Subject Segmentation violaria a restrição offline (exige download). O caminho real
+  para melhorar a discriminação é fine-tuning do modelo — registrado como TODO técnico.
+  F4.6 (`migrate-existing-photo-features`) atualizado para excluir segmentação do escopo.
+
 ### Adicionado
 - **F4.5 — Calibração final do engine de reconhecimento** (change `recalibrate-recognition`):
   calibração empírica com embeddings reais extraídos de 6 fotos de 3 comprimidos visualmente

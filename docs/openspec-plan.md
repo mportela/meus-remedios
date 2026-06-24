@@ -73,20 +73,18 @@ score = w1·cosine(embedding) + w2·colorSim(Lab) + w3·shapeSim(forma) + w4·im
   - Promover os testes de controle a permanentes: **positivo** (verso do mesmo remédio,
     score ~0.958 → confiante) e **negativo** (`frente-druse` → nunca confiante).
   - Capability: `visual-recognition`.
-- **F4.2** → `add-pill-segmentation` — **isolar o comprimido, ignorar o fundo**. ⏸️ adiada
-  (decisão: priorizar o embedding na F4.3; segmentação entra depois). Não há modelo de
-  segmentação offline pronto, e ML Kit Subject Segmentation exige download (viola offline).
-  - Segmentação/detecção do comprimido (TFLite detector ou ML Kit Subject Segmentation);
-    define a ROI que alimenta embedding/OCR/cor/forma.
-  - Corrige o descritor de **forma** para ser do comprimido (contorno/eixo), não da foto.
-  - **Tamanho:** preferir um modelo de segmentação leve e **avaliar quantização int8** se
-    o ganho de precisão↔tamanho compensar (float32 é aceitável quando couber no orçamento);
-    registrar o tamanho no orçamento de APK (F4.7).
-  - Aplica-se ao **cadastro** (F2) e à **consulta** (F4). Capabilities: `medication-photos`,
-    `visual-recognition`.
+- **F4.2** → `add-pill-segmentation` — ❌ **cancelada**.
+  Rationale (decidido após F4.5): o usuário fotografa o comprimido isolado (fundo não é
+  variável relevante); a calibração empírica com 3 pills visualmente idênticos confirmou que
+  a limitação está na **identidade do embedding** (MobileNetV3 genérico não discrimina pills
+  da mesma cor/forma), não no ruído de fundo. Segmentação reduziria background mas não
+  resolveria a confusão de identidade — o único caminho real é fine-tuning do modelo (TODO
+  registrado em `docs/openspec-plan.md` e no README). Adicionar um modelo de segmentação
+  aumentaria o APK e a complexidade do pipeline sem ganho proporcional de acurácia para o
+  caso de uso real. ML Kit Subject Segmentation também exigiria download (viola offline).
 - **F4.3** → `add-tflite-embedding` — **núcleo de inteligência**. ✅ feito
   - Embarcar MobileNetV3 em `assets/`; `FeatureExtractor` real preenche `embedding` no
-    cadastro e na consulta (sobre a imagem; a ROI segmentada é melhoria futura da F4.2).
+    cadastro e na consulta (sobre a imagem completa; F4.2 cancelada).
   - **Entregue:** `mobilenet_v3_small.tflite` (MobileNetV3-Small, `224×224×3`→`1024`,
     float32, ~4,1 MB), L2-normalizado, fallback gracioso. **float32 é o padrão** (prioriza
     precisão numa tarefa sensível); int8 fica como **avaliação opcional** na F4.7 (não há
@@ -107,8 +105,9 @@ score = w1·cosine(embedding) + w2·colorSim(Lab) + w3·shapeSim(forma) + w4·im
   - Golden set determinístico de testes (vetores/imagens fixas). Capability:
     `visual-recognition`.
 - **F4.6** → `migrate-existing-photo-features` — **reprocessar fotos antigas**.
-  - Migração automática: reabrir fotos cadastradas antes e gerar
-    segmentação/embedding/inscrição faltantes (rotina no startup/WorkManager, idempotente).
+  - Migração automática: reabrir fotos cadastradas antes da F4.3/F4.4 e gerar
+    embedding + imprint faltantes (rotina no startup/WorkManager, idempotente).
+    Segmentação excluída do escopo (F4.2 cancelada).
   - Capability: `medication-photos`.
 - **F4.7** → `enforce-apk-size-budget` — **orçamento de tamanho de APK**.
   - Definir um **orçamento explícito** de tamanho (modelos em `assets/` + libs) e falhar o
@@ -119,8 +118,8 @@ score = w1·cosine(embedding) + w2·colorSim(Lab) + w3·shapeSim(forma) + w4·im
 
 ### Dependências e impacto técnico
 - **Novas libs (todas on-device/offline):** TensorFlow Lite runtime + support/task-vision;
-  ML Kit Text Recognition *bundled* (modelo embarcado, sem Play Services em runtime);
-  segmentação (ML Kit Subject Segmentation **ou** detector TFLite próprio).
+  ML Kit Text Recognition *bundled* (modelo embarcado, sem Play Services em runtime).
+  Segmentação descartada (F4.2 cancelada — viola offline e sem ganho para o caso de uso real).
 - **Modelo de dados (TECH-2):** `MedicationPhoto` ganha `imprintText` (e, se útil, bbox/ROI
   da segmentação); `embedding` (BLOB) já existe.
 - **Offline (NFR):** confirmar a cada change que **nenhuma** dependência exige rede e que o
@@ -131,12 +130,13 @@ score = w1·cosine(embedding) + w2·colorSim(Lab) + w3·shapeSim(forma) + w4·im
 - **Acessibilidade/UX:** manter decisão conservadora — em dúvida, pedir 2ª foto ou listar
   candidatos; nunca afirmar identidade com baixa confiança.
 - **Docs a sincronizar quando estas fases entrarem:** PRD-3, TECH-2, TECH-3 (fórmula com
-  `w4`/OCR e segmentação), README/AGENTS e CHANGELOG.
+  `w4`/OCR), README/AGENTS e CHANGELOG. Segmentação removida do escopo.
 
 ### Decisões adotadas (autônomas, revisáveis)
 - **OCR:** ML Kit Text Recognition *bundled* (offline, melhor precisão em inscrições do que
   Tesseract). Reavaliar Tesseract se quisermos zero dependência do Google.
-- **Segmentação:** usar modelo (mais robusto a fundos reais) em vez de heurística de contorno.
+- **Segmentação:** ❌ cancelada (F4.2). Usuário fotografa pill isolado; limitação é de
+  identidade no embedding, não de fundo. Fine-tuning resolve; segmentação não.
 - **Embedding:** MobileNetV3 genérico (ImageNet) em **float32** agora (precisão; int8
   opcional na F4.7); **fine-tune específico de comprimidos** fica como tarefa futura (TODO
   no README): treinar/ajustar com as
