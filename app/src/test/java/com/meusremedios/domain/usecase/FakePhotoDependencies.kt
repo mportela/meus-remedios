@@ -33,9 +33,16 @@ class FakeMedicationPhotoRepository : MedicationPhotoRepository {
         return id
     }
 
+    override suspend fun update(photo: MedicationPhoto) {
+        items.value = items.value.map { if (it.id == photo.id) photo else it }
+    }
+
     override suspend fun delete(photo: MedicationPhoto) {
         items.value = items.value.filterNot { it.id == photo.id }
     }
+
+    override suspend fun getPhotosWithoutEmbedding(): List<MedicationPhoto> =
+        items.value.filter { it.embedding == null }
 }
 
 /** Fake de [MedicationImageStore] que rastreia chamadas. */

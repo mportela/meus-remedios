@@ -17,6 +17,16 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   F4.6 (`migrate-existing-photo-features`) atualizado para excluir segmentação do escopo.
 
 ### Adicionado
+- **F4.6 — Migração automática de features ausentes** (change `migrate-existing-photo-features`):
+  fotos cadastradas antes da F4.3/F4.4 tinham `embedding = null` e `imprintText = null`,
+  degradando o reconhecimento para apenas cor+forma. Ao iniciar o app, `MigratePhotoFeaturesUseCase`
+  detecta fotos sem embedding, reextrai features via `TfliteFeatureExtractor` e persiste
+  `embedding + imprintText` atualizados — silenciosamente, em `Dispatchers.IO`, sem bloquear UI.
+  Idempotente: fotos já migradas (embedding não nulo) são puladas. Falhas individuais são isoladas:
+  arquivo ausente ou erro de modelo logam e continuam para a próxima foto; a foto permanece
+  sem embedding e é retentada no próximo startup. Sem nova dependência: reutiliza `TfliteFeatureExtractor`
+  (F4.3) e `MlKitImprintReader` (F4.4) já injetados via Hilt. Novos métodos DAO: `getWithoutEmbedding()`
+  e `update()`, propagados para `MedicationPhotoRepository`.
 - **F4.5 — Calibração final do engine de reconhecimento** (change `recalibrate-recognition`):
   calibração empírica com embeddings reais extraídos de 6 fotos de 3 comprimidos visualmente
   parecidos (pior caso deliberado). `THRESHOLD_CONFIDENT` recalibrado de `0.90` (provisório F4.1,

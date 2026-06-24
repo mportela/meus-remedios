@@ -3,6 +3,7 @@ package com.meusremedios
 import android.app.Application
 import android.graphics.Bitmap
 import com.meusremedios.data.ml.TfliteEmbedder
+import com.meusremedios.domain.usecase.MigratePhotoFeaturesUseCase
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -18,12 +19,14 @@ import kotlinx.coroutines.launch
 class MeusRemediosApplication : Application() {
 
     @Inject lateinit var tfliteEmbedder: TfliteEmbedder
+    @Inject lateinit var migratePhotoFeaturesUseCase: MigratePhotoFeaturesUseCase
 
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     override fun onCreate() {
         super.onCreate()
         warmUpTflite()
+        runPhotoMigration()
     }
 
     // Dispara a carga de libtensorflowlite.so e a criação do Interpreter em
@@ -34,6 +37,12 @@ class MeusRemediosApplication : Application() {
             val dummy = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
             runCatching { tfliteEmbedder.embed(dummy) }
             dummy.recycle()
+        }
+    }
+
+    private fun runPhotoMigration() {
+        appScope.launch(Dispatchers.IO) {
+            runCatching { migratePhotoFeaturesUseCase() }
         }
     }
 }

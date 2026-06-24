@@ -24,6 +24,12 @@ class MedicationPhotoRepositoryImpl @Inject constructor(
     override suspend fun add(photo: MedicationPhoto): Long =
         photoDao.insert(photo.toEntity())
 
+    override suspend fun update(photo: MedicationPhoto) =
+        photoDao.update(photo.toEntity())
+
     override suspend fun delete(photo: MedicationPhoto) =
         photoDao.delete(photo.toEntity())
+
+    override suspend fun getPhotosWithoutEmbedding(): List<MedicationPhoto> =
+        photoDao.getWithoutEmbedding().map { it.toDomain() }
 }

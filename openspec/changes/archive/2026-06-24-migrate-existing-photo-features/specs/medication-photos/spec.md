@@ -1,39 +1,4 @@
-# medication-photos Specification
-
-## Purpose
-TBD - created by archiving change add-medication-photos. Update Purpose after archive.
-## Requirements
-### Requirement: Adicionar fotos ao medicamento
-O sistema SHALL permitir adicionar uma ou mais fotos do comprimido a um
-medicamento, capturando pela câmera do dispositivo ou selecionando da galeria, e
-indicando o lado (frente ou verso) de cada foto.
-
-#### Scenario: Foto capturada pela câmera
-- **WHEN** o usuário captura uma foto do comprimido pela câmera no formulário
-- **THEN** a foto é associada ao medicamento com o lado indicado
-
-#### Scenario: Foto selecionada da galeria
-- **WHEN** o usuário seleciona uma imagem da galeria
-- **THEN** a imagem é associada ao medicamento com o lado indicado
-
-#### Scenario: Medicamento sem foto permanece válido
-- **WHEN** o usuário salva um medicamento sem nenhuma foto
-- **THEN** o medicamento é salvo normalmente, porém sem participar do
-  reconhecimento visual
-
-### Requirement: Armazenamento privado das fotos
-O sistema SHALL armazenar os arquivos de imagem em diretório privado do
-aplicativo, referenciando apenas o caminho do arquivo no banco de dados, sem
-expô-los a outros aplicativos nem à rede.
-
-#### Scenario: Arquivo em área privada
-- **WHEN** uma foto é adicionada a um medicamento
-- **THEN** o arquivo é gravado no armazenamento privado do app
-- **AND** o registro da foto referencia o caminho desse arquivo
-
-#### Scenario: Remoção apaga o arquivo
-- **WHEN** o usuário remove uma foto de um medicamento
-- **THEN** o registro e o arquivo de imagem correspondente são apagados
+## MODIFIED Requirements
 
 ### Requirement: Extração e persistência de features
 O sistema SHALL extrair, ao adicionar uma foto, as features de reconhecimento — cor dominante
@@ -63,13 +28,7 @@ executar migração automática de features ausentes (ver Requirement abaixo).
 - **WHEN** a foto não possui texto gravado legível ou o OCR falha
 - **THEN** a foto é cadastrada mesmo assim, com as demais features persistidas e o imprint ausente
 
-### Requirement: Operação 100% offline
-O sistema SHALL realizar toda a captura, armazenamento e extração de features das
-fotos no dispositivo, sem qualquer acesso à rede.
-
-#### Scenario: Sem conectividade
-- **WHEN** o dispositivo está sem internet
-- **THEN** adicionar, extrair features e remover fotos funcionam normalmente
+## ADDED Requirements
 
 ### Requirement: Migração automática de features ausentes
 O sistema SHALL detectar, ao iniciar, fotos cadastradas sem embedding e reprocessá-las em
@@ -95,4 +54,3 @@ migração das demais.
 #### Scenario: Migração não bloqueia UI
 - **WHEN** a migração está em andamento ao abrir o app
 - **THEN** todas as telas do app respondem normalmente; a migração ocorre em IO thread
-

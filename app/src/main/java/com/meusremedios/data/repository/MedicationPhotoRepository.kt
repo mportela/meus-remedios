@@ -9,5 +9,7 @@ interface MedicationPhotoRepository {
     suspend fun getByMedication(medicationId: Long): List<MedicationPhoto>
     suspend fun getAll(): List<MedicationPhoto>
     suspend fun add(photo: MedicationPhoto): Long
+    suspend fun update(photo: MedicationPhoto)
     suspend fun delete(photo: MedicationPhoto)
+    suspend fun getPhotosWithoutEmbedding(): List<MedicationPhoto>
 }

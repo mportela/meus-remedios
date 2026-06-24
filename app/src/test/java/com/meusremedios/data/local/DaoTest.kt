@@ -119,6 +119,60 @@ class DaoTest {
     }
 
     @Test
+    fun getWithoutEmbedding_returnsOnlyPhotosWithNullEmbedding() = runTest {
+        val medId = db.medicationDao().insert(medication("Losartana"))
+        db.medicationPhotoDao().insert(
+            MedicationPhotoEntity(
+                medicationId = medId,
+                filePath = "/data/pill_with.jpg",
+                side = PhotoSide.FRONT,
+                embedding = floatArrayOf(0.1f, 0.2f),
+                dominantColorLab = null,
+                aspectRatio = null,
+                createdAt = "2026-06-24T10:00:00Z",
+            ),
+        )
+        db.medicationPhotoDao().insert(
+            MedicationPhotoEntity(
+                medicationId = medId,
+                filePath = "/data/pill_without.jpg",
+                side = PhotoSide.BACK,
+                embedding = null,
+                dominantColorLab = null,
+                aspectRatio = null,
+                createdAt = "2026-06-24T10:01:00Z",
+            ),
+        )
+
+        val result = db.medicationPhotoDao().getWithoutEmbedding()
+
+        assertEquals(1, result.size)
+        assertEquals("/data/pill_without.jpg", result.single().filePath)
+    }
+
+    @Test
+    fun update_persistsEmbeddingChange() = runTest {
+        val medId = db.medicationDao().insert(medication("Atenolol"))
+        val photoId = db.medicationPhotoDao().insert(
+            MedicationPhotoEntity(
+                medicationId = medId,
+                filePath = "/data/atenolol.jpg",
+                side = PhotoSide.FRONT,
+                embedding = null,
+                dominantColorLab = null,
+                aspectRatio = null,
+                createdAt = "2026-06-24T10:00:00Z",
+            ),
+        )
+        val saved = db.medicationPhotoDao().getByMedication(medId).single()
+        val newEmbedding = floatArrayOf(0.9f, 0.1f)
+        db.medicationPhotoDao().update(saved.copy(embedding = newEmbedding))
+
+        val updated = db.medicationPhotoDao().getByMedication(medId).single()
+        assertArrayEquals(newEmbedding, updated.embedding, 0f)
+    }
+
+    @Test
     fun scheduleTime_recoveredByMedication() = runTest {
         val medId = db.medicationDao().insert(medication("Metformina"))
         db.scheduleTimeDao().insert(
