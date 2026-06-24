@@ -1,4 +1,4 @@
-## NEW Requirements
+## ADDED Requirements
 
 ### Requirement: Registrar tomada de dose
 
