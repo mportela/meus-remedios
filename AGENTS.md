@@ -64,6 +64,34 @@ Detalhes em [`docs/technical/tech-1-arquitetura.md`](docs/technical/tech-1-arqui
 - Não introduzir dependências de rede nem chamadas externas.
 - Não criar arquivos de documentação extra sem necessidade; preferir editar os existentes.
 
+## Regras de performance — ML/TF (obrigatório)
+
+> Violações aqui causam jank visível de 1–3 s, "Skipped 100+ frames" e bloqueio de
+> InputDispatcher — confirmados em logcat (Davey! 2644 ms, 175 frames skipped).
+
+1. **Nunca inicializar clientes ML na main thread.**
+   - Singletons de ML Kit, TFLite `Interpreter` ou qualquer `*Reader`/`*Embedder` NÃO devem
+     executar lógica pesada no construtor. Use `by lazy { ... }` para adiar ao primeiro uso.
+   - Exemplo do erro: `private val recognizer = TextRecognition.getClient(...)` → bloqueia a
+     main thread quando o singleton é criado por Hilt na primeira navegação.
+   - Exemplo correto: `private val recognizer by lazy { TextRecognition.getClient(...) }`.
+
+2. **Toda função `suspend` que acessa componente ML deve declarar seu próprio dispatcher.**
+   - `ImprintReader.read()` → `withContext(Dispatchers.IO)`.
+   - `TfliteFeatureExtractor.extract()` → internamente usa `withContext(Dispatchers.Default)`.
+   - Nunca depender do dispatcher do chamador para operações de I/O ou computação pesada.
+
+3. **Warm-up obrigatório no `Application.onCreate()`.**
+   - Qualquer novo componente ML (embedder, OCR, segmentação, etc.) deve ter seu primeiro
+     acesso disparado em `MeusRemediosApplication.warmUpTflite()` (ou método análogo) via
+     `appScope.launch { ... }` em `Dispatchers.Default`.
+   - Isso pré-carrega as `.so` nativas antes do usuário interagir com o formulário.
+
+4. **Ao adicionar nova biblioteca ML, verificar:**
+   - O construtor do `@Singleton` é leve (sem I/O, sem carregamento de modelo, sem JNI init)?
+   - A suspend function que usa a biblioteca declara `withContext` adequado?
+   - O warm-up em `MeusRemediosApplication` cobre a nova biblioteca?
+
 ## Mapa de fases
 F0 Scaffolding · F1 Dados · F2 Cadastro · F3 Consulta/Relatórios · F4 Reconhecimento ·
 F5 Registro de tomadas · F6 Lembretes · F7 Configurações · F8 Acessibilidade · F9 Testes/CI.

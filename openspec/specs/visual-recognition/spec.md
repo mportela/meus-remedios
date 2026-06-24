@@ -114,3 +114,15 @@ SHALL tratar o embedding como ausente e prosseguir o reconhecimento com as demai
 - **WHEN** o modelo de embedding não pode ser carregado ou a inferência falha
 - **THEN** o sistema SHALL prosseguir o reconhecimento usando apenas cor e forma
 
+### Requirement: Warm-up do modelo TFLite no startup
+O sistema SHALL pré-inicializar o `TfliteEmbedder` (criação do `Interpreter` e carga de
+`libtensorflowlite.so`) em thread de background durante o `Application.onCreate()`, de forma
+que a primeira foto cadastrada pelo usuário não sofra latência adicional de inicialização de
+modelo. A inicialização SHALL ocorrer exclusivamente em `Dispatchers.Default`, nunca na main
+thread.
+
+#### Scenario: Primeiro cadastro sem jank de carregamento de modelo
+- **WHEN** o usuário adiciona a primeira foto a um medicamento após instalar o app
+- **THEN** o modelo TFLite já está inicializado em background
+- **AND** a operação de embedding não bloqueia a main thread
+

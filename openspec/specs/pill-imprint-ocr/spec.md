@@ -25,6 +25,18 @@ como ausente, sem interromper a extração das demais features.
 - **WHEN** o reconhecedor de texto não pode ser carregado ou a leitura falha
 - **THEN** o sistema SHALL prosseguir com as demais features e deixar o imprint ausente
 
+### Requirement: Inicialização do reconhecedor fora da main thread
+O sistema SHALL garantir que a criação do cliente de OCR (`TextRecognition.getClient`) e
+qualquer leitura de arquivo de imagem no fluxo de OCR NÃO ocorram na main thread. A
+implementação SHALL usar inicialização lazy do cliente e dispatcher de I/O explícito
+(`withContext(Dispatchers.IO)`) na função de leitura, de forma que o primeiro uso nunca
+cause jank visível.
+
+#### Scenario: Sem jank no primeiro uso
+- **WHEN** o OCR de imprint é acionado pela primeira vez após install
+- **THEN** a inicialização do modelo e a leitura da imagem ocorrem em thread de background
+- **AND** a main thread não é bloqueada
+
 ### Requirement: OCR de imprint 100% offline
 O sistema SHALL realizar a leitura do imprint sem qualquer acesso à rede, com o modelo de
 reconhecimento embarcado no aplicativo. O aplicativo NÃO SHALL declarar a permissão

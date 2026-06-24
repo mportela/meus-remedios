@@ -42,6 +42,23 @@ desambiguar pílulas com gravação só de um lado.
 - **Segurança**: limiar conservador; em dúvida, não afirmar.
 - **Offline**: 100% on-device; modelo embarcado; nenhuma imagem trafega.
 
+## Performance — inicialização de componentes ML
+
+Componentes ML (TFLite, ML Kit) carregam bibliotecas nativas (`.so`) e modelos na primeira
+chamada. Se isso ocorrer na **main thread**, o resultado é jank visível de 1–3 s.
+
+**Invariantes obrigatórios** (ver também seção "Regras de performance" em `AGENTS.md`):
+
+| Componente | Padrão correto |
+|---|---|
+| `TfliteEmbedder` | construtor leve; `Interpreter` criado em `obtainInterpreter()` no primeiro `embed()`, chamado de `Dispatchers.Default` |
+| `MlKitImprintReader` | `recognizer` é `by lazy`; `read()` usa `withContext(Dispatchers.IO)` |
+| Futuras adições | mesmo padrão: construtor leve + lazy init + dispatcher explícito |
+
+**Warm-up no startup**: `MeusRemediosApplication.onCreate()` dispara um `embed()` dummy em
+`Dispatchers.Default` para pré-carregar `libtensorflowlite.so` antes da primeira interação.
+Ao adicionar novos componentes ML, incluí-los no warm-up.
+
 ## Decisão de segmentação (recomendado para o MVP)
 Recorte central + histograma. ML Kit Subject Segmentation / OpenCV ficam como refinamento
 futuro.
