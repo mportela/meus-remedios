@@ -7,6 +7,19 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Adicionado
+- **F4.5 — Calibração final do engine de reconhecimento** (change `recalibrate-recognition`):
+  calibração empírica com embeddings reais extraídos de 6 fotos de 3 comprimidos visualmente
+  parecidos (pior caso deliberado). `THRESHOLD_CONFIDENT` recalibrado de `0.90` (provisório F4.1,
+  sem embedding) para **`0.85`** no regime com embedding TFLite + OCR ativos. Principal achado:
+  a proteção contra falso positivo vem de `MARGIN = 0.08` com cadastro de 2 lados — os dois
+  registros do comprimido errado competem entre si, mantendo margem < 0.08 e forçando AMBÍGUO;
+  o threshold controla apenas o piso mínimo de qualidade. Golden set permanente com
+  `RealPillFixtures` (1024-dim embeddings MobileNetV3 reais, hardcoded em JVM) cobrindo todos
+  os modos de componente. Todos os comentários "provisório/F4.1/Será recalibrado" removidos de
+  `RecognitionParams`. Extração via `RealPillFeatureExtractorTest` (androidTest) — re-executar
+  com `make connected` se o modelo TFLite mudar.
+
 ### Corrigido
 - **Performance no cadastro — inicialização de ML fora da main thread**: o
   `MlKitImprintReader` inicializava `TextRecognition.getClient()` de forma eager no

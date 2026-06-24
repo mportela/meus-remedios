@@ -114,4 +114,52 @@ class RecognitionScorerTest {
 
         assertTrue("Score com imprint igual deve ser > divergente", scoreSame > scoreDiff)
     }
+
+    // --- Golden set com embeddings reais (F4.5) ---
+    // Pares positivos: mesmo comprimido, frente vs verso (pior caso — ângulos opostos).
+    // Pares negativos: comprimidos diferentes, mesma cor/forma (caso mais difícil).
+    // Scores esperados documentam a calibração; desvios indicam mudança de modelo ou pré-processamento.
+
+    @Test
+    fun `par positivo A frente verso score calibrado`() {
+        val s = RecognitionScorer.score(PILL_A_FRENTE, PILL_A_VERSO)
+        assertEquals("A+ frente/verso", 0.9830f, s, 0.001f)
+    }
+
+    @Test
+    fun `par positivo B frente verso score calibrado`() {
+        val s = RecognitionScorer.score(PILL_B_FRENTE, PILL_B_VERSO)
+        assertEquals("B+ frente/verso (pior positivo)", 0.8684f, s, 0.001f)
+    }
+
+    @Test
+    fun `par positivo C frente verso score calibrado`() {
+        val s = RecognitionScorer.score(PILL_C_FRENTE, PILL_C_VERSO)
+        assertEquals("C+ frente/verso", 0.9198f, s, 0.001f)
+    }
+
+    @Test
+    fun `par negativo A vs B score calibrado`() {
+        val s = RecognitionScorer.score(PILL_A_FRENTE, PILL_B_FRENTE)
+        assertEquals("A- vs B (pior negativo)", 0.9620f, s, 0.001f)
+    }
+
+    @Test
+    fun `par negativo A vs C score calibrado`() {
+        val s = RecognitionScorer.score(PILL_A_FRENTE, PILL_C_FRENTE)
+        assertEquals("A- vs C", 0.9248f, s, 0.001f)
+    }
+
+    @Test
+    fun `par negativo B vs C score calibrado`() {
+        val s = RecognitionScorer.score(PILL_B_FRENTE, PILL_C_FRENTE)
+        assertEquals("B- vs C", 0.9175f, s, 0.001f)
+    }
+
+    @Test
+    fun `embedding real pill A frente verso tem cosseno alto`() {
+        // Verifica que o embedding TFLite produz alta similaridade para o mesmo comprimido.
+        val sim = RecognitionScorer.cosineSimilarity(PILL_A_FRENTE.embedding, PILL_A_VERSO.embedding)
+        assertTrue("cosine A+: esperado >= 0.95, obtido $sim", sim!! >= 0.95f)
+    }
 }
