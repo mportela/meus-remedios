@@ -29,8 +29,9 @@ DEVICE_DIR  ?= /sdcard/Pictures
 
 APP_ID      := com.meusremedios
 MAIN_ACT    := $(APP_ID)/.ui.MainActivity
-APK_DEBUG   := app/build/outputs/apk/debug/meus-remedios-1.0.0-debug.apk
-APK_RELEASE := app/build/outputs/apk/release/meus-remedios-1.0.0-release.apk
+VERSION     := $(shell grep versionName app/build.gradle.kts | grep -o '[0-9]\+\.[0-9]\+\.[0-9]\+' | head -1)
+APK_DEBUG   := app/build/outputs/apk/debug/meus-remedios-$(VERSION)-debug.apk
+APK_RELEASE := app/build/outputs/apk/release/meus-remedios-$(VERSION)-release.apk
 
 # Exporta variáveis de ambiente para os comandos do Gradle/SDK.
 export ANDROID_HOME
@@ -59,11 +60,21 @@ release: ## Compila o APK de release (minificado)
 
 .PHONY: test
 test: ## Roda os testes unitários (JVM)
-	$(GRADLE) test
+	$(GRADLE) testDebugUnitTest
 
 .PHONY: check
-check: ## Roda testes + build do APK de debug
-	$(GRADLE) test assembleDebug
+check: ## Roda testes + ktlint + build de debug (equivalente ao CI)
+	$(GRADLE) testDebugUnitTest ktlintCheck assembleDebug
+
+.PHONY: fmt
+fmt: ## Formata o código com ktlintFormat
+	$(GRADLE) ktlintFormat
+
+.PHONY: install-hooks
+install-hooks: ## Instala o git pre-commit hook que bloqueia commits com erro de ktlint
+	@cp .github/hooks/pre-commit .git/hooks/pre-commit
+	@chmod +x .git/hooks/pre-commit
+	@echo "Hook pre-commit instalado."
 
 .PHONY: connected
 connected: ## Roda testes instrumentados (precisa de emulador/device)

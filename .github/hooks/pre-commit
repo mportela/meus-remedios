@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# pre-commit: bloqueia commits que violam ktlint.
+# Instale com: make install-hooks
+
+set -euo pipefail
+
+echo "→ ktlintCheck..."
+if ! ./gradlew ktlintCheck --daemon -q 2>&1; then
+    echo ""
+    echo "✗ ktlint encontrou violações. Execute 'make fmt' para corrigir automaticamente."
+    echo "  Em seguida refaça o commit."
+    exit 1
+fi
+
+echo "✓ ktlint OK"
