@@ -16,21 +16,19 @@ import com.meusremedios.domain.usecase.GetMedicationUseCase
 import com.meusremedios.domain.usecase.MedicationValidationError
 import com.meusremedios.domain.usecase.ObserveMedicationPhotosUseCase
 import com.meusremedios.domain.usecase.RemoveMedicationPhotoUseCase
-import com.meusremedios.domain.usecase.RescheduleAllAlarmsUseCase
 import com.meusremedios.domain.usecase.SaveMedicationUseCase
 import com.meusremedios.ui.navigation.Routes
 import io.mockk.mockk
-import java.time.LocalDate
-import java.time.LocalTime
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
+import java.time.LocalDate
+import java.time.LocalTime
 
 class MedicationFormViewModelTest {
-
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
@@ -46,70 +44,75 @@ class MedicationFormViewModelTest {
             saveMedication = SaveMedicationUseCase(medicationRepository, scheduleRepository, mockk(relaxed = true)),
             deleteMedication = DeleteMedicationUseCase(medicationRepository),
             observeMedicationPhotos = ObserveMedicationPhotosUseCase(photoRepository),
-            addMedicationPhoto = AddMedicationPhotoUseCase(
-                imageStore,
-                FakeFeatureExtractor(),
-                photoRepository,
-            ),
+            addMedicationPhoto =
+                AddMedicationPhotoUseCase(
+                    imageStore,
+                    FakeFeatureExtractor(),
+                    photoRepository,
+                ),
             removeMedicationPhoto = RemoveMedicationPhotoUseCase(imageStore, photoRepository),
             imageStore = imageStore,
         )
 
     @Test
-    fun `save with blank name sets validation error`() = runTest {
-        val vm = viewModel()
+    fun `save with blank name sets validation error`() =
+        runTest {
+            val vm = viewModel()
 
-        vm.save()
-
-        assertEquals(
-            MedicationValidationError.BLANK_NAME,
-            vm.uiState.value.validationError,
-        )
-        assertTrue(medicationRepository.snapshot().isEmpty())
-    }
-
-    @Test
-    fun `save valid medication emits Saved event and persists`() = runTest {
-        val vm = viewModel()
-        vm.onNameChange("Losartana")
-        vm.addSchedule(LocalTime.of(8, 0))
-
-        vm.events.test {
             vm.save()
-            assertEquals(MedicationFormEvent.Saved, awaitItem())
+
+            assertEquals(
+                MedicationValidationError.BLANK_NAME,
+                vm.uiState.value.validationError,
+            )
+            assertTrue(medicationRepository.snapshot().isEmpty())
         }
-        assertEquals("Losartana", medicationRepository.snapshot().single().name)
-        assertEquals(1, scheduleRepository.snapshot().size)
-    }
 
     @Test
-    fun `loads existing medication for editing`() = runTest {
-        val id = medicationRepository.add(Medication(name = "Aspirina"))
-        scheduleRepository.add(
-            com.meusremedios.domain.model.ScheduleTime(
-                medicationId = id,
-                timeOfDay = LocalTime.of(7, 30),
-            ),
-        )
+    fun `save valid medication emits Saved event and persists`() =
+        runTest {
+            val vm = viewModel()
+            vm.onNameChange("Losartana")
+            vm.addSchedule(LocalTime.of(8, 0))
 
-        val vm = viewModel(id)
-
-        val state = vm.uiState.value
-        assertEquals("Aspirina", state.name)
-        assertTrue(state.isEditing)
-        assertEquals(1, state.schedules.size)
-    }
+            vm.events.test {
+                vm.save()
+                assertEquals(MedicationFormEvent.Saved, awaitItem())
+            }
+            assertEquals("Losartana", medicationRepository.snapshot().single().name)
+            assertEquals(1, scheduleRepository.snapshot().size)
+        }
 
     @Test
-    fun `switching to continuous clears dates`() = runTest {
-        val vm = viewModel()
-        vm.onPeriodTypeChange(PeriodType.RANGED)
-        vm.onStartDateChange(LocalDate.of(2026, 1, 1))
-        vm.onEndDateChange(LocalDate.of(2026, 2, 1))
+    fun `loads existing medication for editing`() =
+        runTest {
+            val id = medicationRepository.add(Medication(name = "Aspirina"))
+            scheduleRepository.add(
+                com.meusremedios.domain.model.ScheduleTime(
+                    medicationId = id,
+                    timeOfDay = LocalTime.of(7, 30),
+                ),
+            )
 
-        vm.onPeriodTypeChange(PeriodType.CONTINUOUS)
+            val vm = viewModel(id)
 
-        assertNull(vm.uiState.value.startDate)
-        assertNull(vm.uiState.value.endDate)
-    }
+            val state = vm.uiState.value
+            assertEquals("Aspirina", state.name)
+            assertTrue(state.isEditing)
+            assertEquals(1, state.schedules.size)
+        }
+
+    @Test
+    fun `switching to continuous clears dates`() =
+        runTest {
+            val vm = viewModel()
+            vm.onPeriodTypeChange(PeriodType.RANGED)
+            vm.onStartDateChange(LocalDate.of(2026, 1, 1))
+            vm.onEndDateChange(LocalDate.of(2026, 2, 1))
+
+            vm.onPeriodTypeChange(PeriodType.CONTINUOUS)
+
+            assertNull(vm.uiState.value.startDate)
+            assertNull(vm.uiState.value.endDate)
+        }
 }

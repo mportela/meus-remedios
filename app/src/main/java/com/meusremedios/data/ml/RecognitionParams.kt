@@ -6,7 +6,6 @@ package com.meusremedios.data.ml
  * de 6 fotos de 3 comprimidos visualmente parecidos (pior caso intencionalmente).
  */
 object RecognitionParams {
-
     /** Peso da similaridade de embedding TFLite (MobileNetV3 Small, cosseno mapeado [0,1]). */
     const val W_EMBEDDING: Float = 0.6f
 

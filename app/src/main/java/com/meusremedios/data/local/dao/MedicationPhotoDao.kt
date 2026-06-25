@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface MedicationPhotoDao {
-
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(photo: MedicationPhotoEntity): Long
 

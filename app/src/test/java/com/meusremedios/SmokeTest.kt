@@ -9,7 +9,6 @@ import org.junit.Test
  * Substituído/expandido por testes reais de use cases nas próximas fases.
  */
 class SmokeTest {
-
     @Test
     fun infrastructure_isReady() {
         assertEquals(4, 2 + 2)

@@ -16,7 +16,6 @@ import java.time.LocalTime
  * nome. Todas as conversões são reversíveis e determinísticas.
  */
 class Converters {
-
     @TypeConverter
     fun localDateToString(value: LocalDate?): String? = value?.toString()
 
@@ -56,8 +55,9 @@ class Converters {
     @TypeConverter
     fun floatArrayToBytes(value: FloatArray?): ByteArray? {
         if (value == null) return null
-        val buffer = ByteBuffer.allocate(value.size * Float.SIZE_BYTES)
-            .order(ByteOrder.BIG_ENDIAN)
+        val buffer =
+            ByteBuffer.allocate(value.size * Float.SIZE_BYTES)
+                .order(ByteOrder.BIG_ENDIAN)
         value.forEach(buffer::putFloat)
         return buffer.array()
     }

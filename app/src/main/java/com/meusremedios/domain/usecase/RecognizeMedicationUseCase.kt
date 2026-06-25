@@ -18,50 +18,56 @@ import javax.inject.Inject
  *
  * @param queryImagePaths caminhos das fotos capturadas (1 = frente; 2 = frente+verso).
  */
-class RecognizeMedicationUseCase @Inject constructor(
-    private val medicationPhotoRepository: MedicationPhotoRepository,
-    private val medicationRepository: MedicationRepository,
-    private val featureExtractor: FeatureExtractor,
-) {
-    suspend operator fun invoke(queryImagePaths: List<String>): RecognitionOutcome {
-        if (queryImagePaths.isEmpty()) return RecognitionOutcome.NoMatch
+class RecognizeMedicationUseCase
+    @Inject
+    constructor(
+        private val medicationPhotoRepository: MedicationPhotoRepository,
+        private val medicationRepository: MedicationRepository,
+        private val featureExtractor: FeatureExtractor,
+    ) {
+        suspend operator fun invoke(queryImagePaths: List<String>): RecognitionOutcome {
+            if (queryImagePaths.isEmpty()) return RecognitionOutcome.NoMatch
 
-        val registeredPhotos = medicationPhotoRepository.getAll()
-        if (registeredPhotos.isEmpty()) return RecognitionOutcome.NoPhotosRegistered
+            val registeredPhotos = medicationPhotoRepository.getAll()
+            if (registeredPhotos.isEmpty()) return RecognitionOutcome.NoPhotosRegistered
 
-        val queryFeatures = queryImagePaths.map { path ->
-            featureExtractor.extract(path).let { features ->
-                FeatureSet(
-                    embedding = features.embedding,
-                    colorLab = features.dominantColorLab,
-                    aspectRatio = features.aspectRatio,
-                    imprintText = features.imprintText,
-                )
-            }
+            val queryFeatures =
+                queryImagePaths.map { path ->
+                    featureExtractor.extract(path).let { features ->
+                        FeatureSet(
+                            embedding = features.embedding,
+                            colorLab = features.dominantColorLab,
+                            aspectRatio = features.aspectRatio,
+                            imprintText = features.imprintText,
+                        )
+                    }
+                }
+
+            val candidates =
+                registeredPhotos
+                    .groupBy { it.medicationId }
+                    .mapNotNull { (medicationId, photos) ->
+                        val medication = medicationRepository.getById(medicationId) ?: return@mapNotNull null
+                        val bestScore =
+                            photos.maxOf { photo ->
+                                queryFeatures.maxOf { query -> RecognitionScorer.score(query, photo.toFeatureSet()) }
+                            }
+                        RecognitionCandidate(
+                            medicationId = medicationId,
+                            medicationName = medication.name,
+                            score = bestScore,
+                        )
+                    }
+                    .sortedByDescending { it.score }
+
+            return RecognitionEngine.decide(candidates)
         }
 
-        val candidates = registeredPhotos
-            .groupBy { it.medicationId }
-            .mapNotNull { (medicationId, photos) ->
-                val medication = medicationRepository.getById(medicationId) ?: return@mapNotNull null
-                val bestScore = photos.maxOf { photo ->
-                    queryFeatures.maxOf { query -> RecognitionScorer.score(query, photo.toFeatureSet()) }
-                }
-                RecognitionCandidate(
-                    medicationId = medicationId,
-                    medicationName = medication.name,
-                    score = bestScore,
-                )
-            }
-            .sortedByDescending { it.score }
-
-        return RecognitionEngine.decide(candidates)
+        private fun MedicationPhoto.toFeatureSet(): FeatureSet =
+            FeatureSet(
+                embedding = embedding,
+                colorLab = dominantColorLab,
+                aspectRatio = aspectRatio,
+                imprintText = imprintText,
+            )
     }
-
-    private fun MedicationPhoto.toFeatureSet(): FeatureSet = FeatureSet(
-        embedding = embedding,
-        colorLab = dominantColorLab,
-        aspectRatio = aspectRatio,
-        imprintText = imprintText,
-    )
-}

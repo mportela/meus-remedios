@@ -9,7 +9,6 @@ data class RecognitionCandidate(
 
 /** Resultado do reconhecimento de um comprimido pela câmera. */
 sealed interface RecognitionOutcome {
-
     /** Nenhum medicamento cadastrado possui foto para comparação. */
     data object NoPhotosRegistered : RecognitionOutcome
 

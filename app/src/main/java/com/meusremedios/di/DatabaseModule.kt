@@ -19,16 +19,16 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
-
     @Provides
     @Singleton
     fun provideDatabase(
         @ApplicationContext context: Context,
-    ): MeusRemediosDatabase = Room.databaseBuilder(
-        context,
-        MeusRemediosDatabase::class.java,
-        MeusRemediosDatabase.DATABASE_NAME,
-    ).addMigrations(MeusRemediosDatabase.MIGRATION_1_2).build()
+    ): MeusRemediosDatabase =
+        Room.databaseBuilder(
+            context,
+            MeusRemediosDatabase::class.java,
+            MeusRemediosDatabase.DATABASE_NAME,
+        ).addMigrations(MeusRemediosDatabase.MIGRATION_1_2).build()
 
     @Provides
     fun provideMedicationDao(db: MeusRemediosDatabase): MedicationDao = db.medicationDao()

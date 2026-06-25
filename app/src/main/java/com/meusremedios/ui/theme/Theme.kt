@@ -1,6 +1,5 @@
 package com.meusremedios.ui.theme
 
-import android.app.Activity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -10,31 +9,34 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 
-private val LightColors = lightColorScheme(
-    primary = Blue40,
-    secondary = Teal40,
-    background = Neutral99,
-    surface = Neutral99,
-    error = Error40,
-)
+private val LightColors =
+    lightColorScheme(
+        primary = Blue40,
+        secondary = Teal40,
+        background = Neutral99,
+        surface = Neutral99,
+        error = Error40,
+    )
 
-private val DarkColors = darkColorScheme(
-    primary = Blue80,
-    secondary = Teal80,
-    background = Neutral10,
-    surface = Neutral10,
-    error = Error80,
-)
+private val DarkColors =
+    darkColorScheme(
+        primary = Blue80,
+        secondary = Teal80,
+        background = Neutral10,
+        surface = Neutral10,
+        error = Error80,
+    )
 
-private val HighContrastColors = lightColorScheme(
-    primary = HCPrimary,
-    onPrimary = HCOnPrimary,
-    background = HCBackground,
-    onBackground = HCOnBackground,
-    surface = HCSurface,
-    onSurface = HCOnSurface,
-    error = HCError,
-)
+private val HighContrastColors =
+    lightColorScheme(
+        primary = HCPrimary,
+        onPrimary = HCOnPrimary,
+        background = HCBackground,
+        onBackground = HCOnBackground,
+        surface = HCSurface,
+        onSurface = HCOnSurface,
+        error = HCError,
+    )
 
 /**
  * Tema do app. Sem cores dinâmicas para garantir contraste previsível e
@@ -51,11 +53,12 @@ fun MeusRemediosTheme(
     highContrast: Boolean = false,
     content: @Composable () -> Unit,
 ) {
-    val colorScheme = when {
-        highContrast -> HighContrastColors
-        darkTheme -> DarkColors
-        else -> LightColors
-    }
+    val colorScheme =
+        when {
+            highContrast -> HighContrastColors
+            darkTheme -> DarkColors
+            else -> LightColors
+        }
     val themedContent: @Composable () -> Unit = {
         MaterialTheme(
             colorScheme = colorScheme,

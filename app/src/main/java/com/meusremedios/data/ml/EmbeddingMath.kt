@@ -7,7 +7,6 @@ import kotlin.math.sqrt
  * do Android.
  */
 object EmbeddingMath {
-
     /**
      * Normaliza o vetor para norma L2 unitária. Retorna o próprio vetor (sem
      * alteração) quando vazio ou de norma zero, evitando divisão por zero.

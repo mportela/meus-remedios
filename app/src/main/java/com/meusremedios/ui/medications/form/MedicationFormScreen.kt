@@ -92,27 +92,30 @@ fun MedicationFormScreen(
     var showDeleteDialog by remember { mutableStateOf(false) }
     var pendingSide by remember { mutableStateOf(PhotoSide.FRONT) }
 
-    val galleryLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.PickVisualMedia(),
-    ) { uri: Uri? ->
-        if (uri != null) viewModel.onGalleryPicked(uri, pendingSide)
-    }
-    val cameraLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.TakePicture(),
-    ) { success: Boolean ->
-        if (success) viewModel.onCameraCaptured(pendingSide)
-    }
+    val galleryLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.PickVisualMedia(),
+        ) { uri: Uri? ->
+            if (uri != null) viewModel.onGalleryPicked(uri, pendingSide)
+        }
+    val cameraLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.TakePicture(),
+        ) { success: Boolean ->
+            if (success) viewModel.onCameraCaptured(pendingSide)
+        }
 
     Scaffold(
         modifier = modifier,
         topBar = {
             TopAppBar(
                 title = {
-                    val titleRes = if (uiState.isEditing) {
-                        R.string.medication_form_title_edit
-                    } else {
-                        R.string.medication_form_title_new
-                    }
+                    val titleRes =
+                        if (uiState.isEditing) {
+                            R.string.medication_form_title_edit
+                        } else {
+                            R.string.medication_form_title_new
+                        }
                     Text(
                         text = stringResource(titleRes),
                         modifier = Modifier.semantics { heading() },
@@ -140,11 +143,12 @@ fun MedicationFormScreen(
         },
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             NameField(
@@ -173,8 +177,9 @@ fun MedicationFormScreen(
                 periodType = uiState.periodType,
                 startDate = uiState.startDate,
                 endDate = uiState.endDate,
-                dateError = uiState.validationError ==
-                    MedicationValidationError.END_DATE_BEFORE_START_DATE,
+                dateError =
+                    uiState.validationError ==
+                        MedicationValidationError.END_DATE_BEFORE_START_DATE,
                 onPeriodTypeChange = viewModel::onPeriodTypeChange,
                 onStartDateChange = viewModel::onStartDateChange,
                 onEndDateChange = viewModel::onEndDateChange,
@@ -361,12 +366,14 @@ private fun DateField(
     }
 
     if (showPicker) {
-        val state = rememberDatePickerState(
-            initialSelectedDateMillis = date
-                ?.atStartOfDay(ZoneOffset.UTC)
-                ?.toInstant()
-                ?.toEpochMilli(),
-        )
+        val state =
+            rememberDatePickerState(
+                initialSelectedDateMillis =
+                    date
+                        ?.atStartOfDay(ZoneOffset.UTC)
+                        ?.toInstant()
+                        ?.toEpochMilli(),
+            )
         DatePickerDialog(
             onDismissRequest = { showPicker = false },
             confirmButton = {
@@ -429,9 +436,10 @@ private fun SchedulesSection(
                     IconButton(onClick = { onRemoveSchedule(index) }) {
                         Icon(
                             Icons.Default.Delete,
-                            contentDescription = stringResource(
-                                R.string.medication_form_remove_schedule,
-                            ),
+                            contentDescription =
+                                stringResource(
+                                    R.string.medication_form_remove_schedule,
+                                ),
                         )
                     }
                 }
@@ -484,15 +492,16 @@ private fun WeekdaySelector(
     mask: Int,
     onMaskChange: (Int) -> Unit,
 ) {
-    val labels = listOf(
-        R.string.weekday_monday,
-        R.string.weekday_tuesday,
-        R.string.weekday_wednesday,
-        R.string.weekday_thursday,
-        R.string.weekday_friday,
-        R.string.weekday_saturday,
-        R.string.weekday_sunday,
-    )
+    val labels =
+        listOf(
+            R.string.weekday_monday,
+            R.string.weekday_tuesday,
+            R.string.weekday_wednesday,
+            R.string.weekday_thursday,
+            R.string.weekday_friday,
+            R.string.weekday_saturday,
+            R.string.weekday_sunday,
+        )
     FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         labels.forEachIndexed { bit, labelRes ->
             val selected = (mask and (1 shl bit)) != 0
@@ -625,28 +634,31 @@ private fun PhotoThumbnail(
     onRemove: () -> Unit,
 ) {
     val bitmap = remember(path) { BitmapFactory.decodeFile(path) }
-    val sideDesc = stringResource(
-        if (side == PhotoSide.FRONT) {
-            R.string.medication_form_photo_front_desc
-        } else {
-            R.string.medication_form_photo_back_desc
-        },
-    )
+    val sideDesc =
+        stringResource(
+            if (side == PhotoSide.FRONT) {
+                R.string.medication_form_photo_front_desc
+            } else {
+                R.string.medication_form_photo_back_desc
+            },
+        )
     Box {
         if (bitmap != null) {
             Image(
                 bitmap = bitmap.asImageBitmap(),
                 contentDescription = sideDesc,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(96.dp)
-                    .clip(RoundedCornerShape(8.dp)),
+                modifier =
+                    Modifier
+                        .size(96.dp)
+                        .clip(RoundedCornerShape(8.dp)),
             )
         } else {
             Surface(
-                modifier = Modifier
-                    .size(96.dp)
-                    .clip(RoundedCornerShape(8.dp)),
+                modifier =
+                    Modifier
+                        .size(96.dp)
+                        .clip(RoundedCornerShape(8.dp)),
                 color = MaterialTheme.colorScheme.surfaceVariant,
             ) {}
         }

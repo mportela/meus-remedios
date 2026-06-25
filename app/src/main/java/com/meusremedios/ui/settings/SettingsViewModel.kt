@@ -13,21 +13,23 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor(
-    settingsRepository: SettingsRepository,
-    private val saveSettingsUseCase: SaveSettingsUseCase,
-) : ViewModel() {
+class SettingsViewModel
+    @Inject
+    constructor(
+        settingsRepository: SettingsRepository,
+        private val saveSettingsUseCase: SaveSettingsUseCase,
+    ) : ViewModel() {
+        val uiState: StateFlow<AppSettings> =
+            settingsRepository.observe()
+                .stateIn(
+                    viewModelScope,
+                    SharingStarted.WhileSubscribed(5000),
+                    AppSettings(),
+                )
 
-    val uiState: StateFlow<AppSettings> = settingsRepository.observe()
-        .stateIn(
-            viewModelScope,
-            SharingStarted.WhileSubscribed(5000),
-            AppSettings(),
-        )
-
-    fun save(settings: AppSettings) {
-        viewModelScope.launch {
-            saveSettingsUseCase(settings)
+        fun save(settings: AppSettings) {
+            viewModelScope.launch {
+                saveSettingsUseCase(settings)
+            }
         }
     }
-}

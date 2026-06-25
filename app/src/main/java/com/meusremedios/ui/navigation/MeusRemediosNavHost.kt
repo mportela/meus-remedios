@@ -12,13 +12,13 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -67,9 +67,10 @@ fun MeusRemediosNavHost(
     }
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
-    val showBottomBar = TopLevelDestination.entries.any { dest ->
-        currentDestination?.hierarchy?.any { it.route == dest.route } == true
-    }
+    val showBottomBar =
+        TopLevelDestination.entries.any { dest ->
+            currentDestination?.hierarchy?.any { it.route == dest.route } == true
+        }
 
     Scaffold(
         modifier = modifier,
@@ -107,9 +108,10 @@ fun MeusRemediosNavHost(
         NavHost(
             navController = navController,
             startDestination = Routes.RECOGNITION,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
         ) {
             composable(Routes.RECOGNITION) {
                 RecognitionScreen()
@@ -127,9 +129,10 @@ fun MeusRemediosNavHost(
             }
             composable(
                 route = Routes.MEDICATION_DETAIL_PATTERN,
-                arguments = listOf(
-                    navArgument(Routes.ARG_MEDICATION_ID) { type = NavType.LongType },
-                ),
+                arguments =
+                    listOf(
+                        navArgument(Routes.ARG_MEDICATION_ID) { type = NavType.LongType },
+                    ),
             ) {
                 MedicationDetailScreen(
                     onBack = { navController.popBackStack() },
@@ -138,12 +141,13 @@ fun MeusRemediosNavHost(
             }
             composable(
                 route = Routes.MEDICATION_FORM_PATTERN,
-                arguments = listOf(
-                    navArgument(Routes.ARG_MEDICATION_ID) {
-                        type = NavType.LongType
-                        defaultValue = 0L
-                    },
-                ),
+                arguments =
+                    listOf(
+                        navArgument(Routes.ARG_MEDICATION_ID) {
+                            type = NavType.LongType
+                            defaultValue = 0L
+                        },
+                    ),
             ) {
                 MedicationFormScreen(
                     onDone = { navController.popBackStack() },

@@ -6,7 +6,6 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class RecognitionScorerTest {
-
     @Test
     fun `cosseno de vetores iguais mapeia para 1`() {
         val v = floatArrayOf(1f, 2f, 3f)

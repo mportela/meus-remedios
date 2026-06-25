@@ -45,13 +45,15 @@ data class FeatureSet(
  * resultado em `[0, 1]` independentemente de quais features existem.
  */
 object RecognitionScorer {
-
     /**
      * Similaridade de cosseno mapeada para `[0, 1]` (`(cos + 1) / 2`). Retorna
      * `null` quando algum vetor é ausente, vazio, de tamanhos diferentes ou de
      * norma zero — caso em que o componente não entra no score.
      */
-    fun cosineSimilarity(a: FloatArray?, b: FloatArray?): Float? {
+    fun cosineSimilarity(
+        a: FloatArray?,
+        b: FloatArray?,
+    ): Float? {
         if (a == null || b == null || a.isEmpty() || a.size != b.size) return null
         var dot = 0.0
         var normA = 0.0
@@ -71,7 +73,10 @@ object RecognitionScorer {
      * Similaridade de cor em Lab: `1 − ΔE / MAX_DELTA_E`, com clamp em `[0, 1]`.
      * Retorna `null` se algum vetor for ausente ou não tiver 3 componentes.
      */
-    fun colorSimilarity(a: FloatArray?, b: FloatArray?): Float? {
+    fun colorSimilarity(
+        a: FloatArray?,
+        b: FloatArray?,
+    ): Float? {
         if (a == null || b == null || a.size != 3 || b.size != 3) return null
         val dl = (a[0] - b[0]).toDouble()
         val da = (a[1] - b[1]).toDouble()
@@ -86,7 +91,10 @@ object RecognitionScorer {
      * naturalmente em `[0, 1]`. Retorna `null` se alguma proporção for ausente
      * ou não positiva.
      */
-    fun shapeSimilarity(a: Float?, b: Float?): Float? {
+    fun shapeSimilarity(
+        a: Float?,
+        b: Float?,
+    ): Float? {
         if (a == null || b == null || a <= 0f || b <= 0f) return null
         return minOf(a, b) / maxOf(a, b)
     }
@@ -95,7 +103,10 @@ object RecognitionScorer {
      * Similaridade de imprint delegada para [ImprintMatch.similarity]. Entra no
      * score apenas quando **ambos** os lados possuírem imprint não nulo.
      */
-    fun textSimilarity(a: String?, b: String?): Float? {
+    fun textSimilarity(
+        a: String?,
+        b: String?,
+    ): Float? {
         if (a == null || b == null) return null
         return ImprintMatch.similarity(a, b)
     }
@@ -104,7 +115,10 @@ object RecognitionScorer {
      * Score ponderado entre [query] e [candidate], normalizado pelos
      * componentes disponíveis. Retorna `0` quando nenhum componente é comparável.
      */
-    fun score(query: FeatureSet, candidate: FeatureSet): Float {
+    fun score(
+        query: FeatureSet,
+        candidate: FeatureSet,
+    ): Float {
         var weighted = 0f
         var totalWeight = 0f
 

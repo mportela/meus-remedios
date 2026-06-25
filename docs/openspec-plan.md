@@ -47,7 +47,7 @@ Sugestão de change-ids (verbo + escopo), criados na ordem de dependência:
 - **F6** → `add-scheduling-reminders` (capability 4). ✅ feito
 - **F7** → `add-app-settings-and-retention` (capability 7). ✅ feito
 - **F8** → `add-accessibility-baseline` (capability 8). ✅ feito
-- **F9** → `add-test-automation` (estratégia de testes + CI).
+- **F9** → `add-test-automation` (estratégia de testes + CI). ✅ feito
 
 ## Reconhecimento inteligente (TF) — fases faltantes (objetivo core)
 > **Motivação.** A F4 entregou o engine, mas com `embedding == null` o score usa só cor+forma.

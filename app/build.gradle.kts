@@ -6,6 +6,15 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.ktlint)
+}
+
+ktlint {
+    version.set("1.4.1")
+    filter {
+        exclude { entry -> entry.file.toString().contains("build/") }
+        exclude("**/*.kts")
+    }
 }
 
 android {
@@ -126,6 +135,10 @@ dependencies {
     testImplementation(libs.robolectric)
     testImplementation(libs.androidx.room.testing)
     testImplementation(libs.androidx.test.core)
+    testImplementation(libs.hilt.android.testing)
+    kspTest(libs.hilt.compiler)
+    testImplementation(libs.androidx.ui.test.junit4)
+    testImplementation(libs.androidx.junit)
 
     // Testing (Android instrumented)
     androidTestImplementation(libs.androidx.junit)

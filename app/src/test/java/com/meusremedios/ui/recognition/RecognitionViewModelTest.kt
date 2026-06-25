@@ -29,7 +29,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import java.time.Clock
-import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -38,15 +37,15 @@ import java.time.ZoneOffset
 @OptIn(ExperimentalCoroutinesApi::class)
 @RunWith(RobolectricTestRunner::class)
 class RecognitionViewModelTest {
-
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
     private val date = LocalDate.of(2026, 6, 24)
-    private val clock = Clock.fixed(
-        LocalDateTime.of(date, LocalTime.of(10, 0)).toInstant(ZoneOffset.UTC),
-        ZoneOffset.UTC,
-    )
+    private val clock =
+        Clock.fixed(
+            LocalDateTime.of(date, LocalTime.of(10, 0)).toInstant(ZoneOffset.UTC),
+            ZoneOffset.UTC,
+        )
 
     private val medications = FakeMedicationRepository()
     private val schedules = FakeScheduleRepository()
@@ -73,9 +72,10 @@ class RecognitionViewModelTest {
     }
 
     private fun viewModel(): RecognitionViewModel {
-        val extractor = FakeFeatureExtractor(
-            PhotoFeatures(embedding = null, dominantColorLab = floatArrayOf(50f, 0f, 0f), aspectRatio = 1f),
-        )
+        val extractor =
+            FakeFeatureExtractor(
+                PhotoFeatures(embedding = null, dominantColorLab = floatArrayOf(50f, 0f, 0f), aspectRatio = 1f),
+            )
         val recognizeUseCase = RecognizeMedicationUseCase(photos, medications, extractor)
         val getPending = GetPendingDosesTodayForMedicationUseCase(medications, schedules, intakeLogs, clock)
         val markTaken = MarkIntakeTakenUseCase(intakeLogs, clock)
@@ -83,100 +83,106 @@ class RecognitionViewModelTest {
     }
 
     @Test
-    fun `captura confiante leva a resultado com medicamento`() = runTest {
-        val id = seedMatchingMedication(addSchedule = false)
-        val vm = viewModel()
+    fun `captura confiante leva a resultado com medicamento`() =
+        runTest {
+            val id = seedMatchingMedication(addSchedule = false)
+            val vm = viewModel()
 
-        vm.prepareCapture { }
-        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-        vm.onCaptured()
-        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+            vm.prepareCapture { }
+            mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+            vm.onCaptured()
+            mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
 
-        val state = vm.uiState.value
-        assertEquals(RecognitionPhase.RESULT, state.phase)
-        val outcome = state.outcome
-        assertTrue(outcome is RecognitionOutcome.Confident)
-        assertEquals(id, (outcome as RecognitionOutcome.Confident).best.medicationId)
-    }
-
-    @Test
-    fun `reiniciar volta ao estado inicial e descarta temporarios`() = runTest {
-        seedMatchingMedication()
-        val vm = viewModel()
-        vm.prepareCapture { }
-        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-        vm.onCaptured()
-        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-
-        vm.reset()
-        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-
-        assertEquals(RecognitionPhase.IDLE, vm.uiState.value.phase)
-        assertTrue(imageStore.deleted.isNotEmpty())
-    }
+            val state = vm.uiState.value
+            assertEquals(RecognitionPhase.RESULT, state.phase)
+            val outcome = state.outcome
+            assertTrue(outcome is RecognitionOutcome.Confident)
+            assertEquals(id, (outcome as RecognitionOutcome.Confident).best.medicationId)
+        }
 
     @Test
-    fun `imagem da galeria leva a resultado com medicamento`() = runTest {
-        val id = seedMatchingMedication()
-        val vm = viewModel()
+    fun `reiniciar volta ao estado inicial e descarta temporarios`() =
+        runTest {
+            seedMatchingMedication()
+            val vm = viewModel()
+            vm.prepareCapture { }
+            mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+            vm.onCaptured()
+            mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
 
-        vm.onGalleryPicked(Uri.parse("content://test/foto.jpg"))
-        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+            vm.reset()
+            mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
 
-        val state = vm.uiState.value
-        assertEquals(RecognitionPhase.RESULT, state.phase)
-        val outcome = state.outcome
-        assertTrue(outcome is RecognitionOutcome.Confident)
-        assertEquals(id, (outcome as RecognitionOutcome.Confident).best.medicationId)
-    }
+            assertEquals(RecognitionPhase.IDLE, vm.uiState.value.phase)
+            assertTrue(imageStore.deleted.isNotEmpty())
+        }
+
+    @Test
+    fun `imagem da galeria leva a resultado com medicamento`() =
+        runTest {
+            val id = seedMatchingMedication()
+            val vm = viewModel()
+
+            vm.onGalleryPicked(Uri.parse("content://test/foto.jpg"))
+            mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+
+            val state = vm.uiState.value
+            assertEquals(RecognitionPhase.RESULT, state.phase)
+            val outcome = state.outcome
+            assertTrue(outcome is RecognitionOutcome.Confident)
+            assertEquals(id, (outcome as RecognitionOutcome.Confident).best.medicationId)
+        }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `markTakenFromRecognition com 0 doses - registra ad-hoc e intakeRegistered true`() = runTest {
-        val id = seedMatchingMedication(addSchedule = false) // sem horários
-        val vm = viewModel()
-        vm.onGalleryPicked(Uri.parse("content://test/foto.jpg"))
-        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+    fun `markTakenFromRecognition com 0 doses - registra ad-hoc e intakeRegistered true`() =
+        runTest {
+            val id = seedMatchingMedication(addSchedule = false) // sem horários
+            val vm = viewModel()
+            vm.onGalleryPicked(Uri.parse("content://test/foto.jpg"))
+            mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
 
-        vm.markTakenFromRecognition()
-        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+            vm.markTakenFromRecognition()
+            mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
 
-        assertTrue(vm.uiState.value.intakeRegistered)
-        val log = intakeLogs.observeByDate(date).first().singleOrNull()
-        assertEquals(id, log?.medicationId)
-        assertTrue(log?.scheduleTimeId == null)
-    }
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    @Test
-    fun `markTakenFromRecognition com 1 dose - marca direto e intakeRegistered true`() = runTest {
-        val id = seedMatchingMedication(addSchedule = true)
-        val vm = viewModel()
-        vm.onGalleryPicked(Uri.parse("content://test/foto.jpg"))
-        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-
-        vm.markTakenFromRecognition()
-        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
-
-        assertTrue(vm.uiState.value.intakeRegistered)
-        assertEquals(1, intakeLogs.observeByDate(date).first().size)
-    }
+            assertTrue(vm.uiState.value.intakeRegistered)
+            val log = intakeLogs.observeByDate(date).first().singleOrNull()
+            assertEquals(id, log?.medicationId)
+            assertTrue(log?.scheduleTimeId == null)
+        }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `markTakenFromRecognition com N doses - popula pendingDosesToday sem marcar`() = runTest {
-        val id = seedMatchingMedication(addSchedule = false)
-        schedules.add(ScheduleTime(medicationId = id, timeOfDay = LocalTime.of(8, 0)))
-        schedules.add(ScheduleTime(medicationId = id, timeOfDay = LocalTime.of(14, 0)))
-        val vm = viewModel()
-        vm.onGalleryPicked(Uri.parse("content://test/foto.jpg"))
-        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+    fun `markTakenFromRecognition com 1 dose - marca direto e intakeRegistered true`() =
+        runTest {
+            val id = seedMatchingMedication(addSchedule = true)
+            val vm = viewModel()
+            vm.onGalleryPicked(Uri.parse("content://test/foto.jpg"))
+            mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
 
-        vm.markTakenFromRecognition()
-        mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+            vm.markTakenFromRecognition()
+            mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
 
-        assertFalse(vm.uiState.value.intakeRegistered)
-        assertEquals(2, vm.uiState.value.pendingDosesToday.size)
-        assertEquals(0, intakeLogs.observeByDate(date).first().size)
-    }
+            assertTrue(vm.uiState.value.intakeRegistered)
+            assertEquals(1, intakeLogs.observeByDate(date).first().size)
+        }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
+    fun `markTakenFromRecognition com N doses - popula pendingDosesToday sem marcar`() =
+        runTest {
+            val id = seedMatchingMedication(addSchedule = false)
+            schedules.add(ScheduleTime(medicationId = id, timeOfDay = LocalTime.of(8, 0)))
+            schedules.add(ScheduleTime(medicationId = id, timeOfDay = LocalTime.of(14, 0)))
+            val vm = viewModel()
+            vm.onGalleryPicked(Uri.parse("content://test/foto.jpg"))
+            mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+
+            vm.markTakenFromRecognition()
+            mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+
+            assertFalse(vm.uiState.value.intakeRegistered)
+            assertEquals(2, vm.uiState.value.pendingDosesToday.size)
+            assertEquals(0, intakeLogs.observeByDate(date).first().size)
+        }
 }

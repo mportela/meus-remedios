@@ -8,7 +8,6 @@ import kotlin.math.pow
  * do Android. A cor Lab é robusta a variações de brilho, útil ao reconhecimento.
  */
 object LabColor {
-
     /** Branco de referência D65 (observador 2°), em escala 0–100. */
     private const val REF_X = 95.047
     private const val REF_Y = 100.000
@@ -26,7 +25,11 @@ object LabColor {
     }
 
     /** Converte componentes sRGB (0–255) para `[L, a, b]`. */
-    fun rgbToLab(r: Int, g: Int, b: Int): FloatArray {
+    fun rgbToLab(
+        r: Int,
+        g: Int,
+        b: Int,
+    ): FloatArray {
         val (x, y, z) = rgbToXyz(r, g, b)
 
         val fx = pivotXyz(x / REF_X)
@@ -66,7 +69,11 @@ object LabColor {
         )
     }
 
-    private fun rgbToXyz(r: Int, g: Int, b: Int): Triple<Double, Double, Double> {
+    private fun rgbToXyz(
+        r: Int,
+        g: Int,
+        b: Int,
+    ): Triple<Double, Double, Double> {
         val rl = linearize(r / 255.0) * 100.0
         val gl = linearize(g / 255.0) * 100.0
         val bl = linearize(b / 255.0) * 100.0
@@ -77,9 +84,7 @@ object LabColor {
         return Triple(x, y, z)
     }
 
-    private fun linearize(channel: Double): Double =
-        if (channel > 0.04045) ((channel + 0.055) / 1.055).pow(2.4) else channel / 12.92
+    private fun linearize(channel: Double): Double = if (channel > 0.04045) ((channel + 0.055) / 1.055).pow(2.4) else channel / 12.92
 
-    private fun pivotXyz(t: Double): Double =
-        if (t > 0.008856) t.pow(1.0 / 3.0) else (7.787 * t) + (16.0 / 116.0)
+    private fun pivotXyz(t: Double): Double = if (t > 0.008856) t.pow(1.0 / 3.0) else (7.787 * t) + (16.0 / 116.0)
 }

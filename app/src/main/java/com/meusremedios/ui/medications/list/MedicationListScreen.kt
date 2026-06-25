@@ -65,10 +65,11 @@ fun MedicationListScreen(
         },
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             OutlinedTextField(
@@ -81,25 +82,28 @@ fun MedicationListScreen(
                         IconButton(onClick = viewModel::clearQuery) {
                             Icon(
                                 Icons.Default.Clear,
-                                contentDescription = stringResource(
-                                    R.string.medications_search_clear,
-                                ),
+                                contentDescription =
+                                    stringResource(
+                                        R.string.medications_search_clear,
+                                    ),
                             )
                         }
                     }
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
             )
 
             when {
                 uiState.isLoading -> Unit
                 uiState.medications.isEmpty() -> EmptyState(isSearching = query.isNotEmpty())
-                else -> MedicationList(
-                    medications = uiState.medications,
-                    onOpenMedication = onOpenMedication,
-                )
+                else ->
+                    MedicationList(
+                        medications = uiState.medications,
+                        onOpenMedication = onOpenMedication,
+                    )
             }
         }
     }
@@ -131,9 +135,10 @@ private fun MedicationItem(
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             Text(
@@ -159,15 +164,17 @@ private fun MedicationItem(
 
 @Composable
 private fun EmptyState(isSearching: Boolean) {
-    val message = if (isSearching) {
-        stringResource(R.string.medications_empty_search)
-    } else {
-        stringResource(R.string.medications_empty)
-    }
+    val message =
+        if (isSearching) {
+            stringResource(R.string.medications_empty_search)
+        } else {
+            stringResource(R.string.medications_empty)
+        }
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {

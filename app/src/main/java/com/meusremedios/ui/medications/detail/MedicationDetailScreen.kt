@@ -74,8 +74,9 @@ fun MedicationDetailScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = detail?.medication?.name
-                            ?: stringResource(R.string.medication_detail_title),
+                        text =
+                            detail?.medication?.name
+                                ?: stringResource(R.string.medication_detail_title),
                         modifier = Modifier.semantics { heading() },
                     )
                 },
@@ -102,14 +103,16 @@ fun MedicationDetailScreen(
         when {
             uiState.isLoading -> Unit
             detail == null -> NotFound(modifier = Modifier.padding(innerPadding))
-            else -> DetailContent(
-                detail = detail,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(horizontal = 16.dp)
-                    .verticalScroll(rememberScrollState()),
-            )
+            else ->
+                DetailContent(
+                    detail = detail,
+                    modifier =
+                        Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                            .padding(horizontal = 16.dp)
+                            .verticalScroll(rememberScrollState()),
+                )
         }
     }
 }
@@ -142,31 +145,38 @@ private fun DataSection(detail: MedicationDetail) {
         medication.notes?.takeIf { it.isNotBlank() }?.let { notes ->
             LabeledValue(label = stringResource(R.string.medication_detail_notes), value = notes)
         }
-        val periodText = if (medication.periodType == PeriodType.RANGED) {
-            val start = medication.startDate?.format(DATE_FORMAT)
-                ?: stringResource(R.string.medication_form_date_not_set)
-            val end = medication.endDate?.format(DATE_FORMAT)
-                ?: stringResource(R.string.medication_form_date_not_set)
-            stringResource(R.string.medication_detail_period_ranged, start, end)
-        } else {
-            stringResource(R.string.medication_detail_period_continuous)
-        }
+        val periodText =
+            if (medication.periodType == PeriodType.RANGED) {
+                val start =
+                    medication.startDate?.format(DATE_FORMAT)
+                        ?: stringResource(R.string.medication_form_date_not_set)
+                val end =
+                    medication.endDate?.format(DATE_FORMAT)
+                        ?: stringResource(R.string.medication_form_date_not_set)
+                stringResource(R.string.medication_detail_period_ranged, start, end)
+            } else {
+                stringResource(R.string.medication_detail_period_continuous)
+            }
         LabeledValue(label = stringResource(R.string.medication_detail_period), value = periodText)
         LabeledValue(
             label = stringResource(R.string.medication_detail_reminders),
-            value = stringResource(
-                if (medication.remindersEnabled) {
-                    R.string.medication_detail_reminders_on
-                } else {
-                    R.string.medication_detail_reminders_off
-                },
-            ),
+            value =
+                stringResource(
+                    if (medication.remindersEnabled) {
+                        R.string.medication_detail_reminders_on
+                    } else {
+                        R.string.medication_detail_reminders_off
+                    },
+                ),
         )
     }
 }
 
 @Composable
-private fun LabeledValue(label: String, value: String) {
+private fun LabeledValue(
+    label: String,
+    value: String,
+) {
     Column(modifier = Modifier.padding(vertical = 4.dp)) {
         Text(
             text = label,
@@ -192,27 +202,30 @@ private fun PhotosSection(photos: List<MedicationPhoto>) {
 @Composable
 private fun PhotoThumbnail(photo: MedicationPhoto) {
     val bitmap = remember(photo.filePath) { BitmapFactory.decodeFile(photo.filePath) }
-    val desc = stringResource(
-        if (photo.side == PhotoSide.FRONT) {
-            R.string.medication_form_photo_front_desc
-        } else {
-            R.string.medication_form_photo_back_desc
-        },
-    )
+    val desc =
+        stringResource(
+            if (photo.side == PhotoSide.FRONT) {
+                R.string.medication_form_photo_front_desc
+            } else {
+                R.string.medication_form_photo_back_desc
+            },
+        )
     if (bitmap != null) {
         Image(
             bitmap = bitmap.asImageBitmap(),
             contentDescription = desc,
             contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .size(120.dp)
-                .clip(RoundedCornerShape(8.dp)),
+            modifier =
+                Modifier
+                    .size(120.dp)
+                    .clip(RoundedCornerShape(8.dp)),
         )
     } else {
         Surface(
-            modifier = Modifier
-                .size(120.dp)
-                .clip(RoundedCornerShape(8.dp)),
+            modifier =
+                Modifier
+                    .size(120.dp)
+                    .clip(RoundedCornerShape(8.dp)),
             color = MaterialTheme.colorScheme.surfaceVariant,
         ) {}
     }
@@ -232,9 +245,10 @@ private fun SchedulesSection(schedules: List<ScheduleTime>) {
             schedules.forEach { schedule ->
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         Text(
@@ -268,9 +282,10 @@ private fun HistorySection(history: List<IntakeLog>) {
             history.forEach { log ->
                 Column {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp),
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
                         Text(
@@ -311,12 +326,13 @@ private fun NotFound(modifier: Modifier = Modifier) {
     }
 }
 
-private fun historyStatusRes(status: IntakeStatus): Int = when (status) {
-    IntakeStatus.TAKEN -> R.string.dose_status_taken
-    IntakeStatus.PENDING -> R.string.dose_status_pending
-    IntakeStatus.LATE -> R.string.dose_status_late
-    IntakeStatus.SKIPPED -> R.string.dose_status_skipped
-}
+private fun historyStatusRes(status: IntakeStatus): Int =
+    when (status) {
+        IntakeStatus.TAKEN -> R.string.dose_status_taken
+        IntakeStatus.PENDING -> R.string.dose_status_pending
+        IntakeStatus.LATE -> R.string.dose_status_late
+        IntakeStatus.SKIPPED -> R.string.dose_status_skipped
+    }
 
 @Composable
 private fun weekdaysLabel(mask: Int): String {
@@ -324,17 +340,19 @@ private fun weekdaysLabel(mask: Int): String {
     if (mask and allDays == allDays) {
         return stringResource(R.string.weekdays_all)
     }
-    val labels = listOf(
-        R.string.weekday_monday,
-        R.string.weekday_tuesday,
-        R.string.weekday_wednesday,
-        R.string.weekday_thursday,
-        R.string.weekday_friday,
-        R.string.weekday_saturday,
-        R.string.weekday_sunday,
-    )
-    val selected = labels.filterIndexed { index, _ -> mask and (1 shl index) != 0 }
-        .map { stringResource(it) }
+    val labels =
+        listOf(
+            R.string.weekday_monday,
+            R.string.weekday_tuesday,
+            R.string.weekday_wednesday,
+            R.string.weekday_thursday,
+            R.string.weekday_friday,
+            R.string.weekday_saturday,
+            R.string.weekday_sunday,
+        )
+    val selected =
+        labels.filterIndexed { index, _ -> mask and (1 shl index) != 0 }
+            .map { stringResource(it) }
     return if (selected.isEmpty()) {
         stringResource(R.string.medications_item_no_schedule)
     } else {

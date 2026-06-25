@@ -12,10 +12,12 @@ import javax.inject.Inject
 /** Recebe alarmes exatos e exibe a notificação de lembrete de dose. */
 @AndroidEntryPoint
 class AlarmReceiver : BroadcastReceiver() {
-
     @Inject lateinit var notificationHelper: NotificationHelper
 
-    override fun onReceive(context: Context, intent: Intent) {
+    override fun onReceive(
+        context: Context,
+        intent: Intent,
+    ) {
         val medicationId = intent.getLongExtra(EXTRA_MEDICATION_ID, -1L)
         val medicationName = intent.getStringExtra(EXTRA_MEDICATION_NAME) ?: return
         val timeLabel = intent.getStringExtra(EXTRA_TIME_LABEL) ?: return
@@ -24,30 +26,33 @@ class AlarmReceiver : BroadcastReceiver() {
         val date = intent.getStringExtra(EXTRA_DATE) ?: return
         val notificationId = intent.getIntExtra(EXTRA_NOTIFICATION_ID, medicationId.toInt())
 
-        val takenPi = buildActionPendingIntent(
-            context, notificationId, notificationId + 1,
-            NotificationActionReceiver.ACTION_MARK_TAKEN,
-            medicationId, medicationName, scheduleTimeId, timeLabel, scheduledAt, date,
-        )
-        val snoozePi = buildActionPendingIntent(
-            context, notificationId, notificationId + 2,
-            NotificationActionReceiver.ACTION_SNOOZE,
-            medicationId, medicationName, scheduleTimeId, timeLabel, scheduledAt, date,
-        )
+        val takenPi =
+            buildActionPendingIntent(
+                context, notificationId, notificationId + 1,
+                NotificationActionReceiver.ACTION_MARK_TAKEN,
+                medicationId, medicationName, scheduleTimeId, timeLabel, scheduledAt, date,
+            )
+        val snoozePi =
+            buildActionPendingIntent(
+                context, notificationId, notificationId + 2,
+                NotificationActionReceiver.ACTION_SNOOZE,
+                medicationId, medicationName, scheduleTimeId, timeLabel, scheduledAt, date,
+            )
         val confirmPi = buildOpenRecognitionPendingIntent(context, notificationId)
 
-        val notification = NotificationCompat.Builder(context, NotificationChannels.REMINDERS_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle(context.getString(R.string.notification_dose_title))
-            .setContentText(
-                context.getString(R.string.notification_dose_text, medicationName, timeLabel),
-            )
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setAutoCancel(true)
-            .addAction(0, context.getString(R.string.notification_action_taken), takenPi)
-            .addAction(0, context.getString(R.string.notification_action_confirm), confirmPi)
-            .addAction(0, context.getString(R.string.notification_action_snooze), snoozePi)
-            .build()
+        val notification =
+            NotificationCompat.Builder(context, NotificationChannels.REMINDERS_CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .setContentTitle(context.getString(R.string.notification_dose_title))
+                .setContentText(
+                    context.getString(R.string.notification_dose_text, medicationName, timeLabel),
+                )
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .addAction(0, context.getString(R.string.notification_action_taken), takenPi)
+                .addAction(0, context.getString(R.string.notification_action_confirm), confirmPi)
+                .addAction(0, context.getString(R.string.notification_action_snooze), snoozePi)
+                .build()
 
         notificationHelper.notify(notificationId, notification)
     }
@@ -64,16 +69,17 @@ class AlarmReceiver : BroadcastReceiver() {
         scheduledAt: String,
         date: String,
     ): PendingIntent {
-        val intent = Intent(context, NotificationActionReceiver::class.java).apply {
-            this.action = action
-            putExtra(EXTRA_MEDICATION_ID, medicationId)
-            putExtra(EXTRA_MEDICATION_NAME, medicationName)
-            putExtra(EXTRA_SCHEDULE_TIME_ID, scheduleTimeId)
-            putExtra(EXTRA_TIME_LABEL, timeLabel)
-            putExtra(EXTRA_SCHEDULED_AT, scheduledAt)
-            putExtra(EXTRA_DATE, date)
-            putExtra(EXTRA_NOTIFICATION_ID, notificationId)
-        }
+        val intent =
+            Intent(context, NotificationActionReceiver::class.java).apply {
+                this.action = action
+                putExtra(EXTRA_MEDICATION_ID, medicationId)
+                putExtra(EXTRA_MEDICATION_NAME, medicationName)
+                putExtra(EXTRA_SCHEDULE_TIME_ID, scheduleTimeId)
+                putExtra(EXTRA_TIME_LABEL, timeLabel)
+                putExtra(EXTRA_SCHEDULED_AT, scheduledAt)
+                putExtra(EXTRA_DATE, date)
+                putExtra(EXTRA_NOTIFICATION_ID, notificationId)
+            }
         return PendingIntent.getBroadcast(
             context,
             requestCode,
@@ -82,11 +88,15 @@ class AlarmReceiver : BroadcastReceiver() {
         )
     }
 
-    private fun buildOpenRecognitionPendingIntent(context: Context, notificationId: Int): PendingIntent {
-        val intent = Intent(context, NotificationActionReceiver::class.java).apply {
-            action = NotificationActionReceiver.ACTION_OPEN_RECOGNITION
-            putExtra(EXTRA_NOTIFICATION_ID, notificationId)
-        }
+    private fun buildOpenRecognitionPendingIntent(
+        context: Context,
+        notificationId: Int,
+    ): PendingIntent {
+        val intent =
+            Intent(context, NotificationActionReceiver::class.java).apply {
+                action = NotificationActionReceiver.ACTION_OPEN_RECOGNITION
+                putExtra(EXTRA_NOTIFICATION_ID, notificationId)
+            }
         return PendingIntent.getBroadcast(
             context,
             notificationId + 3,

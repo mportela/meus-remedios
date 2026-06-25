@@ -1,5 +1,6 @@
 package com.meusremedios.domain.usecase
 
+import android.net.Uri
 import com.meusremedios.data.media.CameraTarget
 import com.meusremedios.data.media.MedicationImageStore
 import com.meusremedios.data.ml.FeatureExtractor
@@ -7,7 +8,6 @@ import com.meusremedios.data.ml.PhotoFeatures
 import com.meusremedios.data.repository.MedicationPhotoRepository
 import com.meusremedios.domain.model.MedicationPhoto
 import com.meusremedios.domain.model.PhotoSide
-import android.net.Uri
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -22,8 +22,7 @@ class FakeMedicationPhotoRepository : MedicationPhotoRepository {
     override fun observeByMedication(medicationId: Long): Flow<List<MedicationPhoto>> =
         items.map { list -> list.filter { it.medicationId == medicationId } }
 
-    override suspend fun getByMedication(medicationId: Long): List<MedicationPhoto> =
-        items.value.filter { it.medicationId == medicationId }
+    override suspend fun getByMedication(medicationId: Long): List<MedicationPhoto> = items.value.filter { it.medicationId == medicationId }
 
     override suspend fun getAll(): List<MedicationPhoto> = items.value
 
@@ -41,8 +40,7 @@ class FakeMedicationPhotoRepository : MedicationPhotoRepository {
         items.value = items.value.filterNot { it.id == photo.id }
     }
 
-    override suspend fun getPhotosWithoutEmbedding(): List<MedicationPhoto> =
-        items.value.filter { it.embedding == null }
+    override suspend fun getPhotosWithoutEmbedding(): List<MedicationPhoto> = items.value.filter { it.embedding == null }
 }
 
 /** Fake de [MedicationImageStore] que rastreia chamadas. */
@@ -52,10 +50,13 @@ class FakeMedicationImageStore : MedicationImageStore {
 
     override suspend fun stage(uri: Uri): String = "/tmp/staged.jpg"
 
-    override suspend fun createCameraTarget(): CameraTarget =
-        CameraTarget(tempPath = "/tmp/camera.jpg", uri = Uri.EMPTY)
+    override suspend fun createCameraTarget(): CameraTarget = CameraTarget(tempPath = "/tmp/camera.jpg", uri = Uri.EMPTY)
 
-    override suspend fun persist(tempPath: String, medicationId: Long, side: PhotoSide): String {
+    override suspend fun persist(
+        tempPath: String,
+        medicationId: Long,
+        side: PhotoSide,
+    ): String {
         val finalPath = "/files/$medicationId/${side.name.lowercase()}.jpg"
         persisted += finalPath
         return finalPath
@@ -68,11 +69,12 @@ class FakeMedicationImageStore : MedicationImageStore {
 
 /** Fake de [FeatureExtractor] determinístico. */
 class FakeFeatureExtractor(
-    private val features: PhotoFeatures = PhotoFeatures(
-        embedding = null,
-        dominantColorLab = floatArrayOf(50f, 0f, 0f),
-        aspectRatio = 1f,
-    ),
+    private val features: PhotoFeatures =
+        PhotoFeatures(
+            embedding = null,
+            dominantColorLab = floatArrayOf(50f, 0f, 0f),
+            aspectRatio = 1f,
+        ),
 ) : FeatureExtractor {
     override suspend fun extract(imagePath: String): PhotoFeatures = features
 }

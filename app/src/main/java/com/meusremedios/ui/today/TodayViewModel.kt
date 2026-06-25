@@ -28,45 +28,46 @@ data class TodayUiState(
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
-class TodayViewModel @Inject constructor(
-    observeDailyReport: ObserveDailyReportUseCase,
-    private val markIntakeTakenUseCase: MarkIntakeTakenUseCase,
-    private val markIntakeSkippedUseCase: MarkIntakeSkippedUseCase,
-    clock: Clock,
-) : ViewModel() {
+class TodayViewModel
+    @Inject
+    constructor(
+        observeDailyReport: ObserveDailyReportUseCase,
+        private val markIntakeTakenUseCase: MarkIntakeTakenUseCase,
+        private val markIntakeSkippedUseCase: MarkIntakeSkippedUseCase,
+        clock: Clock,
+    ) : ViewModel() {
+        val today: LocalDate = LocalDate.now(clock)
+        private val selectedDate = MutableStateFlow(today)
+        val selectedDateState: StateFlow<LocalDate> = selectedDate.asStateFlow()
 
-    val today: LocalDate = LocalDate.now(clock)
-    private val selectedDate = MutableStateFlow(today)
-    val selectedDateState: StateFlow<LocalDate> = selectedDate.asStateFlow()
+        val uiState: StateFlow<TodayUiState> =
+            selectedDate.flatMapLatest { date ->
+                observeDailyReport(date).map { report ->
+                    TodayUiState(report = report, isLoading = false)
+                }
+            }.stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = TodayUiState(),
+            )
 
-    val uiState: StateFlow<TodayUiState> =
-        selectedDate.flatMapLatest { date ->
-            observeDailyReport(date).map { report ->
-                TodayUiState(report = report, isLoading = false)
-            }
-        }.stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = TodayUiState(),
-        )
+        fun selectDate(date: LocalDate) {
+            selectedDate.value = date
+        }
 
-    fun selectDate(date: LocalDate) {
-        selectedDate.value = date
+        fun goToPreviousDay() {
+            selectedDate.value = selectedDate.value.minusDays(1)
+        }
+
+        fun goToNextDay() {
+            selectedDate.value = selectedDate.value.plusDays(1)
+        }
+
+        fun markTaken(dose: ScheduledDose) {
+            viewModelScope.launch { markIntakeTakenUseCase(dose, selectedDate.value) }
+        }
+
+        fun markSkipped(dose: ScheduledDose) {
+            viewModelScope.launch { markIntakeSkippedUseCase(dose, selectedDate.value) }
+        }
     }
-
-    fun goToPreviousDay() {
-        selectedDate.value = selectedDate.value.minusDays(1)
-    }
-
-    fun goToNextDay() {
-        selectedDate.value = selectedDate.value.plusDays(1)
-    }
-
-    fun markTaken(dose: ScheduledDose) {
-        viewModelScope.launch { markIntakeTakenUseCase(dose, selectedDate.value) }
-    }
-
-    fun markSkipped(dose: ScheduledDose) {
-        viewModelScope.launch { markIntakeSkippedUseCase(dose, selectedDate.value) }
-    }
-}

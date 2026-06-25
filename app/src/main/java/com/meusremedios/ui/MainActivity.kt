@@ -34,7 +34,6 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
     @Inject lateinit var settingsRepository: SettingsRepository
 
     var navigateToRecognition by mutableStateOf(false)
@@ -42,15 +41,16 @@ class MainActivity : ComponentActivity() {
     private var showPermissionDeniedDialog by mutableStateOf(false)
     private var showExactAlarmWarning by mutableStateOf(false)
 
-    private val requestNotificationPermission = registerForActivityResult(
-        ActivityResultContracts.RequestPermission(),
-    ) { granted ->
-        if (!granted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            if (!shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
-                showPermissionDeniedDialog = true
+    private val requestNotificationPermission =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission(),
+        ) { granted ->
+            if (!granted && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                if (!shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)) {
+                    showPermissionDeniedDialog = true
+                }
             }
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

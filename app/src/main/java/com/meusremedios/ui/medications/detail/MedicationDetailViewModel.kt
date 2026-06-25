@@ -19,19 +19,20 @@ data class MedicationDetailUiState(
 )
 
 @HiltViewModel
-class MedicationDetailViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
-    observeMedicationDetail: ObserveMedicationDetailUseCase,
-) : ViewModel() {
+class MedicationDetailViewModel
+    @Inject
+    constructor(
+        savedStateHandle: SavedStateHandle,
+        observeMedicationDetail: ObserveMedicationDetailUseCase,
+    ) : ViewModel() {
+        val medicationId: Long = savedStateHandle.get<Long>(Routes.ARG_MEDICATION_ID) ?: 0L
 
-    val medicationId: Long = savedStateHandle.get<Long>(Routes.ARG_MEDICATION_ID) ?: 0L
-
-    val uiState: StateFlow<MedicationDetailUiState> =
-        observeMedicationDetail(medicationId)
-            .map { detail -> MedicationDetailUiState(detail = detail, isLoading = false) }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(5_000),
-                initialValue = MedicationDetailUiState(),
-            )
-}
+        val uiState: StateFlow<MedicationDetailUiState> =
+            observeMedicationDetail(medicationId)
+                .map { detail -> MedicationDetailUiState(detail = detail, isLoading = false) }
+                .stateIn(
+                    scope = viewModelScope,
+                    started = SharingStarted.WhileSubscribed(5_000),
+                    initialValue = MedicationDetailUiState(),
+                )
+    }

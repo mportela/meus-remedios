@@ -8,7 +8,6 @@ import org.junit.Before
 import org.junit.Test
 
 class SaveSettingsUseCaseTest {
-
     private lateinit var settingsRepository: FakeSettingsRepository
     private lateinit var rescheduleAllAlarmsUseCase: RescheduleAllAlarmsUseCase
     private lateinit var useCase: SaveSettingsUseCase
@@ -21,38 +20,42 @@ class SaveSettingsUseCaseTest {
     }
 
     @Test
-    fun `chama reschedule quando remindersGlobal muda`() = runTest {
-        val newSettings = AppSettings(remindersGlobal = false, reminderLeadMinutes = 5)
+    fun `chama reschedule quando remindersGlobal muda`() =
+        runTest {
+            val newSettings = AppSettings(remindersGlobal = false, reminderLeadMinutes = 5)
 
-        useCase(newSettings)
+            useCase(newSettings)
 
-        coVerify(exactly = 1) { rescheduleAllAlarmsUseCase() }
-    }
-
-    @Test
-    fun `chama reschedule quando reminderLeadMinutes muda`() = runTest {
-        val newSettings = AppSettings(remindersGlobal = true, reminderLeadMinutes = 15)
-
-        useCase(newSettings)
-
-        coVerify(exactly = 1) { rescheduleAllAlarmsUseCase() }
-    }
+            coVerify(exactly = 1) { rescheduleAllAlarmsUseCase() }
+        }
 
     @Test
-    fun `nao chama reschedule quando apenas autoCapture muda`() = runTest {
-        val newSettings = AppSettings(remindersGlobal = true, reminderLeadMinutes = 5, autoCapture = true)
+    fun `chama reschedule quando reminderLeadMinutes muda`() =
+        runTest {
+            val newSettings = AppSettings(remindersGlobal = true, reminderLeadMinutes = 15)
 
-        useCase(newSettings)
+            useCase(newSettings)
 
-        coVerify(exactly = 0) { rescheduleAllAlarmsUseCase() }
-    }
+            coVerify(exactly = 1) { rescheduleAllAlarmsUseCase() }
+        }
 
     @Test
-    fun `persiste as novas configuracoes`() = runTest {
-        val newSettings = AppSettings(historyRetentionDays = 180, autoCapture = true)
+    fun `nao chama reschedule quando apenas autoCapture muda`() =
+        runTest {
+            val newSettings = AppSettings(remindersGlobal = true, reminderLeadMinutes = 5, autoCapture = true)
 
-        useCase(newSettings)
+            useCase(newSettings)
 
-        assert(settingsRepository.get() == newSettings)
-    }
+            coVerify(exactly = 0) { rescheduleAllAlarmsUseCase() }
+        }
+
+    @Test
+    fun `persiste as novas configuracoes`() =
+        runTest {
+            val newSettings = AppSettings(historyRetentionDays = 180, autoCapture = true)
+
+            useCase(newSettings)
+
+            assert(settingsRepository.get() == newSettings)
+        }
 }

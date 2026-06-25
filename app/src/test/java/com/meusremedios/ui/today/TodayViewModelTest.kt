@@ -2,10 +2,10 @@ package com.meusremedios.ui.today
 
 import app.cash.turbine.test
 import com.meusremedios.MainDispatcherRule
-import com.meusremedios.domain.model.Medication
-import com.meusremedios.domain.model.ScheduleTime
 import com.meusremedios.domain.model.DoseStatus
 import com.meusremedios.domain.model.IntakeStatus
+import com.meusremedios.domain.model.Medication
+import com.meusremedios.domain.model.ScheduleTime
 import com.meusremedios.domain.usecase.FakeIntakeLogRepository
 import com.meusremedios.domain.usecase.FakeMedicationRepository
 import com.meusremedios.domain.usecase.FakeScheduleRepository
@@ -28,7 +28,6 @@ import java.time.LocalTime
 import java.time.ZoneId
 
 class TodayViewModelTest {
-
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
@@ -50,76 +49,80 @@ class TodayViewModelTest {
     }
 
     @Test
-    fun `expoe relatorio do dia atual`() = runTest {
-        val id = medications.add(Medication(name = "Losartana"))
-        schedules.add(ScheduleTime(medicationId = id, timeOfDay = LocalTime.of(8, 0)))
+    fun `expoe relatorio do dia atual`() =
+        runTest {
+            val id = medications.add(Medication(name = "Losartana"))
+            schedules.add(ScheduleTime(medicationId = id, timeOfDay = LocalTime.of(8, 0)))
 
-        val vm = viewModel()
-        assertEquals(date, vm.today)
+            val vm = viewModel()
+            assertEquals(date, vm.today)
 
-        vm.uiState.test {
-            // Aguarda o estado carregado.
-            var state = awaitItem()
-            while (state.isLoading) {
-                state = awaitItem()
+            vm.uiState.test {
+                // Aguarda o estado carregado.
+                var state = awaitItem()
+                while (state.isLoading) {
+                    state = awaitItem()
+                }
+                assertFalse(state.isLoading)
+                assertEquals(1, state.report?.doses?.size)
+                assertEquals(DoseStatus.LATE, state.report?.doses?.single()?.status)
+                cancelAndIgnoreRemainingEvents()
             }
-            assertFalse(state.isLoading)
-            assertEquals(1, state.report?.doses?.size)
-            assertEquals(DoseStatus.LATE, state.report?.doses?.single()?.status)
-            cancelAndIgnoreRemainingEvents()
         }
-    }
 
     @Test
-    fun `navegar para o proximo dia altera a data selecionada`() = runTest {
-        val vm = viewModel()
-        vm.goToNextDay()
-        assertEquals(date.plusDays(1), vm.selectedDateState.value)
-        vm.goToPreviousDay()
-        vm.goToPreviousDay()
-        assertEquals(date.minusDays(1), vm.selectedDateState.value)
-    }
+    fun `navegar para o proximo dia altera a data selecionada`() =
+        runTest {
+            val vm = viewModel()
+            vm.goToNextDay()
+            assertEquals(date.plusDays(1), vm.selectedDateState.value)
+            vm.goToPreviousDay()
+            vm.goToPreviousDay()
+            assertEquals(date.minusDays(1), vm.selectedDateState.value)
+        }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `markTaken dispara registro TAKEN para a data selecionada`() = runTest {
-        val id = medications.add(Medication(name = "Losartana"))
-        schedules.add(ScheduleTime(medicationId = id, timeOfDay = LocalTime.of(8, 0)))
-        val vm = viewModel()
+    fun `markTaken dispara registro TAKEN para a data selecionada`() =
+        runTest {
+            val id = medications.add(Medication(name = "Losartana"))
+            schedules.add(ScheduleTime(medicationId = id, timeOfDay = LocalTime.of(8, 0)))
+            val vm = viewModel()
 
-        // aguarda o relatório carregar e obtém a dose
-        vm.uiState.test {
-            var state = awaitItem()
-            while (state.isLoading || state.report == null) state = awaitItem()
-            val dose = state.report!!.doses.single()
-            cancelAndIgnoreRemainingEvents()
+            // aguarda o relatório carregar e obtém a dose
+            vm.uiState.test {
+                var state = awaitItem()
+                while (state.isLoading || state.report == null) state = awaitItem()
+                val dose = state.report!!.doses.single()
+                cancelAndIgnoreRemainingEvents()
 
-            vm.markTaken(dose)
-            advanceUntilIdle()
+                vm.markTaken(dose)
+                advanceUntilIdle()
 
-            val log = intakeLogs.observeByDate(date).first().singleOrNull()
-            assertEquals(IntakeStatus.TAKEN, log?.status)
+                val log = intakeLogs.observeByDate(date).first().singleOrNull()
+                assertEquals(IntakeStatus.TAKEN, log?.status)
+            }
         }
-    }
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `markSkipped dispara registro SKIPPED para a data selecionada`() = runTest {
-        val id = medications.add(Medication(name = "Losartana"))
-        schedules.add(ScheduleTime(medicationId = id, timeOfDay = LocalTime.of(8, 0)))
-        val vm = viewModel()
+    fun `markSkipped dispara registro SKIPPED para a data selecionada`() =
+        runTest {
+            val id = medications.add(Medication(name = "Losartana"))
+            schedules.add(ScheduleTime(medicationId = id, timeOfDay = LocalTime.of(8, 0)))
+            val vm = viewModel()
 
-        vm.uiState.test {
-            var state = awaitItem()
-            while (state.isLoading || state.report == null) state = awaitItem()
-            val dose = state.report!!.doses.single()
-            cancelAndIgnoreRemainingEvents()
+            vm.uiState.test {
+                var state = awaitItem()
+                while (state.isLoading || state.report == null) state = awaitItem()
+                val dose = state.report!!.doses.single()
+                cancelAndIgnoreRemainingEvents()
 
-            vm.markSkipped(dose)
-            advanceUntilIdle()
+                vm.markSkipped(dose)
+                advanceUntilIdle()
 
-            val log = intakeLogs.observeByDate(date).first().singleOrNull()
-            assertEquals(IntakeStatus.SKIPPED, log?.status)
+                val log = intakeLogs.observeByDate(date).first().singleOrNull()
+                assertEquals(IntakeStatus.SKIPPED, log?.status)
+            }
         }
-    }
 }

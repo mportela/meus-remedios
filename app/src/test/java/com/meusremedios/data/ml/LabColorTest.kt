@@ -4,8 +4,11 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class LabColorTest {
-
-    private fun assertLab(expected: FloatArray, actual: FloatArray, eps: Float = 0.5f) {
+    private fun assertLab(
+        expected: FloatArray,
+        actual: FloatArray,
+        eps: Float = 0.5f,
+    ) {
         assertEquals(expected[0], actual[0], eps)
         assertEquals(expected[1], actual[1], eps)
         assertEquals(expected[2], actual[2], eps)

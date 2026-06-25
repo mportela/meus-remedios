@@ -18,7 +18,6 @@ import java.time.LocalTime
 import java.time.ZoneId
 
 class ObserveMedicationDetailUseCaseTest {
-
     private val zone: ZoneId = ZoneId.systemDefault()
     private val today: LocalDate = LocalDate.of(2026, 6, 22)
     private val nowInstant: Instant =
@@ -41,44 +40,46 @@ class ObserveMedicationDetailUseCaseTest {
         )
 
     @Test
-    fun `agrega medicamento horarios e historico dentro da retencao`() = runTest {
-        val id = medications.add(Medication(name = "Losartana"))
-        schedules.add(ScheduleTime(medicationId = id, timeOfDay = LocalTime.of(8, 0)))
-        intakeLogs.seed(
-            listOf(
-                IntakeLog(
-                    id = 1,
-                    medicationId = id,
-                    date = today.minusDays(5),
-                    scheduledAt = nowInstant,
-                    status = IntakeStatus.TAKEN,
+    fun `agrega medicamento horarios e historico dentro da retencao`() =
+        runTest {
+            val id = medications.add(Medication(name = "Losartana"))
+            schedules.add(ScheduleTime(medicationId = id, timeOfDay = LocalTime.of(8, 0)))
+            intakeLogs.seed(
+                listOf(
+                    IntakeLog(
+                        id = 1,
+                        medicationId = id,
+                        date = today.minusDays(5),
+                        scheduledAt = nowInstant,
+                        status = IntakeStatus.TAKEN,
+                    ),
+                    IntakeLog(
+                        id = 2,
+                        medicationId = id,
+                        date = today.minusDays(200),
+                        scheduledAt = nowInstant,
+                        status = IntakeStatus.TAKEN,
+                    ),
                 ),
-                IntakeLog(
-                    id = 2,
-                    medicationId = id,
-                    date = today.minusDays(200),
-                    scheduledAt = nowInstant,
-                    status = IntakeStatus.TAKEN,
-                ),
-            ),
-        )
+            )
 
-        useCase(AppSettings(historyRetentionDays = 90)).invoke(id).test {
-            val detail = awaitItem()!!
-            assertEquals("Losartana", detail.medication.name)
-            assertEquals(1, detail.schedules.size)
-            // O registro de 200 dias atrás é omitido pela retenção de 90 dias.
-            assertEquals(1, detail.history.size)
-            assertEquals(today.minusDays(5), detail.history.single().date)
-            cancelAndIgnoreRemainingEvents()
+            useCase(AppSettings(historyRetentionDays = 90)).invoke(id).test {
+                val detail = awaitItem()!!
+                assertEquals("Losartana", detail.medication.name)
+                assertEquals(1, detail.schedules.size)
+                // O registro de 200 dias atrás é omitido pela retenção de 90 dias.
+                assertEquals(1, detail.history.size)
+                assertEquals(today.minusDays(5), detail.history.single().date)
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 
     @Test
-    fun `retorna nulo quando medicamento nao existe`() = runTest {
-        useCase().invoke(999L).test {
-            assertNull(awaitItem())
-            cancelAndIgnoreRemainingEvents()
+    fun `retorna nulo quando medicamento nao existe`() =
+        runTest {
+            useCase().invoke(999L).test {
+                assertNull(awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
         }
-    }
 }

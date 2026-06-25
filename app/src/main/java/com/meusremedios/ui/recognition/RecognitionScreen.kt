@@ -34,6 +34,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
@@ -42,12 +43,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.meusremedios.BuildConfig
 import com.meusremedios.R
-import androidx.compose.ui.unit.sp
 import com.meusremedios.domain.model.RecognitionCandidate
 import com.meusremedios.domain.model.RecognitionOutcome
 import com.meusremedios.domain.model.ScheduledDose
@@ -67,28 +67,31 @@ fun RecognitionScreen(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val coroutineScope = rememberCoroutineScope()
 
-    val cameraLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.TakePicture(),
-    ) { success: Boolean ->
-        if (success) viewModel.onCaptured()
-    }
+    val cameraLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.TakePicture(),
+        ) { success: Boolean ->
+            if (success) viewModel.onCaptured()
+        }
     val capture: () -> Unit = {
         viewModel.prepareCapture { uri -> cameraLauncher.launch(uri) }
     }
-    val galleryLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.PickVisualMedia(),
-    ) { uri: Uri? ->
-        if (uri != null) viewModel.onGalleryPicked(uri)
-    }
-    val pickFromGallery: (() -> Unit)? = if (BuildConfig.DEV_TOOLS_ENABLED) {
-        {
-            galleryLauncher.launch(
-                PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
-            )
+    val galleryLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.PickVisualMedia(),
+        ) { uri: Uri? ->
+            if (uri != null) viewModel.onGalleryPicked(uri)
         }
-    } else {
-        null
-    }
+    val pickFromGallery: (() -> Unit)? =
+        if (BuildConfig.DEV_TOOLS_ENABLED) {
+            {
+                galleryLauncher.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                )
+            }
+        } else {
+            null
+        }
 
     Scaffold(
         modifier = modifier,
@@ -104,29 +107,32 @@ fun RecognitionScreen(
         },
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 24.dp)
-                .verticalScroll(rememberScrollState()),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = 24.dp)
+                    .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterVertically),
         ) {
             when (uiState.phase) {
-                RecognitionPhase.IDLE -> IdleContent(
-                    onCapture = capture,
-                    onPickFromGallery = pickFromGallery,
-                )
+                RecognitionPhase.IDLE ->
+                    IdleContent(
+                        onCapture = capture,
+                        onPickFromGallery = pickFromGallery,
+                    )
                 RecognitionPhase.ANALYZING -> AnalyzingContent()
-                RecognitionPhase.RESULT -> ResultContent(
-                    outcome = uiState.outcome,
-                    canAddSecondPhoto = uiState.canAddSecondPhoto,
-                    intakeRegistered = uiState.intakeRegistered,
-                    onCapture = capture,
-                    onPickFromGallery = pickFromGallery,
-                    onReset = viewModel::reset,
-                    onMarkTaken = viewModel::markTakenFromRecognition,
-                )
+                RecognitionPhase.RESULT ->
+                    ResultContent(
+                        outcome = uiState.outcome,
+                        canAddSecondPhoto = uiState.canAddSecondPhoto,
+                        intakeRegistered = uiState.intakeRegistered,
+                        onCapture = capture,
+                        onPickFromGallery = pickFromGallery,
+                        onReset = viewModel::reset,
+                        onMarkTaken = viewModel::markTakenFromRecognition,
+                    )
                 RecognitionPhase.ERROR -> ErrorContent(onReset = viewModel::reset)
             }
         }
@@ -149,7 +155,10 @@ fun RecognitionScreen(
 }
 
 @Composable
-private fun IdleContent(onCapture: () -> Unit, onPickFromGallery: (() -> Unit)?) {
+private fun IdleContent(
+    onCapture: () -> Unit,
+    onPickFromGallery: (() -> Unit)?,
+) {
     Text(
         text = stringResource(R.string.recognition_intro),
         style = MaterialTheme.typography.titleLarge,
@@ -175,9 +184,10 @@ private fun GalleryDevButton(onClick: () -> Unit) {
 private fun BigConfirmButton(onClick: () -> Unit) {
     Button(
         onClick = onClick,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(120.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .height(120.dp),
     ) {
         Icon(
             Icons.Default.Search,
@@ -214,35 +224,39 @@ private fun ResultContent(
     onReset: () -> Unit,
     onMarkTaken: () -> Unit,
 ) {
-    val resultDescription = when (outcome) {
-        is RecognitionOutcome.Confident -> stringResource(R.string.cd_recognition_confident, outcome.best.medicationName)
-        is RecognitionOutcome.Ambiguous -> stringResource(R.string.cd_recognition_ambiguous)
-        RecognitionOutcome.NoMatch -> stringResource(R.string.cd_recognition_no_match)
-        RecognitionOutcome.NoPhotosRegistered -> stringResource(R.string.recognition_no_photos)
-        null -> stringResource(R.string.recognition_error)
-    }
+    val resultDescription =
+        when (outcome) {
+            is RecognitionOutcome.Confident -> stringResource(R.string.cd_recognition_confident, outcome.best.medicationName)
+            is RecognitionOutcome.Ambiguous -> stringResource(R.string.cd_recognition_ambiguous)
+            RecognitionOutcome.NoMatch -> stringResource(R.string.cd_recognition_no_match)
+            RecognitionOutcome.NoPhotosRegistered -> stringResource(R.string.recognition_no_photos)
+            null -> stringResource(R.string.recognition_error)
+        }
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .semantics {
-                liveRegion = LiveRegionMode.Polite
-                contentDescription = resultDescription
-            },
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .semantics {
+                    liveRegion = LiveRegionMode.Polite
+                    contentDescription = resultDescription
+                },
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         when (outcome) {
-            is RecognitionOutcome.Confident -> ConfidentResult(
-                outcome = outcome,
-                intakeRegistered = intakeRegistered,
-                onMarkTaken = onMarkTaken,
-            )
-            is RecognitionOutcome.Ambiguous -> AmbiguousResult(
-                outcome = outcome,
-                canAddSecondPhoto = canAddSecondPhoto,
-                onCapture = onCapture,
-                onPickFromGallery = onPickFromGallery,
-            )
+            is RecognitionOutcome.Confident ->
+                ConfidentResult(
+                    outcome = outcome,
+                    intakeRegistered = intakeRegistered,
+                    onMarkTaken = onMarkTaken,
+                )
+            is RecognitionOutcome.Ambiguous ->
+                AmbiguousResult(
+                    outcome = outcome,
+                    canAddSecondPhoto = canAddSecondPhoto,
+                    onCapture = onCapture,
+                    onPickFromGallery = onPickFromGallery,
+                )
             RecognitionOutcome.NoMatch -> MessageResult(stringResource(R.string.recognition_no_match))
             RecognitionOutcome.NoPhotosRegistered ->
                 MessageResult(stringResource(R.string.recognition_no_photos))
@@ -305,9 +319,10 @@ private fun DosePickerSheet(
     onDoseSelected: (ScheduledDose) -> Unit,
 ) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 24.dp, vertical = 16.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Text(
@@ -379,9 +394,10 @@ private fun CandidateCard(candidate: RecognitionCandidate) {
         Text(
             text = candidate.medicationName,
             style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
         )
     }
 }

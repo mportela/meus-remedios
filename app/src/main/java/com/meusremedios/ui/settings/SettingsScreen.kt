@@ -47,10 +47,11 @@ private fun SettingsScreenContent(
     modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
+        modifier =
+            modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
     ) {
         // Histórico
         Text(
@@ -72,9 +73,10 @@ private fun SettingsScreenContent(
             modifier = Modifier.padding(top = 24.dp, bottom = 8.dp),
         )
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(Modifier.weight(1f)) {
@@ -103,9 +105,10 @@ private fun SettingsScreenContent(
             modifier = Modifier.padding(top = 24.dp, bottom = 8.dp),
         )
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
@@ -143,9 +146,10 @@ private fun SettingsScreenContent(
             },
         )
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Column(Modifier.weight(1f)) {
@@ -196,9 +200,10 @@ private fun RetentionDropdown(
     var expanded by remember { mutableStateOf(false) }
 
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -243,9 +248,10 @@ private fun ReminderLeadDropdown(
     var expanded by remember { mutableStateOf(false) }
 
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -286,19 +292,22 @@ private fun AccessibilityFontDropdown(
     onSelected: (Float?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val options: List<Pair<Float?, Int>> = listOf(
-        null to R.string.settings_font_size_default,
-        1.15f to R.string.settings_font_size_large,
-        1.30f to R.string.settings_font_size_larger,
-    )
+    val options: List<Pair<Float?, Int>> =
+        listOf(
+            null to R.string.settings_font_size_default,
+            1.15f to R.string.settings_font_size_large,
+            1.30f to R.string.settings_font_size_larger,
+        )
     var expanded by remember { mutableStateOf(false) }
-    val currentLabel = options.firstOrNull { it.first == currentValue }?.second
-        ?: R.string.settings_font_size_default
+    val currentLabel =
+        options.firstOrNull { it.first == currentValue }?.second
+            ?: R.string.settings_font_size_default
 
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
+        modifier =
+            modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(

@@ -8,7 +8,6 @@ import com.meusremedios.domain.model.PhotoSide
  * do app. Os caminhos retornados são absolutos e referenciados no banco.
  */
 interface MedicationImageStore {
-
     /**
      * Copia o conteúdo de uma [uri] selecionada (ex.: galeria) para um arquivo
      * temporário privado e retorna seu caminho. Use [persist] para torná-lo
@@ -27,7 +26,11 @@ interface MedicationImageStore {
      * Move um arquivo temporário (de [stage] ou [createCameraTarget]) para o
      * diretório definitivo do medicamento e retorna o caminho final.
      */
-    suspend fun persist(tempPath: String, medicationId: Long, side: PhotoSide): String
+    suspend fun persist(
+        tempPath: String,
+        medicationId: Long,
+        side: PhotoSide,
+    ): String
 
     /** Apaga o arquivo no [path] informado, se existir. */
     suspend fun delete(path: String)

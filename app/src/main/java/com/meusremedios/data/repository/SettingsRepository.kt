@@ -7,6 +7,8 @@ import kotlinx.coroutines.flow.Flow
 interface SettingsRepository {
     /** Emite as configurações atuais, com os valores padrão se ainda não houver registro. */
     fun observe(): Flow<AppSettings>
+
     suspend fun get(): AppSettings
+
     suspend fun update(settings: AppSettings)
 }

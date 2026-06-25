@@ -14,28 +14,30 @@ import javax.inject.Inject
  * @param tempPath caminho do arquivo temporário (de captura ou seleção).
  * @return id da foto persistida.
  */
-class AddMedicationPhotoUseCase @Inject constructor(
-    private val imageStore: MedicationImageStore,
-    private val featureExtractor: FeatureExtractor,
-    private val photoRepository: MedicationPhotoRepository,
-) {
-    suspend operator fun invoke(
-        medicationId: Long,
-        tempPath: String,
-        side: PhotoSide,
-    ): Long {
-        val features = featureExtractor.extract(tempPath)
-        val finalPath = imageStore.persist(tempPath, medicationId, side)
-        return photoRepository.add(
-            MedicationPhoto(
-                medicationId = medicationId,
-                filePath = finalPath,
-                side = side,
-                embedding = features.embedding,
-                dominantColorLab = features.dominantColorLab,
-                aspectRatio = features.aspectRatio,
-                imprintText = features.imprintText,
-            ),
-        )
+class AddMedicationPhotoUseCase
+    @Inject
+    constructor(
+        private val imageStore: MedicationImageStore,
+        private val featureExtractor: FeatureExtractor,
+        private val photoRepository: MedicationPhotoRepository,
+    ) {
+        suspend operator fun invoke(
+            medicationId: Long,
+            tempPath: String,
+            side: PhotoSide,
+        ): Long {
+            val features = featureExtractor.extract(tempPath)
+            val finalPath = imageStore.persist(tempPath, medicationId, side)
+            return photoRepository.add(
+                MedicationPhoto(
+                    medicationId = medicationId,
+                    filePath = finalPath,
+                    side = side,
+                    embedding = features.embedding,
+                    dominantColorLab = features.dominantColorLab,
+                    aspectRatio = features.aspectRatio,
+                    imprintText = features.imprintText,
+                ),
+            )
+        }
     }
-}

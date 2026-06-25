@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ScheduleTimeDao {
-
     @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insert(scheduleTime: ScheduleTimeEntity): Long
 

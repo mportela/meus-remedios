@@ -26,7 +26,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -38,6 +37,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -79,11 +79,12 @@ fun TodayScreen(
         },
     ) { innerPadding ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = 16.dp)
+                    .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             WeekSelector(
@@ -255,9 +256,10 @@ private fun SummaryCard(
 ) {
     Card(modifier = modifier.heightIn(min = 88.dp)) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(12.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
@@ -315,9 +317,10 @@ private fun DoseCard(
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 12.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -369,18 +372,20 @@ private fun DoseCard(
 
 @Composable
 private fun DoseStatusBadge(status: DoseStatus) {
-    val (label, color) = when (status) {
-        DoseStatus.TAKEN -> stringResource(R.string.dose_status_taken) to StatusColors.taken()
-        DoseStatus.PENDING -> stringResource(R.string.dose_status_pending) to StatusColors.pending()
-        DoseStatus.LATE -> stringResource(R.string.dose_status_late) to StatusColors.late()
-        DoseStatus.SKIPPED -> stringResource(R.string.dose_status_skipped) to StatusColors.skipped()
-    }
+    val (label, color) =
+        when (status) {
+            DoseStatus.TAKEN -> stringResource(R.string.dose_status_taken) to StatusColors.taken()
+            DoseStatus.PENDING -> stringResource(R.string.dose_status_pending) to StatusColors.pending()
+            DoseStatus.LATE -> stringResource(R.string.dose_status_late) to StatusColors.late()
+            DoseStatus.SKIPPED -> stringResource(R.string.dose_status_skipped) to StatusColors.skipped()
+        }
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
         Box(
-            modifier = Modifier
-                .size(12.dp)
-                .background(color, CircleShape)
-                .clearAndSetSemantics { },
+            modifier =
+                Modifier
+                    .size(12.dp)
+                    .background(color, CircleShape)
+                    .clearAndSetSemantics { },
         )
         Text(text = label, style = MaterialTheme.typography.bodyMedium)
     }
@@ -389,9 +394,10 @@ private fun DoseStatusBadge(status: DoseStatus) {
 @Composable
 private fun EmptyState() {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 48.dp, start = 24.dp, end = 24.dp),
+        modifier =
+            Modifier
+                .fillMaxWidth()
+                .padding(top = 48.dp, start = 24.dp, end = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
@@ -402,16 +408,20 @@ private fun EmptyState() {
     }
 }
 
-private fun DayPeriod.labelRes(): Int = when (this) {
-    DayPeriod.MORNING -> R.string.period_morning
-    DayPeriod.AFTERNOON -> R.string.period_afternoon
-    DayPeriod.NIGHT -> R.string.period_night
-}
+private fun DayPeriod.labelRes(): Int =
+    when (this) {
+        DayPeriod.MORNING -> R.string.period_morning
+        DayPeriod.AFTERNOON -> R.string.period_afternoon
+        DayPeriod.NIGHT -> R.string.period_night
+    }
 
 /** Cores semânticas para status de dose, com bom contraste em tema claro/escuro. */
 private object StatusColors {
     @Composable fun taken(): Color = MaterialTheme.colorScheme.primary
+
     @Composable fun pending(): Color = MaterialTheme.colorScheme.tertiary
+
     @Composable fun late(): Color = MaterialTheme.colorScheme.error
+
     @Composable fun skipped(): Color = MaterialTheme.colorScheme.outline
 }

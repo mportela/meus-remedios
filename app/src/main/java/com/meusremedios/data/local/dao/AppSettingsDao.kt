@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface AppSettingsDao {
-
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsert(settings: AppSettingsEntity)
 

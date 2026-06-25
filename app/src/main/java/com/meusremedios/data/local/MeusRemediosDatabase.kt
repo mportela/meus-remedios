@@ -30,7 +30,6 @@ import com.meusremedios.data.local.entity.ScheduleTimeEntity
 )
 @TypeConverters(Converters::class)
 abstract class MeusRemediosDatabase : RoomDatabase() {
-
     abstract fun medicationDao(): MedicationDao
 
     abstract fun medicationPhotoDao(): MedicationPhotoDao
@@ -44,10 +43,11 @@ abstract class MeusRemediosDatabase : RoomDatabase() {
     companion object {
         const val DATABASE_NAME: String = "meus_remedios.db"
 
-        val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                db.execSQL("ALTER TABLE medication_photos ADD COLUMN imprint_text TEXT")
+        val MIGRATION_1_2 =
+            object : Migration(1, 2) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("ALTER TABLE medication_photos ADD COLUMN imprint_text TEXT")
+                }
             }
-        }
     }
 }

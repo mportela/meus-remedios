@@ -13,14 +13,15 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NotificationsModule {
+    @Provides
+    @Singleton
+    fun provideAlarmManager(
+        @ApplicationContext context: Context,
+    ): AlarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
     @Provides
     @Singleton
-    fun provideAlarmManager(@ApplicationContext context: Context): AlarmManager =
-        context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-
-    @Provides
-    @Singleton
-    fun provideNotificationManager(@ApplicationContext context: Context): NotificationManagerCompat =
-        NotificationManagerCompat.from(context)
+    fun provideNotificationManager(
+        @ApplicationContext context: Context,
+    ): NotificationManagerCompat = NotificationManagerCompat.from(context)
 }

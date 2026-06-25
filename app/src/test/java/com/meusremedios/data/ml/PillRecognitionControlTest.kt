@@ -19,15 +19,16 @@ import org.junit.Test
  * `RecognitionEngine.decide`, idêntico ao `RecognizeMedicationUseCase`.
  */
 class PillRecognitionControlTest {
-
     // Features medidas (Lab [L,a,b] + aspect ratio) — ver design.md da change.
     private val frente = FeatureSet(colorLab = floatArrayOf(68.18981f, -1.4912211f, 3.4981222f), aspectRatio = 1.7777778f)
     private val verso = FeatureSet(colorLab = floatArrayOf(73.67061f, -1.735405f, 2.4459465f), aspectRatio = 1.7777778f)
     private val druse = FeatureSet(colorLab = floatArrayOf(68.32766f, -2.3755991f, 3.70237f), aspectRatio = 0.5625f)
 
     /** Replica a agregação do use case: melhor score entre as fotos de consulta e cadastradas. */
-    private fun bestScore(query: List<FeatureSet>, registered: List<FeatureSet>): Float =
-        registered.maxOf { cand -> query.maxOf { q -> RecognitionScorer.score(q, cand) } }
+    private fun bestScore(
+        query: List<FeatureSet>,
+        registered: List<FeatureSet>,
+    ): Float = registered.maxOf { cand -> query.maxOf { q -> RecognitionScorer.score(q, cand) } }
 
     @Test
     fun `controle negativo - comprimido diferente nao e afirmado como confiante`() {
@@ -37,9 +38,10 @@ class PillRecognitionControlTest {
         assertEquals(0.8222f, score, 1e-3f)
         assertTrue("controle negativo deveria ficar abaixo do limiar", score < RecognitionParams.THRESHOLD_CONFIDENT)
 
-        val outcome = RecognitionEngine.decide(
-            listOf(RecognitionCandidate(medicationId = 1, medicationName = "Cadastrado", score = score)),
-        )
+        val outcome =
+            RecognitionEngine.decide(
+                listOf(RecognitionCandidate(medicationId = 1, medicationName = "Cadastrado", score = score)),
+            )
         assertFalse(
             "FALSO POSITIVO: controle negativo foi afirmado como confiante",
             outcome is RecognitionOutcome.Confident,
@@ -53,9 +55,10 @@ class PillRecognitionControlTest {
         assertEquals(0.9581f, score, 1e-3f)
         assertTrue("match legítimo deveria atingir o limiar", score >= RecognitionParams.THRESHOLD_CONFIDENT)
 
-        val outcome = RecognitionEngine.decide(
-            listOf(RecognitionCandidate(medicationId = 1, medicationName = "Cadastrado", score = score)),
-        )
+        val outcome =
+            RecognitionEngine.decide(
+                listOf(RecognitionCandidate(medicationId = 1, medicationName = "Cadastrado", score = score)),
+            )
         assertTrue(
             "match legítimo deveria ser confiante",
             outcome is RecognitionOutcome.Confident,

@@ -23,7 +23,6 @@ import java.time.LocalTime
 import java.time.ZoneId
 
 class MedicationDetailViewModelTest {
-
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
@@ -35,32 +34,34 @@ class MedicationDetailViewModelTest {
     private val intakeLogs = FakeIntakeLogRepository()
 
     private fun viewModel(id: Long): MedicationDetailViewModel {
-        val useCase = ObserveMedicationDetailUseCase(
-            medications,
-            schedules,
-            photos,
-            intakeLogs,
-            FakeSettingsRepository(AppSettings()),
-            clock,
-        )
+        val useCase =
+            ObserveMedicationDetailUseCase(
+                medications,
+                schedules,
+                photos,
+                intakeLogs,
+                FakeSettingsRepository(AppSettings()),
+                clock,
+            )
         val handle = SavedStateHandle(mapOf(Routes.ARG_MEDICATION_ID to id))
         return MedicationDetailViewModel(handle, useCase)
     }
 
     @Test
-    fun `expoe detalhe do medicamento`() = runTest {
-        val id = medications.add(Medication(name = "Losartana", dosage = "50 mg"))
-        schedules.add(ScheduleTime(medicationId = id, timeOfDay = LocalTime.of(8, 0)))
+    fun `expoe detalhe do medicamento`() =
+        runTest {
+            val id = medications.add(Medication(name = "Losartana", dosage = "50 mg"))
+            schedules.add(ScheduleTime(medicationId = id, timeOfDay = LocalTime.of(8, 0)))
 
-        val vm = viewModel(id)
-        vm.uiState.test {
-            var state = awaitItem()
-            while (state.isLoading) {
-                state = awaitItem()
+            val vm = viewModel(id)
+            vm.uiState.test {
+                var state = awaitItem()
+                while (state.isLoading) {
+                    state = awaitItem()
+                }
+                assertEquals("Losartana", state.detail?.medication?.name)
+                assertEquals(1, state.detail?.schedules?.size)
+                cancelAndIgnoreRemainingEvents()
             }
-            assertEquals("Losartana", state.detail?.medication?.name)
-            assertEquals(1, state.detail?.schedules?.size)
-            cancelAndIgnoreRemainingEvents()
         }
-    }
 }

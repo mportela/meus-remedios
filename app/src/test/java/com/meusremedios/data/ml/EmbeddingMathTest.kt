@@ -8,7 +8,6 @@ import org.junit.Test
 import kotlin.math.sqrt
 
 class EmbeddingMathTest {
-
     @Test
     fun `l2Normalize produz norma unitaria`() {
         val out = EmbeddingMath.l2Normalize(floatArrayOf(3f, 4f))

@@ -15,10 +15,11 @@ enum class DayPeriod {
         private val NIGHT_START: LocalTime = LocalTime.of(18, 0)
 
         /** Classifica um horário em manhã `[05:00,12:00)`, tarde `[12:00,18:00)` ou noite. */
-        fun fromTime(time: LocalTime): DayPeriod = when {
-            time >= MORNING_START && time < AFTERNOON_START -> MORNING
-            time >= AFTERNOON_START && time < NIGHT_START -> AFTERNOON
-            else -> NIGHT
-        }
+        fun fromTime(time: LocalTime): DayPeriod =
+            when {
+                time >= MORNING_START && time < AFTERNOON_START -> MORNING
+                time >= AFTERNOON_START && time < NIGHT_START -> AFTERNOON
+                else -> NIGHT
+            }
     }
 }

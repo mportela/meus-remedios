@@ -16,7 +16,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class MediaModule {
-
     @Binds
     @Singleton
     abstract fun bindMedicationImageStore(impl: FileMedicationImageStore): MedicationImageStore

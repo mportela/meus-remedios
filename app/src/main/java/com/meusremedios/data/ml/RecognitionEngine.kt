@@ -9,7 +9,6 @@ import com.meusremedios.domain.model.RecognitionOutcome
  * com confiança alta e margem suficiente; em dúvida, retorna ambíguo.
  */
 object RecognitionEngine {
-
     fun decide(ranked: List<RecognitionCandidate>): RecognitionOutcome {
         if (ranked.isEmpty()) return RecognitionOutcome.NoMatch
 
@@ -20,8 +19,9 @@ object RecognitionEngine {
         val top2 = sorted.getOrNull(1)?.score ?: 0f
         val candidates = sorted.take(RecognitionParams.MAX_CANDIDATES)
 
-        val confident = top1 >= RecognitionParams.THRESHOLD_CONFIDENT &&
-            (top1 - top2) >= RecognitionParams.MARGIN
+        val confident =
+            top1 >= RecognitionParams.THRESHOLD_CONFIDENT &&
+                (top1 - top2) >= RecognitionParams.MARGIN
 
         return if (confident) {
             RecognitionOutcome.Confident(best = sorted[0], candidates = candidates)

@@ -17,6 +17,18 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   F4.6 (`migrate-existing-photo-features`) atualizado para excluir segmentação do escopo.
 
 ### Adicionado
+- **F9 — Automação de testes** (change `add-test-automation`):
+  infraestrutura de testes expandida com 11 novos testes (total: 161); testes
+  Compose/Robolectric para 4 telas críticas (`MedicationListScreen`, `MedicationFormScreen`,
+  `TodayScreen`, `RecognitionScreen`) usando `@RobolectricTestRunner` + `createComposeRule()`
+  com ViewModels manuais e fakes existentes; `OfflineConstraintTest` que asserta via
+  `PackageManager` que `android.permission.INTERNET` está ausente do manifest mergeado;
+  módulos Hilt de teste (`FakeRepositoryModule`, `FakeMlModule`) com `@TestInstallIn` para
+  uso futuro em testes `@HiltAndroidTest`; ktlint (plugin 12.1.2, biblioteca 1.4.1)
+  integrado ao build com `.editorconfig` configurando regras compatíveis com o código
+  existente; step `ktlintCheck` adicionado ao CI (`ci.yml`); `libs.versions.toml` e
+  `app/build.gradle.kts` atualizados com novas dependências.
+
 - **F8 — Acessibilidade baseline** (change `add-accessibility-baseline`):
   correcões de layout com fonte grande (font_scale 1.3x) confirmadas no emulador:
   label "Configurações" da NavigationBar com `maxLines=1`+ellipsis; `SummaryCard`

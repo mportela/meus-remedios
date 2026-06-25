@@ -11,7 +11,6 @@ import org.junit.Rule
 import org.junit.Test
 
 class MedicationListViewModelTest {
-
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
@@ -20,29 +19,31 @@ class MedicationListViewModelTest {
     private fun viewModel() = MedicationListViewModel(SearchMedicationsUseCase(repository))
 
     @Test
-    fun `emits all medications ordered by name`() = runTest {
-        repository.add(Medication(name = "Paracetamol"))
-        repository.add(Medication(name = "Aspirina"))
+    fun `emits all medications ordered by name`() =
+        runTest {
+            repository.add(Medication(name = "Paracetamol"))
+            repository.add(Medication(name = "Aspirina"))
 
-        val vm = viewModel()
+            val vm = viewModel()
 
-        vm.uiState.test {
-            val state = awaitItem()
-            assertEquals(listOf("Aspirina", "Paracetamol"), state.medications.map { it.name })
+            vm.uiState.test {
+                val state = awaitItem()
+                assertEquals(listOf("Aspirina", "Paracetamol"), state.medications.map { it.name })
+            }
         }
-    }
 
     @Test
-    fun `filters medications by query`() = runTest {
-        repository.add(Medication(name = "Paracetamol"))
-        repository.add(Medication(name = "Aspirina"))
-        val vm = viewModel()
+    fun `filters medications by query`() =
+        runTest {
+            repository.add(Medication(name = "Paracetamol"))
+            repository.add(Medication(name = "Aspirina"))
+            val vm = viewModel()
 
-        vm.uiState.test {
-            awaitItem() // estado inicial
-            vm.onQueryChange("para")
-            val filtered = awaitItem()
-            assertEquals(listOf("Paracetamol"), filtered.medications.map { it.name })
+            vm.uiState.test {
+                awaitItem() // estado inicial
+                vm.onQueryChange("para")
+                val filtered = awaitItem()
+                assertEquals(listOf("Paracetamol"), filtered.medications.map { it.name })
+            }
         }
-    }
 }

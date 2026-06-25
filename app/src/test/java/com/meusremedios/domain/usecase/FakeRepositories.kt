@@ -1,13 +1,13 @@
 package com.meusremedios.domain.usecase
 
-import com.meusremedios.domain.model.AppSettings
-import com.meusremedios.domain.model.IntakeLog
-import com.meusremedios.domain.model.Medication
-import com.meusremedios.domain.model.ScheduleTime
 import com.meusremedios.data.repository.IntakeLogRepository
 import com.meusremedios.data.repository.MedicationRepository
 import com.meusremedios.data.repository.ScheduleRepository
 import com.meusremedios.data.repository.SettingsRepository
+import com.meusremedios.domain.model.AppSettings
+import com.meusremedios.domain.model.IntakeLog
+import com.meusremedios.domain.model.Medication
+import com.meusremedios.domain.model.ScheduleTime
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.map
@@ -20,11 +20,9 @@ class FakeMedicationRepository : MedicationRepository {
 
     fun snapshot(): List<Medication> = items.value
 
-    override fun observeAll(): Flow<List<Medication>> =
-        items.map { list -> list.sortedBy { it.name.lowercase() } }
+    override fun observeAll(): Flow<List<Medication>> = items.map { list -> list.sortedBy { it.name.lowercase() } }
 
-    override fun observeById(id: Long): Flow<Medication?> =
-        items.map { list -> list.firstOrNull { it.id == id } }
+    override fun observeById(id: Long): Flow<Medication?> = items.map { list -> list.firstOrNull { it.id == id } }
 
     override fun search(query: String): Flow<List<Medication>> =
         items.map { list ->
@@ -32,8 +30,7 @@ class FakeMedicationRepository : MedicationRepository {
                 .sortedBy { it.name.lowercase() }
         }
 
-    override suspend fun getById(id: Long): Medication? =
-        items.value.firstOrNull { it.id == id }
+    override suspend fun getById(id: Long): Medication? = items.value.firstOrNull { it.id == id }
 
     override suspend fun add(medication: Medication): Long {
         val id = nextId++
@@ -90,8 +87,7 @@ class FakeIntakeLogRepository : IntakeLogRepository {
 
     fun snapshot(): List<IntakeLog> = items.value
 
-    override fun observeByDate(date: LocalDate): Flow<List<IntakeLog>> =
-        items.map { list -> list.filter { it.date == date } }
+    override fun observeByDate(date: LocalDate): Flow<List<IntakeLog>> = items.map { list -> list.filter { it.date == date } }
 
     override fun observeByMedication(medicationId: Long): Flow<List<IntakeLog>> =
         items.map { list -> list.filter { it.medicationId == medicationId } }
@@ -120,9 +116,10 @@ class FakeIntakeLogRepository : IntakeLogRepository {
         medicationId: Long,
         scheduleTimeId: Long,
         date: LocalDate,
-    ): IntakeLog? = items.value.firstOrNull {
-        it.medicationId == medicationId && it.scheduleTimeId == scheduleTimeId && it.date == date
-    }
+    ): IntakeLog? =
+        items.value.firstOrNull {
+            it.medicationId == medicationId && it.scheduleTimeId == scheduleTimeId && it.date == date
+        }
 }
 
 /** Fake in-memory de [SettingsRepository] para testes determinísticos. */
@@ -139,4 +136,3 @@ class FakeSettingsRepository(
         state.value = settings
     }
 }
-

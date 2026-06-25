@@ -34,131 +34,134 @@ data class RecognitionUiState(
 )
 
 @HiltViewModel
-class RecognitionViewModel @Inject constructor(
-    private val imageStore: MedicationImageStore,
-    private val recognizeMedication: RecognizeMedicationUseCase,
-    private val getPendingDosesForMedication: GetPendingDosesTodayForMedicationUseCase,
-    private val markIntakeTakenUseCase: MarkIntakeTakenUseCase,
-    private val clock: Clock,
-) : ViewModel() {
+class RecognitionViewModel
+    @Inject
+    constructor(
+        private val imageStore: MedicationImageStore,
+        private val recognizeMedication: RecognizeMedicationUseCase,
+        private val getPendingDosesForMedication: GetPendingDosesTodayForMedicationUseCase,
+        private val markIntakeTakenUseCase: MarkIntakeTakenUseCase,
+        private val clock: Clock,
+    ) : ViewModel() {
+        private val _uiState = MutableStateFlow(RecognitionUiState())
+        val uiState: StateFlow<RecognitionUiState> = _uiState.asStateFlow()
 
-    private val _uiState = MutableStateFlow(RecognitionUiState())
-    val uiState: StateFlow<RecognitionUiState> = _uiState.asStateFlow()
+        private val queryPaths = mutableListOf<String>()
+        private var pendingTempPath: String? = null
 
-    private val queryPaths = mutableListOf<String>()
-    private var pendingTempPath: String? = null
-
-    /** Cria o arquivo de saída para a câmera e entrega o [Uri] via [onReady]. */
-    fun prepareCapture(onReady: (Uri) -> Unit) {
-        viewModelScope.launch {
-            val target = imageStore.createCameraTarget()
-            pendingTempPath = target.tempPath
-            onReady(target.uri)
-        }
-    }
-
-    /** Confirma a captura da câmera e dispara a análise com todas as fotos. */
-    fun onCaptured() {
-        val path = pendingTempPath ?: return
-        pendingTempPath = null
-        queryPaths += path
-        analyze()
-    }
-
-    /**
-     * Usa uma imagem escolhida da galeria como foto de consulta (recurso de
-     * desenvolvimento). Copia a [uri] para a área privada e dispara a análise,
-     * reaproveitando o mesmo fluxo da câmera.
-     */
-    fun onGalleryPicked(uri: Uri) {
-        _uiState.update { it.copy(phase = RecognitionPhase.ANALYZING) }
-        viewModelScope.launch {
-            val staged = runCatching { imageStore.stage(uri) }.getOrNull()
-            if (staged == null) {
-                _uiState.update {
-                    it.copy(phase = RecognitionPhase.ERROR, outcome = null, canAddSecondPhoto = false)
-                }
-                return@launch
+        /** Cria o arquivo de saída para a câmera e entrega o [Uri] via [onReady]. */
+        fun prepareCapture(onReady: (Uri) -> Unit) {
+            viewModelScope.launch {
+                val target = imageStore.createCameraTarget()
+                pendingTempPath = target.tempPath
+                onReady(target.uri)
             }
-            queryPaths += staged
+        }
+
+        /** Confirma a captura da câmera e dispara a análise com todas as fotos. */
+        fun onCaptured() {
+            val path = pendingTempPath ?: return
+            pendingTempPath = null
+            queryPaths += path
             analyze()
         }
-    }
 
-    private fun analyze() {
-        _uiState.update { it.copy(phase = RecognitionPhase.ANALYZING) }
-        viewModelScope.launch {
-            runCatching { recognizeMedication(queryPaths.toList()) }
-                .onSuccess { outcome ->
+        /**
+         * Usa uma imagem escolhida da galeria como foto de consulta (recurso de
+         * desenvolvimento). Copia a [uri] para a área privada e dispara a análise,
+         * reaproveitando o mesmo fluxo da câmera.
+         */
+        fun onGalleryPicked(uri: Uri) {
+            _uiState.update { it.copy(phase = RecognitionPhase.ANALYZING) }
+            viewModelScope.launch {
+                val staged = runCatching { imageStore.stage(uri) }.getOrNull()
+                if (staged == null) {
                     _uiState.update {
-                        it.copy(
-                            phase = RecognitionPhase.RESULT,
-                            outcome = outcome,
-                            canAddSecondPhoto = outcome is RecognitionOutcome.Ambiguous &&
-                                queryPaths.size < MAX_QUERY_PHOTOS,
-                        )
+                        it.copy(phase = RecognitionPhase.ERROR, outcome = null, canAddSecondPhoto = false)
                     }
+                    return@launch
                 }
-                .onFailure {
-                    _uiState.update { state ->
-                        state.copy(phase = RecognitionPhase.ERROR, outcome = null, canAddSecondPhoto = false)
-                    }
-                }
+                queryPaths += staged
+                analyze()
+            }
         }
-    }
 
-    /**
-     * Chamado pelo botão "Tomei" na tela de resultado confiante.
-     * Determina quantas doses estão pendentes hoje e age conforme:
-     * - 0 → registra tomada ad-hoc
-     * - 1 → marca a dose diretamente
-     * - N > 1 → popula [RecognitionUiState.pendingDosesToday] para exibir seletor na UI
-     */
-    fun markTakenFromRecognition() {
-        val medicationId = (uiState.value.outcome as? RecognitionOutcome.Confident)
-            ?.best?.medicationId ?: return
-        val today = LocalDate.now(clock)
-        viewModelScope.launch {
-            runCatching { getPendingDosesForMedication(medicationId) }
-                .onSuccess { doses ->
-                    when (doses.size) {
-                        0 -> {
-                            markIntakeTakenUseCase(medicationId, today)
-                            _uiState.update { it.copy(intakeRegistered = true) }
+        private fun analyze() {
+            _uiState.update { it.copy(phase = RecognitionPhase.ANALYZING) }
+            viewModelScope.launch {
+                runCatching { recognizeMedication(queryPaths.toList()) }
+                    .onSuccess { outcome ->
+                        _uiState.update {
+                            it.copy(
+                                phase = RecognitionPhase.RESULT,
+                                outcome = outcome,
+                                canAddSecondPhoto =
+                                    outcome is RecognitionOutcome.Ambiguous &&
+                                        queryPaths.size < MAX_QUERY_PHOTOS,
+                            )
                         }
-                        1 -> {
-                            markIntakeTakenUseCase(doses.first(), today)
-                            _uiState.update { it.copy(intakeRegistered = true) }
-                        }
-                        else -> _uiState.update { it.copy(pendingDosesToday = doses) }
                     }
-                }
+                    .onFailure {
+                        _uiState.update { state ->
+                            state.copy(phase = RecognitionPhase.ERROR, outcome = null, canAddSecondPhoto = false)
+                        }
+                    }
+            }
+        }
+
+        /**
+         * Chamado pelo botão "Tomei" na tela de resultado confiante.
+         * Determina quantas doses estão pendentes hoje e age conforme:
+         * - 0 → registra tomada ad-hoc
+         * - 1 → marca a dose diretamente
+         * - N > 1 → popula [RecognitionUiState.pendingDosesToday] para exibir seletor na UI
+         */
+        fun markTakenFromRecognition() {
+            val medicationId =
+                (uiState.value.outcome as? RecognitionOutcome.Confident)
+                    ?.best?.medicationId ?: return
+            val today = LocalDate.now(clock)
+            viewModelScope.launch {
+                runCatching { getPendingDosesForMedication(medicationId) }
+                    .onSuccess { doses ->
+                        when (doses.size) {
+                            0 -> {
+                                markIntakeTakenUseCase(medicationId, today)
+                                _uiState.update { it.copy(intakeRegistered = true) }
+                            }
+                            1 -> {
+                                markIntakeTakenUseCase(doses.first(), today)
+                                _uiState.update { it.copy(intakeRegistered = true) }
+                            }
+                            else -> _uiState.update { it.copy(pendingDosesToday = doses) }
+                        }
+                    }
+            }
+        }
+
+        /** Chamado quando o usuário escolhe um horário no seletor (caso N > 1 doses). */
+        fun markTakenForDose(dose: ScheduledDose) {
+            val today = LocalDate.now(clock)
+            viewModelScope.launch {
+                runCatching { markIntakeTakenUseCase(dose, today) }
+                    .onSuccess {
+                        _uiState.update { it.copy(pendingDosesToday = emptyList(), intakeRegistered = true) }
+                    }
+            }
+        }
+
+        /** Reinicia o fluxo, descartando as fotos de consulta temporárias. */
+        fun reset() {
+            val paths = queryPaths.toList()
+            queryPaths.clear()
+            pendingTempPath = null
+            _uiState.value = RecognitionUiState()
+            viewModelScope.launch {
+                paths.forEach { imageStore.delete(it) }
+            }
+        }
+
+        private companion object {
+            const val MAX_QUERY_PHOTOS = 2
         }
     }
-
-    /** Chamado quando o usuário escolhe um horário no seletor (caso N > 1 doses). */
-    fun markTakenForDose(dose: ScheduledDose) {
-        val today = LocalDate.now(clock)
-        viewModelScope.launch {
-            runCatching { markIntakeTakenUseCase(dose, today) }
-                .onSuccess {
-                    _uiState.update { it.copy(pendingDosesToday = emptyList(), intakeRegistered = true) }
-                }
-        }
-    }
-
-    /** Reinicia o fluxo, descartando as fotos de consulta temporárias. */
-    fun reset() {
-        val paths = queryPaths.toList()
-        queryPaths.clear()
-        pendingTempPath = null
-        _uiState.value = RecognitionUiState()
-        viewModelScope.launch {
-            paths.forEach { imageStore.delete(it) }
-        }
-    }
-
-    private companion object {
-        const val MAX_QUERY_PHOTOS = 2
-    }
-}

@@ -11,12 +11,12 @@ import com.meusremedios.domain.usecase.RescheduleAllAlarmsUseCase
 import com.meusremedios.notifications.NotificationChannels
 import com.meusremedios.work.RetentionWorker
 import dagger.hilt.android.HiltAndroidApp
-import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 /**
  * Application root do app. Habilita o grafo de dependências do Hilt para todas
@@ -24,9 +24,10 @@ import java.util.concurrent.TimeUnit
  */
 @HiltAndroidApp
 class MeusRemediosApplication : Application() {
-
     @Inject lateinit var tfliteEmbedder: TfliteEmbedder
+
     @Inject lateinit var migratePhotoFeaturesUseCase: MigratePhotoFeaturesUseCase
+
     @Inject lateinit var rescheduleAllAlarmsUseCase: RescheduleAllAlarmsUseCase
 
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
@@ -65,9 +66,11 @@ class MeusRemediosApplication : Application() {
 
     private fun scheduleRetentionWorker() {
         runCatching {
-            val retentionWork = PeriodicWorkRequestBuilder<RetentionWorker>(
-                1, TimeUnit.DAYS,
-            ).build()
+            val retentionWork =
+                PeriodicWorkRequestBuilder<RetentionWorker>(
+                    1,
+                    TimeUnit.DAYS,
+                ).build()
             WorkManager.getInstance(this).enqueueUniquePeriodicWork(
                 "retention",
                 ExistingPeriodicWorkPolicy.KEEP,
