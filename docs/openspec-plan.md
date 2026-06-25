@@ -198,3 +198,81 @@ flowchart TD
   B2 --> F5[F5 add-intake-tracking]
 ```
 
+---
+
+## Roadmap TD — Dívidas Técnicas
+
+> Changes planejadas para quitar os itens de `docs/technical/tech-debt.md`.
+> Numeradas a partir de **F10** para não colidir com as fases anteriores.
+
+- **F10** → `fix-duplicate-medication-name` (TD-1) — ainda não iniciada
+- **F11** → `add-photo-collision-warning` (TD-2) — ainda não iniciada
+
+### F10 — `fix-duplicate-medication-name` (TD-1)
+
+**Objetivo:** impedir cadastro de dois medicamentos com o mesmo nome, evitando duplicatas
+confusas na listagem e no ranking de reconhecimento.
+
+**Capability afetada:** `medication-catalog`
+
+**Escopo:**
+- Adicionar `MedicationDao.existsByName(name: String, excludeId: Long): Boolean` (consulta
+  SQL `COLLATE NOCASE` + trim).
+- Incluir a verificação em `SaveMedicationUseCase`: se nome já existe em outro medicamento,
+  retornar `MedicationValidationError.DuplicateName` (novo sealed class / valor).
+- No formulário (`MedicationFormViewModel`/`MedicationFormScreen`), exibir mensagem de erro
+  inline abaixo do campo "Nome do remédio" quando o use case retornar o erro.
+- Edição do próprio medicamento é excluída da checagem (`excludeId = medication.id`).
+
+**Testes planejados:**
+- `MedicationDaoTest`: `existsByName` retorna `true` com mesmo nome (case-insensitive),
+  `false` com nome diferente, `false` para o próprio id excluído.
+- `SaveMedicationUseCaseTest`: salvar com nome duplicado retorna `DuplicateName`; editar
+  mantendo o mesmo nome não dispara erro.
+
+**Dependências:** nenhuma nova lib.
+
+**Estimativa de esforço:** baixo — somente DAO, use case, ViewModel e UI de erro.
+
+---
+
+### F11 — `add-photo-collision-warning` (TD-2)
+
+**Objetivo:** alertar o usuário, no momento do cadastro, quando a foto de um comprimido é
+visualmente muito similar à de outro medicamento já cadastrado — prevenindo erros de
+reconhecimento antes que ocorram em campo.
+
+**Capabilities afetadas:** `medication-photos`, `visual-recognition`
+
+**Escopo:**
+- Criar `CheckPhotoCollisionUseCase(features: PhotoFeatures): List<CollisionCandidate>`:
+  reutiliza `RecognitionEngine` internamente; retorna candidatos com score ≥
+  `THRESHOLD_CONFIDENT`.
+- Chamar o use case em `MedicationFormViewModel.save()` após extrair features das fotos
+  pendentes com embedding não-nulo, antes de persistir.
+- Exibir **aviso não-bloqueante** (Snackbar ou dialog): *"Esta foto é muito parecida com
+  [Nome]. O reconhecimento pode falhar — considere outra foto com ângulo ou iluminação
+  diferente."* Com ações "Salvar assim mesmo" e "Cancelar".
+- Nome do medicamento mais similar exibido na mensagem (produção); score omitido da UI
+  (reservado para dev/debug via log).
+
+**Testes planejados:**
+- `CheckPhotoCollisionUseCaseTest`: features sintéticas próximas de um candidato cadastrado
+  → retorna `CollisionCandidate` com score ≥ limiar; features sintéticas distintas →
+  lista vazia.
+- `MedicationFormViewModelTest`: ao salvar com colisão detectada, estado emite
+  `showCollisionWarning = true` com o nome do candidato.
+
+**Dependências:** `RecognitionEngine` já existente; nenhuma nova lib.
+**Pré-requisito:** F10 (não bloqueante tecnicamente, mas resolvê-la antes garante
+que a listagem de candidatos na colisão não retorne duplicatas do próprio cadastro).
+
+**Estimativa de esforço:** médio — new use case + integração no ViewModel + UI de aviso.
+
+### Ordem sugerida de implementação
+```mermaid
+flowchart LR
+  F9[F9 add-test-automation ✅] --> F10[F10 fix-duplicate-medication-name TD-1]
+  F10 --> F11[F11 add-photo-collision-warning TD-2]
+```
+
