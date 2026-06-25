@@ -43,7 +43,7 @@ Sugestão de change-ids (verbo + escopo), criados na ordem de dependência:
   (engine cor+forma; `embedding`/OCR ainda **não** plugados — ver F4.1–F4.7 abaixo).
 - **F4.1–F4.7** → **Reconhecimento inteligente (TF)** — objetivo core; detalhado na seção
   seguinte. **Prioridade imediata, antes de F5.** (F4.1 ✅ feito)
-- **F5** → `add-intake-tracking` (capability 5).
+- **F5** → `add-intake-tracking` (capability 5). ✅ feito
 - **F6** → `add-scheduling-reminders` (capability 4).
 - **F7** → `add-app-settings-and-retention` (capability 7).
 - **F8** → `add-accessibility-baseline` (capability 8).
@@ -98,13 +98,13 @@ score = w1·cosine(embedding) + w2·colorSim(Lab) + w3·shapeSim(forma) + w4·im
     + edit distance) e peso `W_IMPRINT = 0.2`; schema Room v2 + `MIGRATION_1_2`.
   - Guard offline: `INTERNET` removida no merge e confirmada ausente no manifesto mergeado.
   - Capabilities: `pill-imprint-ocr`, `medication-photos`, `visual-recognition`.
-- **F4.5** → `recalibrate-recognition` — **calibração final multimodal**.
+- **F4.5** → `recalibrate-recognition` — **calibração final multimodal**. ✅ feito
   - Reequilibrar `W_*` e limiares com um **conjunto de referência** (positivos + controles
     negativos), agora com embedding+OCR disponíveis; relaxar o endurecimento provisório da
     F4.1 sem reabrir falsos positivos.
   - Golden set determinístico de testes (vetores/imagens fixas). Capability:
     `visual-recognition`.
-- **F4.6** → `migrate-existing-photo-features` — **reprocessar fotos antigas**.
+- **F4.6** → `migrate-existing-photo-features` — **reprocessar fotos antigas**. ✅ feito
   - Migração automática: reabrir fotos cadastradas antes da F4.3/F4.4 e gerar
     embedding + imprint faltantes (rotina no startup/WorkManager, idempotente).
     Segmentação excluída do escopo (F4.2 cancelada).
