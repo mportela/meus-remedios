@@ -40,6 +40,9 @@ class SaveMedicationUseCase
             }
 
             val normalized = medication.copy(name = trimmedName)
+            if (medicationRepository.existsByName(trimmedName, normalized.id)) {
+                return SaveMedicationResult.Invalid(MedicationValidationError.DUPLICATE_NAME)
+            }
             val medicationId: Long
             if (normalized.id == 0L) {
                 medicationId = medicationRepository.add(normalized)

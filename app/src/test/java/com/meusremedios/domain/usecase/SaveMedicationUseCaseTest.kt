@@ -107,4 +107,38 @@ class SaveMedicationUseCaseTest {
             val times = scheduleRepository.snapshot().map { it.timeOfDay }.sorted()
             assertEquals(listOf(LocalTime.of(9, 0), LocalTime.of(12, 0)), times)
         }
+
+    @Test
+    fun `rejects duplicate name on new medication`() =
+        runTest {
+            medicationRepository.add(Medication(name = "Caltrat"))
+            val result = useCase(Medication(name = "Caltrat"), emptyList())
+
+            assertEquals(
+                SaveMedicationResult.Invalid(MedicationValidationError.DUPLICATE_NAME),
+                result,
+            )
+            assertEquals(1, medicationRepository.snapshot().size)
+        }
+
+    @Test
+    fun `rejects duplicate name case-insensitive`() =
+        runTest {
+            medicationRepository.add(Medication(name = "Caltrat"))
+            val result = useCase(Medication(name = "caltrat"), emptyList())
+
+            assertEquals(
+                SaveMedicationResult.Invalid(MedicationValidationError.DUPLICATE_NAME),
+                result,
+            )
+        }
+
+    @Test
+    fun `allows editing medication keeping same name`() =
+        runTest {
+            val id = medicationRepository.add(Medication(name = "Caltrat"))
+            val result = useCase(Medication(id = id, name = "Caltrat"), emptyList())
+
+            assertTrue(result is SaveMedicationResult.Success)
+        }
 }

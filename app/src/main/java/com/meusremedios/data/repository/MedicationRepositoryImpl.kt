@@ -27,4 +27,7 @@ class MedicationRepositoryImpl
         override suspend fun update(medication: Medication) = medicationDao.update(medication.toEntity())
 
         override suspend fun delete(medication: Medication) = medicationDao.delete(medication.toEntity())
+
+        override suspend fun existsByName(name: String, excludeId: Long): Boolean =
+            medicationDao.existsByName(name, excludeId)
     }

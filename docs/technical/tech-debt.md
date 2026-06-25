@@ -5,7 +5,9 @@ para rastreabilidade em commits e PRs.
 
 ---
 
-## TD-1 — Validação de nome único no cadastro de medicamento
+## TD-1 — ~~Validação de nome único no cadastro de medicamento~~ ✅ resolvido
+
+> Resolvido na change `fix-duplicate-medication-name` (F10). Commit referência: ver git log.
 
 **Área:** Cadastro (F2) · `domain/usecase/SaveMedicationUseCase` · `ui/medications/form`
 

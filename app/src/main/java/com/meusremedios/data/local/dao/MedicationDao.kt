@@ -34,4 +34,10 @@ interface MedicationDao {
             "ORDER BY name COLLATE NOCASE ASC",
     )
     fun search(query: String): Flow<List<MedicationEntity>>
+
+    @Query(
+        "SELECT COUNT(*) > 0 FROM medications " +
+            "WHERE LOWER(TRIM(name)) = LOWER(TRIM(:name)) AND id != :excludeId",
+    )
+    suspend fun existsByName(name: String, excludeId: Long): Boolean
 }

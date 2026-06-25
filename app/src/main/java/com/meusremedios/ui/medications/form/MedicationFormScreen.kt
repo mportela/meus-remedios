@@ -153,7 +153,7 @@ fun MedicationFormScreen(
         ) {
             NameField(
                 value = uiState.name,
-                error = uiState.validationError == MedicationValidationError.BLANK_NAME,
+                validationError = uiState.validationError,
                 onValueChange = viewModel::onNameChange,
             )
 
@@ -251,19 +251,24 @@ fun MedicationFormScreen(
 @Composable
 private fun NameField(
     value: String,
-    error: Boolean,
+    validationError: MedicationValidationError?,
     onValueChange: (String) -> Unit,
 ) {
+    val isError =
+        validationError == MedicationValidationError.BLANK_NAME ||
+            validationError == MedicationValidationError.DUPLICATE_NAME
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
-        isError = error,
+        isError = isError,
         label = { Text(stringResource(R.string.medication_form_name_label)) },
         supportingText = {
-            if (error) {
-                Text(stringResource(R.string.error_name_required))
-            } else {
-                Text(stringResource(R.string.medication_form_name_help))
+            when (validationError) {
+                MedicationValidationError.BLANK_NAME ->
+                    Text(stringResource(R.string.error_name_required))
+                MedicationValidationError.DUPLICATE_NAME ->
+                    Text(stringResource(R.string.error_name_duplicate))
+                else -> Text(stringResource(R.string.medication_form_name_help))
             }
         },
         singleLine = true,

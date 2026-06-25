@@ -205,7 +205,7 @@ flowchart TD
 > Changes planejadas para quitar os itens de `docs/technical/tech-debt.md`.
 > Numeradas a partir de **F10** para não colidir com as fases anteriores.
 
-- **F10** → `fix-duplicate-medication-name` (TD-1) — ainda não iniciada
+- **F10** → `fix-duplicate-medication-name` (TD-1) — ✅ feito
 - **F11** → `add-photo-collision-warning` (TD-2) — ainda não iniciada
 
 ### F10 — `fix-duplicate-medication-name` (TD-1)

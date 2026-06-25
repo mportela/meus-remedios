@@ -255,4 +255,40 @@ class DaoTest {
             fontScale = null,
             highContrast = null,
         )
+
+    @Test
+    fun existsByName_returnsTrueForDuplicateName() =
+        runTest {
+            db.medicationDao().insert(medication("Dipirona"))
+            assertTrue(db.medicationDao().existsByName("Dipirona", excludeId = 0L))
+        }
+
+    @Test
+    fun existsByName_isCaseInsensitive() =
+        runTest {
+            db.medicationDao().insert(medication("Dipirona"))
+            assertTrue(db.medicationDao().existsByName("dipirona", excludeId = 0L))
+            assertTrue(db.medicationDao().existsByName("DIPIRONA", excludeId = 0L))
+        }
+
+    @Test
+    fun existsByName_ignoresWhitespace() =
+        runTest {
+            db.medicationDao().insert(medication("  Dipirona  "))
+            assertTrue(db.medicationDao().existsByName("Dipirona", excludeId = 0L))
+        }
+
+    @Test
+    fun existsByName_returnsFalseForDifferentName() =
+        runTest {
+            db.medicationDao().insert(medication("Dipirona"))
+            assertTrue(!db.medicationDao().existsByName("Paracetamol", excludeId = 0L))
+        }
+
+    @Test
+    fun existsByName_excludesOwnId() =
+        runTest {
+            val id = db.medicationDao().insert(medication("Dipirona"))
+            assertTrue(!db.medicationDao().existsByName("Dipirona", excludeId = id))
+        }
 }

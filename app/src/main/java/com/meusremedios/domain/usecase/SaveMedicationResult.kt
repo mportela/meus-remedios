@@ -18,4 +18,7 @@ enum class MedicationValidationError {
 
     /** Data de término anterior à data de início (RN-1.3). */
     END_DATE_BEFORE_START_DATE,
+
+    /** Outro medicamento com o mesmo nome já existe no catálogo. */
+    DUPLICATE_NAME,
 }

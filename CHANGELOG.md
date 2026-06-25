@@ -16,6 +16,14 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   para melhorar a discriminação é fine-tuning do modelo — registrado como TODO técnico.
   F4.6 (`migrate-existing-photo-features`) atualizado para excluir segmentação do escopo.
 
+### Corrigido
+- **F10 — TD-1: unicidade de nome de medicamento** (change `fix-duplicate-medication-name`):
+  o sistema agora impede salvar dois medicamentos com o mesmo nome (comparação
+  case-insensitive após trim); erro inline exibido no campo "Nome do remédio" com a
+  mensagem "Já existe um remédio com este nome."; edição do próprio medicamento não é
+  afetada; dados já duplicados persistem — o conflito é detectado apenas ao tentar salvar
+  novamente.
+
 ### Adicionado
 - **F9 — Automação de testes** (change `add-test-automation`):
   infraestrutura de testes expandida com 11 novos testes (total: 161); testes

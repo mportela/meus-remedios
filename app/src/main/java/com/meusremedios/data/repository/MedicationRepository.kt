@@ -18,4 +18,6 @@ interface MedicationRepository {
     suspend fun update(medication: Medication)
 
     suspend fun delete(medication: Medication)
+
+    suspend fun existsByName(name: String, excludeId: Long): Boolean
 }

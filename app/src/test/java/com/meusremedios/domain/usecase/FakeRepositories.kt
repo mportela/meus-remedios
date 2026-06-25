@@ -45,6 +45,9 @@ class FakeMedicationRepository : MedicationRepository {
     override suspend fun delete(medication: Medication) {
         items.value = items.value.filterNot { it.id == medication.id }
     }
+
+    override suspend fun existsByName(name: String, excludeId: Long): Boolean =
+        items.value.any { it.id != excludeId && it.name.trim().lowercase() == name.trim().lowercase() }
 }
 
 /** Fake in-memory de [ScheduleRepository] para testes determinísticos. */

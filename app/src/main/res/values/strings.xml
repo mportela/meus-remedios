@@ -68,6 +68,7 @@
 
     <!-- Erros de validação -->
     <string name="error_name_required">Informe o nome do remédio.</string>
+    <string name="error_name_duplicate">Já existe um remédio com este nome.</string>
     <string name="error_end_before_start">A data de término deve ser igual ou posterior à data de início.</string>
 
     <!-- Comum -->
