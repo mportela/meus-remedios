@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.first
 class SaveMedicationUseCase @Inject constructor(
     private val medicationRepository: MedicationRepository,
     private val scheduleRepository: ScheduleRepository,
+    private val rescheduleAllAlarmsUseCase: RescheduleAllAlarmsUseCase,
 ) {
     suspend operator fun invoke(
         medication: Medication,
@@ -46,6 +47,7 @@ class SaveMedicationUseCase @Inject constructor(
         }
 
         reconcileSchedules(medicationId, schedules)
+        runCatching { rescheduleAllAlarmsUseCase() }
         return SaveMedicationResult.Success(medicationId)
     }
 

@@ -3,6 +3,8 @@ package com.meusremedios.domain.usecase
 import com.meusremedios.domain.model.Medication
 import com.meusremedios.domain.model.PeriodType
 import com.meusremedios.domain.model.ScheduleTime
+import io.mockk.coVerify
+import io.mockk.mockk
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlinx.coroutines.test.runTest
@@ -15,13 +17,15 @@ class SaveMedicationUseCaseTest {
 
     private lateinit var medicationRepository: FakeMedicationRepository
     private lateinit var scheduleRepository: FakeScheduleRepository
+    private lateinit var rescheduleAllAlarmsUseCase: RescheduleAllAlarmsUseCase
     private lateinit var useCase: SaveMedicationUseCase
 
     @Before
     fun setUp() {
         medicationRepository = FakeMedicationRepository()
         scheduleRepository = FakeScheduleRepository()
-        useCase = SaveMedicationUseCase(medicationRepository, scheduleRepository)
+        rescheduleAllAlarmsUseCase = mockk(relaxed = true)
+        useCase = SaveMedicationUseCase(medicationRepository, scheduleRepository, rescheduleAllAlarmsUseCase)
     }
 
     @Test
@@ -66,6 +70,13 @@ class SaveMedicationUseCaseTest {
         val schedule = scheduleRepository.snapshot().single()
         assertEquals(saved.id, schedule.medicationId)
         assertEquals(LocalTime.of(8, 0), schedule.timeOfDay)
+    }
+
+    @Test
+    fun `calls RescheduleAllAlarmsUseCase after saving medication`() = runTest {
+        useCase(Medication(name = "Losartana"), emptyList())
+
+        coVerify { rescheduleAllAlarmsUseCase() }
     }
 
     @Test

@@ -17,6 +17,21 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   F4.6 (`migrate-existing-photo-features`) atualizado para excluir segmentação do escopo.
 
 ### Adicionado
+- **F6 — Lembretes de medicamentos** (change `add-scheduling-reminders`):
+  alarmes exatos (`setExactAndAllowWhileIdle`) por dose ativa do dia, respeitando
+  `remindersGlobal` e `remindersEnabled` por medicamento. Notificação com 3 ações:
+  **"Tomei"** (registra dose como TAKEN diretamente e descarta a notificação),
+  **"Confirmar comprimido"** (abre a tela Confirmar e descarta a notificação),
+  **"Lembrar em 2 min"** (reagenda o alarme por 2 minutos). Reagendamento automático
+  após boot (`BootReceiver`) e à meia-noite (alarme diário). Ao salvar ou excluir
+  medicamentos, `SaveMedicationUseCase` aciona `RescheduleAllAlarmsUseCase`.
+  Fluxo de permissão: `POST_NOTIFICATIONS` solicitado na primeira abertura (Android 13+);
+  se negado permanentemente, dialog com link para configurações. Se `SCHEDULE_EXACT_ALARM`
+  indisponível, aviso com link para configurações do sistema. Novos componentes:
+  `AlarmReceiver`, `BootReceiver`, `NotificationActionReceiver`, `NotificationActionHandler`,
+  `NotificationHelper`, `NotificationChannels`, `ScheduleAlarmsForTodayUseCase`,
+  `RescheduleAllAlarmsUseCase`. Canal de notificação `REMINDERS` (importância HIGH) criado
+  no startup. Deep link via `MainActivity.onNewIntent` para navegar à aba Confirmar.
 - **F5 — Registro de tomadas** (change `add-intake-tracking`):
   registro de doses como TAKEN ou SKIPPED direto na tela Hoje, com toggle idempotente
   (mesmo status → desfaz; status diferente → atualiza; ausente → insere). Cada `DoseCard`

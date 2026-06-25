@@ -12,6 +12,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -44,8 +45,22 @@ private enum class TopLevelDestination(
 
 /** Grafo de navegação principal do app. */
 @Composable
-fun MeusRemediosNavHost(modifier: Modifier = Modifier) {
+fun MeusRemediosNavHost(
+    modifier: Modifier = Modifier,
+    navigateToRecognition: Boolean = false,
+    onRecognitionNavigated: () -> Unit = {},
+) {
     val navController = rememberNavController()
+
+    LaunchedEffect(navigateToRecognition) {
+        if (navigateToRecognition) {
+            navController.navigate(Routes.RECOGNITION) {
+                launchSingleTop = true
+                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
+            }
+            onRecognitionNavigated()
+        }
+    }
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
     val showBottomBar = TopLevelDestination.entries.any { dest ->

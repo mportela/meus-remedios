@@ -44,7 +44,7 @@ Sugestão de change-ids (verbo + escopo), criados na ordem de dependência:
 - **F4.1–F4.7** → **Reconhecimento inteligente (TF)** — objetivo core; detalhado na seção
   seguinte. **Prioridade imediata, antes de F5.** (F4.1 ✅ feito)
 - **F5** → `add-intake-tracking` (capability 5). ✅ feito
-- **F6** → `add-scheduling-reminders` (capability 4). ← próxima
+- **F6** → `add-scheduling-reminders` (capability 4). ✅ feito
 - **F7** → `add-app-settings-and-retention` (capability 7).
 - **F8** → `add-accessibility-baseline` (capability 8).
 - **F9** → `add-test-automation` (estratégia de testes + CI).

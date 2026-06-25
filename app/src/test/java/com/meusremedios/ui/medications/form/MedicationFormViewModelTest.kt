@@ -16,8 +16,10 @@ import com.meusremedios.domain.usecase.GetMedicationUseCase
 import com.meusremedios.domain.usecase.MedicationValidationError
 import com.meusremedios.domain.usecase.ObserveMedicationPhotosUseCase
 import com.meusremedios.domain.usecase.RemoveMedicationPhotoUseCase
+import com.meusremedios.domain.usecase.RescheduleAllAlarmsUseCase
 import com.meusremedios.domain.usecase.SaveMedicationUseCase
 import com.meusremedios.ui.navigation.Routes
+import io.mockk.mockk
 import java.time.LocalDate
 import java.time.LocalTime
 import kotlinx.coroutines.test.runTest
@@ -41,7 +43,7 @@ class MedicationFormViewModelTest {
         MedicationFormViewModel(
             savedStateHandle = SavedStateHandle(mapOf(Routes.ARG_MEDICATION_ID to id)),
             getMedication = GetMedicationUseCase(medicationRepository, scheduleRepository),
-            saveMedication = SaveMedicationUseCase(medicationRepository, scheduleRepository),
+            saveMedication = SaveMedicationUseCase(medicationRepository, scheduleRepository, mockk(relaxed = true)),
             deleteMedication = DeleteMedicationUseCase(medicationRepository),
             observeMedicationPhotos = ObserveMedicationPhotosUseCase(photoRepository),
             addMedicationPhoto = AddMedicationPhotoUseCase(

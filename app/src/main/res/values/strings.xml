@@ -138,4 +138,15 @@
     <string name="medication_detail_history_empty">Nenhum registro de tomada ainda.</string>
     <string name="medication_detail_not_found">Remédio não encontrado.</string>
     <string name="weekdays_all">Todos os dias</string>
+
+    <!-- Notificações de lembrete -->
+    <string name="notification_channel_reminders_name">Lembretes de medicamentos</string>
+    <string name="notification_dose_title">Hora do remédio</string>
+    <string name="notification_dose_text">%1$s às %2$s</string>
+    <string name="notification_action_taken">Tomei</string>
+    <string name="notification_action_confirm">Confirmar comprimido</string>
+    <string name="notification_action_snooze">Lembrar em 2 min</string>
+    <string name="notification_permission_rationale">Ative as notificações para receber lembretes nos horários cadastrados.</string>
+    <string name="notification_permission_open_settings">Abrir configurações</string>
+    <string name="notification_exact_alarm_warning">Notificações podem chegar com atraso. Toque para corrigir.</string>
 </resources>
