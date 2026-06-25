@@ -31,6 +31,19 @@ jobs:
       - name: Validar wrapper do Gradle
         uses: gradle/actions/wrapper-validation@v4
 
+      - name: Restaurar keystore da keystore base64
+        run: |
+          echo "${{ secrets.KEYSTORE_FILE }}" | base64 -d > app/meus-remedios-key.jks
+
+      - name: Criar arquivo key.properties
+        run: |
+          cat > key.properties << EOF
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=$(pwd)/app/meus-remedios-key.jks
+          EOF
+
       - name: Build de release
         run: ./gradlew assembleRelease --stacktrace
 

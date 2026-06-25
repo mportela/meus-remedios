@@ -7,6 +7,15 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Adicionado
+- **Build:** configuração de assinatura do APK para release via Gradle (signingConfigs com
+  keystore em `app/meus-remedios-key.jks` e credenciais em `key.properties` — arquivo
+  adicionado ao `.gitignore` para segurança); `./gradlew assembleRelease` agora gera APK
+  assinado pronto para distribuição.
+- **CI/CD:** workflow GitHub Actions (`release.yml`) configurado para gerar APK assinado
+  automaticamente em releases (tags `v*.*.*`); keystore e credenciais armazenadas como
+  secrets no GitHub; documentação de setup em `.github/SECRETS_SETUP.md`.
+
 ## [1.1.1] - 2026-06-25
 
 ### Alterado

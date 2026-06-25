@@ -1,4 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.io.File
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
@@ -17,6 +19,12 @@ ktlint {
     }
 }
 
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(keystorePropertiesFile.inputStream())
+}
+
 android {
     namespace = "com.meusremedios"
     compileSdk = 35
@@ -31,6 +39,15 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        create("release") {
+            keyAlias = keystoreProperties["keyAlias"]?.toString() ?: ""
+            keyPassword = keystoreProperties["keyPassword"]?.toString() ?: ""
+            storeFile = keystoreProperties["storeFile"]?.toString()?.let { File(it) }
+            storePassword = keystoreProperties["storePassword"]?.toString() ?: ""
+        }
+    }
+
     buildTypes {
         debug {
             // Recursos de desenvolvimento (ex.: escolher foto da galeria no
@@ -41,6 +58,7 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             buildConfigField("boolean", "DEV_TOOLS_ENABLED", "false")
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",

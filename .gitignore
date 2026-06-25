@@ -16,8 +16,10 @@ local.properties
 # Keystore / segredos
 *.jks
 *.keystore
+key.properties
 keystore.properties
 secrets.properties
+.github/KEYSTORE_BASE64.txt
 
 # Logs e arquivos temporários
 *.log
