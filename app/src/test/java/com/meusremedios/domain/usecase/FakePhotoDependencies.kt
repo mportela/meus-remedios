@@ -2,11 +2,11 @@ package com.meusremedios.domain.usecase
 
 import android.graphics.Bitmap
 import android.net.Uri
-import com.meusremedios.data.ml.TfliteEmbedder
 import com.meusremedios.data.media.CameraTarget
 import com.meusremedios.data.media.MedicationImageStore
 import com.meusremedios.data.ml.FeatureExtractor
 import com.meusremedios.data.ml.PhotoFeatures
+import com.meusremedios.data.ml.TfliteEmbedder
 import com.meusremedios.data.repository.MedicationPhotoRepository
 import com.meusremedios.domain.model.MedicationPhoto
 import com.meusremedios.domain.model.PhotoSide

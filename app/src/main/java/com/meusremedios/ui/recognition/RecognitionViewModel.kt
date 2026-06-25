@@ -3,6 +3,7 @@ package com.meusremedios.ui.recognition
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.SystemClock
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.meusremedios.data.media.MedicationImageStore
@@ -18,7 +19,6 @@ import com.meusremedios.domain.usecase.GetPendingDosesTodayForMedicationUseCase
 import com.meusremedios.domain.usecase.MarkIntakeTakenUseCase
 import com.meusremedios.domain.usecase.RecognizeMedicationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import androidx.annotation.VisibleForTesting
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -30,7 +30,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.time.Clock
 import java.time.LocalDate
 import javax.inject.Inject
@@ -217,25 +216,28 @@ class RecognitionViewModel
             viewModelScope.launch(computationDispatcher) {
                 try {
                     val embedding = embedder.embed(bitmap) ?: return@launch
-                    val queryFeature = FeatureSet(
-                        embedding = embedding,
-                        colorLab = null,
-                        aspectRatio = 1f,
-                        imprintText = null,
-                    )
-                    val registeredPhotos = medicationPhotoRepository.getAll()
-                    val hasConfidentMatch = registeredPhotos.any { photo ->
-                        val refFeature = FeatureSet(
-                            embedding = photo.embedding,
-                            colorLab = photo.dominantColorLab,
-                            aspectRatio = photo.aspectRatio,
-                            imprintText = photo.imprintText,
+                    val queryFeature =
+                        FeatureSet(
+                            embedding = embedding,
+                            colorLab = null,
+                            aspectRatio = 1f,
+                            imprintText = null,
                         )
-                        com.meusremedios.data.ml.RecognitionScorer.score(
-                            query = queryFeature,
-                            candidate = refFeature,
-                        ) >= RecognitionParams.THRESHOLD_CONFIDENT
-                    }
+                    val registeredPhotos = medicationPhotoRepository.getAll()
+                    val hasConfidentMatch =
+                        registeredPhotos.any { photo ->
+                            val refFeature =
+                                FeatureSet(
+                                    embedding = photo.embedding,
+                                    colorLab = photo.dominantColorLab,
+                                    aspectRatio = photo.aspectRatio,
+                                    imprintText = photo.imprintText,
+                                )
+                            com.meusremedios.data.ml.RecognitionScorer.score(
+                                query = queryFeature,
+                                candidate = refFeature,
+                            ) >= RecognitionParams.THRESHOLD_CONFIDENT
+                        }
                     if (hasConfidentMatch) {
                         lastAutoCaptureMs = SystemClock.elapsedRealtime()
                         _autoCaptureEvents.trySend(Unit)

@@ -2,28 +2,24 @@ package com.meusremedios.ui.recognition
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.ImageFormat
 import android.net.Uri
-import android.os.Build
 import android.util.Size
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
-import androidx.camera.core.SurfaceOrientedMeteringPointFactory
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlinx.coroutines.suspendCancellableCoroutine
 
 /**
  * Encapsula os use cases CameraX para o preview ao vivo da tela de reconhecimento.
@@ -32,7 +28,6 @@ import kotlinx.coroutines.suspendCancellableCoroutine
  * Comunica eventos ao ViewModel via callbacks (sem referência direta ao ViewModel).
  */
 class CameraXPreviewController(private val context: Context) {
-
     private var imageCapture: ImageCapture? = null
     private var cameraProvider: ProcessCameraProvider? = null
     private val analysisExecutor: ExecutorService = Executors.newSingleThreadExecutor()
@@ -94,11 +89,12 @@ class CameraXPreviewController(private val context: Context) {
      * Deve ser chamado após [start].
      */
     fun triggerFocus(previewView: PreviewView) {
-        val camera = cameraProvider?.let {
-            // Acesso ao Camera object via cameraControl não é exposto diretamente;
-            // usamos a instância bindada pelo lifecycleOwner.
-            // O foco automático contínuo é suficiente para o caso de uso.
-        }
+        val camera =
+            cameraProvider?.let {
+                // Acesso ao Camera object via cameraControl não é exposto diretamente;
+                // usamos a instância bindada pelo lifecycleOwner.
+                // O foco automático contínuo é suficiente para o caso de uso.
+            }
         // Foco contínuo automático é o comportamento padrão do CameraX;
         // não é necessário triggerFocus explícito para o fluxo de auto-captura.
     }
@@ -109,10 +105,11 @@ class CameraXPreviewController(private val context: Context) {
      */
     suspend fun capturePhoto(outputFile: File): Uri =
         suspendCancellableCoroutine { cont ->
-            val capture = imageCapture ?: run {
-                cont.resumeWithException(IllegalStateException("ImageCapture não inicializado"))
-                return@suspendCancellableCoroutine
-            }
+            val capture =
+                imageCapture ?: run {
+                    cont.resumeWithException(IllegalStateException("ImageCapture não inicializado"))
+                    return@suspendCancellableCoroutine
+                }
             val outputOptions = ImageCapture.OutputFileOptions.Builder(outputFile).build()
             capture.takePicture(
                 outputOptions,
