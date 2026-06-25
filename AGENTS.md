@@ -1,7 +1,8 @@
 # AGENTS.md
 
-Guia para agentes de IA e pessoas contribuindo no **Meus Remédios**.
+Guia para agentes de IA (Claude, GitHub Copilot, etc.) e pessoas contribuindo no **Meus Remédios**.
 Visão geral e início rápido no [`README.md`](README.md) da raiz.
+Para instruções específicas de Claude Code, veja [`CLAUDE.md`](CLAUDE.md).
 
 ## O que é o projeto
 App Android **100% offline** que confirma visualmente, pela câmera, qual remédio
