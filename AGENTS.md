@@ -64,7 +64,7 @@ Detalhes em [`docs/technical/tech-1-arquitetura.md`](docs/technical/tech-1-arqui
 - **Antes de qualquer commit**, rodar `make fmt` (ktlintFormat) seguido de `make check`
   (testes + ktlintCheck + build). O hook `pre-commit` bloqueia violações de ktlint;
   instale-o com `make install-hooks` em novos clones.
-- Manter este `AGENTS.md` e o [`.github/copilot-instructions.md`](.github/copilot-instructions.md)
+- Manter este `AGENTS.md` e o [`.github/ai-instructions.md`](.github/ai-instructions.md)
   sincronizados quando convenções/arquitetura mudarem.
 - Não introduzir dependências de rede nem chamadas externas.
 - Não criar arquivos de documentação extra sem necessidade; preferir editar os existentes.
