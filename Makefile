@@ -111,6 +111,13 @@ ime-fix: ## Força o teclado virtual a aparecer mesmo com teclado físico
 	@"$(ADB)" shell settings put secure show_ime_with_hard_keyboard 1
 	@echo "Teclado virtual habilitado (show_ime_with_hard_keyboard=1)."
 
+.PHONY: keyboard-enable
+keyboard-enable: ## Habilita teclado físico do Mac no AVD (hw.keyboard=yes) — requer kill-emulator antes
+	@CONFIG="$$HOME/.android/avd/$(AVD_NAME).avd/config.ini"; \
+	if [ ! -f "$$CONFIG" ]; then echo "AVD '$(AVD_NAME)' não encontrado."; exit 1; fi; \
+	python3 -c "path='$$CONFIG'; f=open(path,'rb'); c=f.read(); f.close(); f=open(path,'wb'); f.write(c.replace(b'hw.keyboard=no',b'hw.keyboard=yes')); f.close()"; \
+	echo "hw.keyboard=yes aplicado em $$CONFIG."
+
 .PHONY: kill-emulator
 kill-emulator: ## Encerra o emulador em execução
 	@"$(ADB)" emu kill 2>/dev/null || echo "Nenhum emulador rodando."
