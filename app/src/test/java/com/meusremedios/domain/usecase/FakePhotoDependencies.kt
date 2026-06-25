@@ -1,6 +1,8 @@
 package com.meusremedios.domain.usecase
 
+import android.graphics.Bitmap
 import android.net.Uri
+import com.meusremedios.data.ml.TfliteEmbedder
 import com.meusremedios.data.media.CameraTarget
 import com.meusremedios.data.media.MedicationImageStore
 import com.meusremedios.data.ml.FeatureExtractor
@@ -77,4 +79,14 @@ class FakeFeatureExtractor(
         ),
 ) : FeatureExtractor {
     override suspend fun extract(imagePath: String): PhotoFeatures = features
+}
+
+/**
+ * Fake de [TfliteEmbedder] para uso em testes JVM (sem modelo TFLite real).
+ * Retorna [embedding] para qualquer bitmap, ou `null` se não configurado.
+ */
+class FakeTfliteEmbedder(
+    val embedding: FloatArray? = null,
+) : TfliteEmbedder(context = io.mockk.mockk(relaxed = true)) {
+    override fun embed(bitmap: Bitmap): FloatArray? = embedding
 }

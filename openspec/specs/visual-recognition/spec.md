@@ -152,17 +152,27 @@ diretamente na tela Confirmar, sem exigir navegação para a tela Hoje.
   (o usuário não sabe qual remédio é, portanto não pode registrar a tomada)
 
 ### Requirement: Auto-captura controlada por configuração
-O sistema SHALL respeitar a preferência `autoCapture` de `AppSettings` na tela de
-reconhecimento: quando ativa, o foco bem-sucedido da câmera dispara captura automática;
-quando inativa, o usuário precisa tocar para capturar.
+O sistema DEVE permitir que o usuário inicie o reconhecimento de um comprimido por câmera.
+Quando `autoCapture` estiver habilitado nas configurações, o sistema DEVE capturar
+automaticamente quando detectar foco estável e score TFLite ≥ THRESHOLD_CONFIDENT no frame
+ao vivo. Quando `autoCapture` estiver desabilitado, o sistema DEVE exibir um botão de
+captura manual (comportamento atual preservado).
 
-#### Scenario: Auto-captura ativa — foco dispara captura
-- **WHEN** `autoCapture = true` e a câmera foca o comprimido
-- **THEN** a foto é capturada automaticamente sem interação do usuário
+#### Scenario: Auto-captura com confiança suficiente
+- **WHEN** `autoCapture = true` E câmera está com foco estável E score TFLite do frame ≥ THRESHOLD_CONFIDENT
+- **THEN** o sistema captura a imagem automaticamente, exibe flash branco e vibração háptica, e inicia a análise
 
-#### Scenario: Auto-captura inativa — toque necessário
+#### Scenario: Auto-captura bloqueada por cooldown
+- **WHEN** uma captura automática foi realizada há menos de 2 segundos
+- **THEN** o sistema NÃO dispara nova captura automática, mesmo com foco estável e score suficiente
+
+#### Scenario: Score insuficiente no preview
+- **WHEN** `autoCapture = true` E câmera está com foco estável E score TFLite do frame < THRESHOLD_CONFIDENT
+- **THEN** o sistema NÃO captura automaticamente; botão manual permanece disponível
+
+#### Scenario: Auto-captura desabilitada
 - **WHEN** `autoCapture = false`
-- **THEN** a câmera aguarda o toque do usuário no botão de captura para tirar a foto
+- **THEN** o sistema usa câmera nativa (Intent) e botão de captura manual; nenhum preview ao vivo é exibido
 
 ### Requirement: Anúncio do resultado de reconhecimento via TalkBack
 O sistema SHALL anunciar o resultado do reconhecimento via semântica Compose

@@ -3,6 +3,7 @@ package com.meusremedios.ui.recognition
 import android.net.Uri
 import com.meusremedios.MainDispatcherRule
 import com.meusremedios.data.ml.PhotoFeatures
+import com.meusremedios.domain.model.AppSettings
 import com.meusremedios.domain.model.Medication
 import com.meusremedios.domain.model.MedicationPhoto
 import com.meusremedios.domain.model.PhotoSide
@@ -14,11 +15,16 @@ import com.meusremedios.domain.usecase.FakeMedicationImageStore
 import com.meusremedios.domain.usecase.FakeMedicationPhotoRepository
 import com.meusremedios.domain.usecase.FakeMedicationRepository
 import com.meusremedios.domain.usecase.FakeScheduleRepository
+import com.meusremedios.domain.usecase.FakeSettingsRepository
+import com.meusremedios.domain.usecase.FakeTfliteEmbedder
 import com.meusremedios.domain.usecase.GetPendingDosesTodayForMedicationUseCase
 import com.meusremedios.domain.usecase.MarkIntakeTakenUseCase
 import com.meusremedios.domain.usecase.RecognizeMedicationUseCase
+import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
@@ -71,7 +77,10 @@ class RecognitionViewModelTest {
         return id
     }
 
-    private fun viewModel(): RecognitionViewModel {
+    private fun viewModel(
+        settingsRepository: FakeSettingsRepository = FakeSettingsRepository(),
+        fakeEmbedder: FakeTfliteEmbedder = FakeTfliteEmbedder(),
+    ): RecognitionViewModel {
         val extractor =
             FakeFeatureExtractor(
                 PhotoFeatures(embedding = null, dominantColorLab = floatArrayOf(50f, 0f, 0f), aspectRatio = 1f),
@@ -79,7 +88,17 @@ class RecognitionViewModelTest {
         val recognizeUseCase = RecognizeMedicationUseCase(photos, medications, extractor)
         val getPending = GetPendingDosesTodayForMedicationUseCase(medications, schedules, intakeLogs, clock)
         val markTaken = MarkIntakeTakenUseCase(intakeLogs, clock)
-        return RecognitionViewModel(imageStore, recognizeUseCase, getPending, markTaken, clock)
+        return RecognitionViewModel(
+            imageStore = imageStore,
+            recognizeMedication = recognizeUseCase,
+            getPendingDosesForMedication = getPending,
+            markIntakeTakenUseCase = markTaken,
+            clock = clock,
+            settingsRepository = settingsRepository,
+            embedder = fakeEmbedder,
+            medicationPhotoRepository = photos,
+            medicationRepository = medications,
+        ).also { it.computationDispatcher = mainDispatcherRule.dispatcher }
     }
 
     @Test
@@ -185,4 +204,102 @@ class RecognitionViewModelTest {
             assertEquals(2, vm.uiState.value.pendingDosesToday.size)
             assertEquals(0, intakeLogs.observeByDate(date).first().size)
         }
+
+    @Test
+    fun `autoCaptureEnabled reflete setting do repositorio`() =
+        runTest {
+            val settings = FakeSettingsRepository(AppSettings(autoCapture = true))
+            val vm = viewModel(settingsRepository = settings)
+            advanceUntilIdle()
+
+            assertTrue(vm.uiState.value.autoCaptureEnabled)
+        }
+
+    @Test
+    fun `onFrameReady com embedding confiante emite evento de auto-captura`() =
+        runTest {
+            val embedding = FloatArray(1024) { 1f / kotlin.math.sqrt(1024f) }
+            val medId = medications.add(Medication(name = "Paracetamol"))
+            photos.add(
+                MedicationPhoto(
+                    medicationId = medId,
+                    filePath = "/f/p.jpg",
+                    embedding = embedding,
+                    dominantColorLab = floatArrayOf(50f, 0f, 0f),
+                    aspectRatio = 1f,
+                    side = PhotoSide.FRONT,
+                ),
+            )
+            val embedder = FakeTfliteEmbedder(embedding = embedding)
+            val vm = viewModel(fakeEmbedder = embedder)
+
+            var eventReceived = false
+            val job = launch { vm.autoCaptureEvents.collect { eventReceived = true } }
+
+            vm.onFrameReady(mockk(relaxed = true))
+            advanceUntilIdle()
+
+            assertTrue(eventReceived)
+            job.cancel()
+        }
+
+    @Test
+    fun `onFrameReady com embedding de score baixo nao emite evento`() =
+        runTest {
+            val medId = medications.add(Medication(name = "Paracetamol"))
+            photos.add(
+                MedicationPhoto(
+                    medicationId = medId,
+                    filePath = "/f/p.jpg",
+                    // embedding oposto → cosseno negativo → score baixo
+                    embedding = FloatArray(1024) { 1f / kotlin.math.sqrt(1024f) },
+                    dominantColorLab = floatArrayOf(50f, 0f, 0f),
+                    aspectRatio = 1f,
+                    side = PhotoSide.FRONT,
+                ),
+            )
+            // Embedder retorna vetor oposto
+            val embedder = FakeTfliteEmbedder(embedding = FloatArray(1024) { -1f / kotlin.math.sqrt(1024f) })
+            val vm = viewModel(fakeEmbedder = embedder)
+
+            var eventReceived = false
+            val job = launch { vm.autoCaptureEvents.collect { eventReceived = true } }
+
+            vm.onFrameReady(mockk(relaxed = true))
+            advanceUntilIdle()
+
+            assertFalse(eventReceived)
+            job.cancel()
+        }
+
+    @Test
+    fun `onFrameReady dentro do cooldown nao emite segundo evento`() =
+        runTest {
+            val embedding = FloatArray(1024) { 1f / kotlin.math.sqrt(1024f) }
+            val medId = medications.add(Medication(name = "Paracetamol"))
+            photos.add(
+                MedicationPhoto(
+                    medicationId = medId,
+                    filePath = "/f/p.jpg",
+                    embedding = embedding,
+                    dominantColorLab = floatArrayOf(50f, 0f, 0f),
+                    aspectRatio = 1f,
+                    side = PhotoSide.FRONT,
+                ),
+            )
+            val embedder = FakeTfliteEmbedder(embedding = embedding)
+            val vm = viewModel(fakeEmbedder = embedder)
+
+            var eventCount = 0
+            val job = launch { vm.autoCaptureEvents.collect { eventCount++ } }
+
+            vm.onFrameReady(mockk(relaxed = true))
+            advanceUntilIdle()
+            vm.onFrameReady(mockk(relaxed = true)) // dentro do cooldown de 2s
+            advanceUntilIdle()
+
+            assertEquals(1, eventCount)
+            job.cancel()
+        }
 }
+

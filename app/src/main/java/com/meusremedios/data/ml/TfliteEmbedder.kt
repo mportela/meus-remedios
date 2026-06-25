@@ -20,7 +20,7 @@ import javax.inject.Singleton
  * reconhecimento prossegue apenas com cor e forma, sem quebrar o app.
  */
 @Singleton
-class TfliteEmbedder
+open class TfliteEmbedder
     @Inject
     constructor(
         @ApplicationContext private val context: Context,
@@ -33,7 +33,7 @@ class TfliteEmbedder
          * Calcula o embedding L2-normalizado de [bitmap], ou `null` se o modelo não
          * estiver disponível ou a inferência falhar.
          */
-        fun embed(bitmap: Bitmap): FloatArray? {
+        open fun embed(bitmap: Bitmap): FloatArray? {
             val tflite = obtainInterpreter() ?: return null
             return try {
                 val input = preprocess(bitmap)

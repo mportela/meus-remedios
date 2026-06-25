@@ -25,16 +25,18 @@ serão retidos (opções: 30, 60, 90, 180, 365 dias; default 90).
 - **AND** medicamentos e horários cadastrados permanecem intactos
 
 ### Requirement: Auto-captura configurável
-O sistema SHALL permitir ativar/desativar a auto-captura da câmera (focar o comprimido
-dispara foto automaticamente); default desativado.
+O sistema DEVE persistir a preferência `autoCapture` do usuário e aplicá-la ao comportamento
+da câmera na tela de reconhecimento. Quando `autoCapture = true`, a câmera DEVE operar em
+modo de preview ao vivo com captura automática por confiança. Quando `autoCapture = false`,
+a câmera DEVE operar em modo manual (Intent nativo), preservando o comportamento anterior.
 
-#### Scenario: Ativar auto-captura
-- **WHEN** o usuário ativa o toggle "Auto-captura"
-- **THEN** a câmera passa a disparar foto automaticamente ao focar um comprimido
+#### Scenario: Configuração habilitada reflete na câmera
+- **WHEN** o usuário habilita auto-captura nas configurações
+- **THEN** a tela de reconhecimento exibe preview ao vivo (CameraX) e captura automaticamente ao detectar foco + confiança
 
-#### Scenario: Desativar auto-captura
-- **WHEN** o usuário desativa o toggle "Auto-captura"
-- **THEN** a câmera exige toque manual para capturar
+#### Scenario: Configuração desabilitada preserva comportamento manual
+- **WHEN** o usuário desabilita auto-captura nas configurações
+- **THEN** a tela de reconhecimento exibe o botão de captura manual e usa câmera nativa (Intent)
 
 ### Requirement: Lembretes globais e antecedência configuráveis
 O sistema SHALL permitir ligar/desligar lembretes globais e ajustar a antecedência do

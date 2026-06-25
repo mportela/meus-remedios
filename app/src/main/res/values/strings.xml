@@ -87,6 +87,7 @@
     <!-- Reconhecimento visual -->
     <string name="recognition_title">Confirmar remédio</string>
     <string name="recognition_intro">Aponte a câmera para o comprimido e toque no botão para confirmar qual remédio é.</string>
+    <string name="recognition_auto_capture_hint">Aponte para o comprimido — a câmera capturará automaticamente ao reconhecer.</string>
     <string name="recognition_confirm_button">Confirmar remédio</string>
     <string name="recognition_analyzing">Analisando a foto…</string>
     <string name="recognition_confident_prefix">Este remédio é:</string>

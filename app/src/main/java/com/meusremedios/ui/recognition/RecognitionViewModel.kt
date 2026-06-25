@@ -1,20 +1,36 @@
 package com.meusremedios.ui.recognition
 
+import android.graphics.Bitmap
 import android.net.Uri
+import android.os.SystemClock
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.meusremedios.data.media.MedicationImageStore
+import com.meusremedios.data.ml.FeatureSet
+import com.meusremedios.data.ml.RecognitionParams
+import com.meusremedios.data.ml.TfliteEmbedder
+import com.meusremedios.data.repository.MedicationPhotoRepository
+import com.meusremedios.data.repository.MedicationRepository
+import com.meusremedios.data.repository.SettingsRepository
 import com.meusremedios.domain.model.RecognitionOutcome
 import com.meusremedios.domain.model.ScheduledDose
 import com.meusremedios.domain.usecase.GetPendingDosesTodayForMedicationUseCase
 import com.meusremedios.domain.usecase.MarkIntakeTakenUseCase
 import com.meusremedios.domain.usecase.RecognizeMedicationUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import androidx.annotation.VisibleForTesting
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.time.Clock
 import java.time.LocalDate
 import javax.inject.Inject
@@ -31,6 +47,10 @@ data class RecognitionUiState(
     val pendingDosesToday: List<ScheduledDose> = emptyList(),
     /** Verdadeiro após o usuário registrar uma tomada bem-sucedida. */
     val intakeRegistered: Boolean = false,
+    /** Verdadeiro quando a auto-captura está habilitada nas configurações. */
+    val autoCaptureEnabled: Boolean = false,
+    /** Verdadeiro durante o flash visual de auto-captura. */
+    val showCaptureFlash: Boolean = false,
 )
 
 @HiltViewModel
@@ -42,12 +62,31 @@ class RecognitionViewModel
         private val getPendingDosesForMedication: GetPendingDosesTodayForMedicationUseCase,
         private val markIntakeTakenUseCase: MarkIntakeTakenUseCase,
         private val clock: Clock,
+        private val settingsRepository: SettingsRepository,
+        private val embedder: TfliteEmbedder,
+        private val medicationPhotoRepository: MedicationPhotoRepository,
+        private val medicationRepository: MedicationRepository,
     ) : ViewModel() {
+        @VisibleForTesting
+        internal var computationDispatcher: CoroutineDispatcher = Dispatchers.Default
         private val _uiState = MutableStateFlow(RecognitionUiState())
         val uiState: StateFlow<RecognitionUiState> = _uiState.asStateFlow()
 
+        private val _autoCaptureEvents = Channel<Unit>(Channel.CONFLATED)
+        val autoCaptureEvents = _autoCaptureEvents.receiveAsFlow()
+
         private val queryPaths = mutableListOf<String>()
         private var pendingTempPath: String? = null
+        private var lastAutoCaptureMs: Long = -AUTO_CAPTURE_COOLDOWN_MS
+        private var isProcessingFrame: Boolean = false
+
+        init {
+            settingsRepository.observe()
+                .onEach { settings ->
+                    _uiState.update { it.copy(autoCaptureEnabled = settings.autoCapture) }
+                }
+                .launchIn(viewModelScope)
+        }
 
         /** Cria o arquivo de saída para a câmera e entrega o [Uri] via [onReady]. */
         fun prepareCapture(onReady: (Uri) -> Unit) {
@@ -155,13 +194,66 @@ class RecognitionViewModel
             val paths = queryPaths.toList()
             queryPaths.clear()
             pendingTempPath = null
-            _uiState.value = RecognitionUiState()
+            isProcessingFrame = false
+            _uiState.value = RecognitionUiState(autoCaptureEnabled = _uiState.value.autoCaptureEnabled)
             viewModelScope.launch {
                 paths.forEach { imageStore.delete(it) }
             }
         }
 
+        /**
+         * Processa um frame ao vivo do preview CameraX.
+         * Chamado ~5 fps quando [autoCaptureEnabled] é verdadeiro.
+         * Se o embedding do frame tiver score suficiente contra qualquer cadastro,
+         * emite evento de auto-captura (com cooldown de [AUTO_CAPTURE_COOLDOWN_MS]).
+         */
+        fun onFrameReady(bitmap: Bitmap) {
+            if (isProcessingFrame) return
+            if (_uiState.value.phase != RecognitionPhase.IDLE) return
+            val now = SystemClock.elapsedRealtime()
+            if (now - lastAutoCaptureMs < AUTO_CAPTURE_COOLDOWN_MS) return
+
+            isProcessingFrame = true
+            viewModelScope.launch(computationDispatcher) {
+                try {
+                    val embedding = embedder.embed(bitmap) ?: return@launch
+                    val queryFeature = FeatureSet(
+                        embedding = embedding,
+                        colorLab = null,
+                        aspectRatio = 1f,
+                        imprintText = null,
+                    )
+                    val registeredPhotos = medicationPhotoRepository.getAll()
+                    val hasConfidentMatch = registeredPhotos.any { photo ->
+                        val refFeature = FeatureSet(
+                            embedding = photo.embedding,
+                            colorLab = photo.dominantColorLab,
+                            aspectRatio = photo.aspectRatio,
+                            imprintText = photo.imprintText,
+                        )
+                        com.meusremedios.data.ml.RecognitionScorer.score(
+                            query = queryFeature,
+                            candidate = refFeature,
+                        ) >= RecognitionParams.THRESHOLD_CONFIDENT
+                    }
+                    if (hasConfidentMatch) {
+                        lastAutoCaptureMs = SystemClock.elapsedRealtime()
+                        _autoCaptureEvents.trySend(Unit)
+                        _uiState.update { it.copy(showCaptureFlash = true) }
+                    }
+                } finally {
+                    isProcessingFrame = false
+                }
+            }
+        }
+
+        /** Chamado pela UI após exibir o flash de auto-captura. */
+        fun onCaptureFlashDone() {
+            _uiState.update { it.copy(showCaptureFlash = false) }
+        }
+
         private companion object {
             const val MAX_QUERY_PHOTOS = 2
+            const val AUTO_CAPTURE_COOLDOWN_MS = 2_000L
         }
     }

@@ -207,7 +207,7 @@ flowchart TD
 
 - **F10** → `fix-duplicate-medication-name` (TD-1) — ✅ feito
 - **F11** → `add-photo-collision-warning` (TD-2) — ✅ feito
-- **F12** → `add-camerax-auto-capture` — ainda não iniciada
+- **F12** → `add-camerax-auto-capture` — ✅ feito
 
 ### F10 — `fix-duplicate-medication-name` (TD-1)
 
@@ -275,7 +275,7 @@ que a listagem de candidatos na colisão não retorne duplicatas do próprio cad
 flowchart LR
   F9[F9 add-test-automation ✅] --> F10[F10 fix-duplicate-medication-name TD-1]
   F10 --> F11[F11 add-photo-collision-warning TD-2]
-  F11 --> F12[F12 add-camerax-auto-capture]
+  F11 --> F12[F12 add-camerax-auto-capture ✅]
 ```
 
 ---

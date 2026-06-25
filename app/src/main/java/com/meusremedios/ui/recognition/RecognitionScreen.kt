@@ -52,6 +52,27 @@ import com.meusremedios.domain.model.RecognitionCandidate
 import com.meusremedios.domain.model.RecognitionOutcome
 import com.meusremedios.domain.model.ScheduledDose
 import kotlinx.coroutines.launch
+import android.os.VibrationEffect
+import android.os.Vibrator
+import android.os.VibratorManager
+import android.view.HapticFeedbackConstants
+import androidx.camera.view.PreviewView
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.viewinterop.AndroidView
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -66,6 +87,20 @@ fun RecognitionScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val view = LocalView.current
+
+    // CameraX controller — instanciado apenas quando auto-captura está ativa.
+    val cameraController = remember { CameraXPreviewController(context) }
+    DisposableEffect(Unit) { onDispose { cameraController.shutdown() } }
+
+    // Vibração háptica ao auto-capturar.
+    LaunchedEffect(Unit) {
+        viewModel.autoCaptureEvents.collect {
+            view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+        }
+    }
 
     val cameraLauncher =
         rememberLauncherForActivityResult(
@@ -118,10 +153,19 @@ fun RecognitionScreen(
         ) {
             when (uiState.phase) {
                 RecognitionPhase.IDLE ->
-                    IdleContent(
-                        onCapture = capture,
-                        onPickFromGallery = pickFromGallery,
-                    )
+                    if (uiState.autoCaptureEnabled) {
+                        AutoCaptureContent(
+                            cameraController = cameraController,
+                            lifecycleOwner = lifecycleOwner,
+                            onFrameReady = viewModel::onFrameReady,
+                            onManualCapture = capture,
+                        )
+                    } else {
+                        IdleContent(
+                            onCapture = capture,
+                            onPickFromGallery = pickFromGallery,
+                        )
+                    }
                 RecognitionPhase.ANALYZING -> AnalyzingContent()
                 RecognitionPhase.RESULT ->
                     ResultContent(
@@ -151,6 +195,60 @@ fun RecognitionScreen(
                 },
             )
         }
+    }
+
+    // Flash branco de auto-captura
+    AnimatedVisibility(
+        visible = uiState.showCaptureFlash,
+        enter = fadeIn(),
+        exit = fadeOut(),
+    ) {
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.White.copy(alpha = 0.7f)),
+        )
+        LaunchedEffect(Unit) {
+            kotlinx.coroutines.delay(300)
+            viewModel.onCaptureFlashDone()
+        }
+    }
+}
+
+@Composable
+private fun AutoCaptureContent(
+    cameraController: CameraXPreviewController,
+    lifecycleOwner: androidx.lifecycle.LifecycleOwner,
+    onFrameReady: (android.graphics.Bitmap) -> Unit,
+    onManualCapture: () -> Unit,
+) {
+    androidx.compose.foundation.layout.Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        AndroidView(
+            factory = { ctx ->
+                PreviewView(ctx).also { previewView ->
+                    cameraController.start(
+                        lifecycleOwner = lifecycleOwner,
+                        previewView = previewView,
+                        onFrameReady = onFrameReady,
+                    )
+                }
+            },
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+        )
+        Text(
+            text = stringResource(R.string.recognition_auto_capture_hint),
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center,
+        )
+        BigConfirmButton(onClick = onManualCapture)
     }
 }
 

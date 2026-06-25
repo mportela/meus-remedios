@@ -14,6 +14,8 @@ import com.meusremedios.domain.usecase.FakeMedicationImageStore
 import com.meusremedios.domain.usecase.FakeMedicationPhotoRepository
 import com.meusremedios.domain.usecase.FakeMedicationRepository
 import com.meusremedios.domain.usecase.FakeScheduleRepository
+import com.meusremedios.domain.usecase.FakeSettingsRepository
+import com.meusremedios.domain.usecase.FakeTfliteEmbedder
 import com.meusremedios.domain.usecase.GetPendingDosesTodayForMedicationUseCase
 import com.meusremedios.domain.usecase.MarkIntakeTakenUseCase
 import com.meusremedios.domain.usecase.RecognizeMedicationUseCase
@@ -49,7 +51,17 @@ class RecognitionScreenTest {
         val recognizeUseCase = RecognizeMedicationUseCase(photos, medications, extractor)
         val getPending = GetPendingDosesTodayForMedicationUseCase(medications, schedules, intakeLogs, clock)
         val markTaken = MarkIntakeTakenUseCase(intakeLogs, clock)
-        return RecognitionViewModel(imageStore, recognizeUseCase, getPending, markTaken, clock)
+        return RecognitionViewModel(
+            imageStore = imageStore,
+            recognizeMedication = recognizeUseCase,
+            getPendingDosesForMedication = getPending,
+            markIntakeTakenUseCase = markTaken,
+            clock = clock,
+            settingsRepository = FakeSettingsRepository(),
+            embedder = FakeTfliteEmbedder(),
+            medicationPhotoRepository = photos,
+            medicationRepository = medications,
+        )
     }
 
     @Test
