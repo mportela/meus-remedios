@@ -7,7 +7,7 @@
   <a href="https://github.com/mportela/meus-remedios/actions/workflows/ci.yml">
     <img src="https://github.com/mportela/meus-remedios/actions/workflows/ci.yml/badge.svg" alt="CI">
   </a>
-  <img src="https://img.shields.io/github/v/release/mportela/meus-remedios?label=vers%C3%A3o&color=blue" alt="Versão">
+  <img src="https://img.shields.io/badge/versão-latest%201.2.0-blue" alt="Versão">
   <img src="https://img.shields.io/badge/Android-7.0%2B-brightgreen?logo=android" alt="Android 7.0+">
   <img src="https://img.shields.io/badge/Kotlin-2.0-7F52FF?logo=kotlin&logoColor=white" alt="Kotlin">
   <img src="https://img.shields.io/badge/TensorFlow%20Lite-on--device-FF6F00?logo=tensorflow&logoColor=white" alt="TFLite">

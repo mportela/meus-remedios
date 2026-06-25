@@ -122,6 +122,26 @@ Use replace_string_in_file incluindo 2 linhas de contexto antes e depois.
 
 ---
 
+## Passo 5.5 — Atualizar badge de versão no README.md
+
+Edite `README.md` para manter o badge de versão sincronizado:
+
+Procure pela linha do badge de versão (procura por `img.shields.io/badge/versão`):
+
+```markdown
+<img src="https://img.shields.io/badge/versão-latest%20X.Y.Z-blue" alt="Versão">
+```
+
+Atualize com a nova versão. Exemplo para versão 1.2.0:
+
+```markdown
+<img src="https://img.shields.io/badge/versão-latest%201.2.0-blue" alt="Versão">
+```
+
+Use replace_string_in_file incluindo 2 linhas de contexto antes e depois.
+
+---
+
 ## Passo 6 — Validar antes de commitar
 
 Execute:
@@ -138,14 +158,19 @@ Se houver falhas, rode `./gradlew ktlintFormat` e reporte ao usuário antes de c
 Execute em sequência:
 
 ```bash
-git add CHANGELOG.md app/build.gradle.kts
-git commit -m "chore: bump version to X.Y.Z"
+git add CHANGELOG.md app/build.gradle.kts README.md
+git commit -m "chore: bump version to X.Y.Z
+
+- Atualizado CHANGELOG.md com nova seção [X.Y.Z]
+- Atualizado app/build.gradle.kts (versionCode, versionName)
+- Atualizado badge de versão no README.md"
 git tag vX.Y.Z
 git push origin main --tags
 ```
 
 Reporte ao usuário:
 - Versão lançada: `vX.Y.Z`
+- Badge no README atualizado
 - Tag criada e publicada
 - Workflow do GitHub Actions disparado (se `.github/workflows/release.yml` existir e o trigger for tag `v*.*.*`)
 
