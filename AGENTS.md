@@ -53,6 +53,7 @@ Detalhes em [`docs/technical/tech-1-arquitetura.md`](docs/technical/tech-1-arqui
 2. Validar com `openspec validate`, implementar, depois `openspec archive`.
 3. Manter rastreabilidade **PRD ↔ capability ↔ change**.
 4. As skills `openspec-*` em `.github/skills/` guiam cada etapa.
+5. Para lançar uma nova versão (bump semântico + CHANGELOG + tag), use a skill `bump-version`.
 
 ## Regras para o agente
 - **Sempre** atualizar o [`CHANGELOG.md`](CHANGELOG.md) quando fizer mudanças relevantes
