@@ -9,6 +9,36 @@ Instruções específicas para Claude Code trabalhando no **Meus Remédios**.
 - **Roadmap:** [`docs/product/roadmap.md`](docs/product/roadmap.md) (fases de desenvolvimento)
 - **OpenSpec plan:** [`docs/openspec-plan.md`](docs/openspec-plan.md) (rastreamento de changes)
 
+## Skills disponíveis
+
+Existem skills customizadas no projeto que você pode usar:
+
+### bump-version
+Automatiza o lançamento de novas versões com bumping semântico, atualização do CHANGELOG e criação de tags git.
+
+**Quando usar:**
+- `"bump release"` ou `"vou lançar uma nova versão"`
+- Quando quiser atualizar versionName/versionCode + CHANGELOG + badge do README automaticamente
+
+**O que faz:**
+1. Analisa CHANGELOG.md (seção "Não lançado")
+2. Propõe bump (major/minor/patch) baseado em Versionamento Semântico
+3. Atualiza app/build.gradle.kts
+4. Atualiza README.md com novo badge de versão
+5. Reorganiza CHANGELOG com nova seção [X.Y.Z]
+6. Commita, cria tag `vX.Y.Z` e faz push
+
+**Localização:** `.github/skills/bump-version/SKILL.md`
+
+### openspec-* (OpenSpec workflow)
+Skills para o fluxo experimental de especificação:
+- `openspec-new-change` — criar nova change
+- `openspec-apply-change` — implementar tasks de uma change
+- `openspec-archive-change` — finalizar e arquivar change
+- `openspec-verify-change` — validar implementação
+
+**Documentação:** Ver [`docs/openspec-plan.md`](docs/openspec-plan.md)
+
 ## Regras essenciais
 
 ### Builds, testes e commits

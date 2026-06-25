@@ -6,10 +6,16 @@ description: >
   versionName/versionCode no build.gradle.kts, commita e cria a tag git.
   Use quando o usuário quer lançar uma nova versão ou criar uma release tag.
 license: MIT
-compatibility: Projeto Android com Gradle Kotlin DSL, CHANGELOG.md no formato Keep a Changelog.
+compatibility: >
+  Projeto Android com Gradle Kotlin DSL, CHANGELOG.md no formato Keep a Changelog.
+  Funciona com GitHub Copilot e Claude Code.
+agents:
+  - copilot
+  - claude-code
 metadata:
   author: marcel.portela@gmail.com
-  version: "1.0"
+  version: "1.1"
+  updated: "2026-06-25"
 ---
 
 Fluxo completo de bump de versão semântica para o projeto **Meus Remédios**.
