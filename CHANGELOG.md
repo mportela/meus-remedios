@@ -7,6 +7,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.2.0] - 2026-06-25
+
 ### Adicionado
 - **Build:** configuração de assinatura do APK para release via Gradle (signingConfigs com
   keystore em `app/meus-remedios-key.jks` e credenciais em `key.properties` — arquivo
