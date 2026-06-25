@@ -7,6 +7,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.1.1] - 2026-06-25
+
 ### Alterado
 - **Documentação:** roadmap pós-MVP extraído de `docs/openspec-plan.md` para o novo
   `docs/product/roadmap.md` (definições estratégicas, inventário de backlog e itens fora de
