@@ -5,6 +5,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.lifecycle.SavedStateHandle
 import com.meusremedios.domain.usecase.AddMedicationPhotoUseCase
+import com.meusremedios.domain.usecase.CheckPhotoCollisionUseCase
 import com.meusremedios.domain.usecase.DeleteMedicationUseCase
 import com.meusremedios.domain.usecase.FakeFeatureExtractor
 import com.meusremedios.domain.usecase.FakeMedicationImageStore
@@ -47,6 +48,8 @@ class MedicationFormScreenTest {
             addMedicationPhoto = AddMedicationPhotoUseCase(imageStore, FakeFeatureExtractor(), photoRepository),
             removeMedicationPhoto = RemoveMedicationPhotoUseCase(imageStore, photoRepository),
             imageStore = imageStore,
+            checkPhotoCollision = CheckPhotoCollisionUseCase(photoRepository, medicationRepository),
+            featureExtractor = FakeFeatureExtractor(),
         )
 
     @Test

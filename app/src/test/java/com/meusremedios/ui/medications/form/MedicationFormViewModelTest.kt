@@ -3,9 +3,13 @@ package com.meusremedios.ui.medications.form
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.meusremedios.MainDispatcherRule
+import com.meusremedios.data.ml.PhotoFeatures
 import com.meusremedios.domain.model.Medication
+import com.meusremedios.domain.model.MedicationPhoto
 import com.meusremedios.domain.model.PeriodType
+import com.meusremedios.domain.model.PhotoSide
 import com.meusremedios.domain.usecase.AddMedicationPhotoUseCase
+import com.meusremedios.domain.usecase.CheckPhotoCollisionUseCase
 import com.meusremedios.domain.usecase.DeleteMedicationUseCase
 import com.meusremedios.domain.usecase.FakeFeatureExtractor
 import com.meusremedios.domain.usecase.FakeMedicationImageStore
@@ -37,7 +41,10 @@ class MedicationFormViewModelTest {
     private val photoRepository = FakeMedicationPhotoRepository()
     private val imageStore = FakeMedicationImageStore()
 
-    private fun viewModel(id: Long = 0L): MedicationFormViewModel =
+    private fun viewModel(
+        id: Long = 0L,
+        featureExtractor: FakeFeatureExtractor = FakeFeatureExtractor(),
+    ): MedicationFormViewModel =
         MedicationFormViewModel(
             savedStateHandle = SavedStateHandle(mapOf(Routes.ARG_MEDICATION_ID to id)),
             getMedication = GetMedicationUseCase(medicationRepository, scheduleRepository),
@@ -52,6 +59,8 @@ class MedicationFormViewModelTest {
                 ),
             removeMedicationPhoto = RemoveMedicationPhotoUseCase(imageStore, photoRepository),
             imageStore = imageStore,
+            checkPhotoCollision = CheckPhotoCollisionUseCase(photoRepository, medicationRepository),
+            featureExtractor = featureExtractor,
         )
 
     @Test
@@ -114,5 +123,83 @@ class MedicationFormViewModelTest {
 
             assertNull(vm.uiState.value.startDate)
             assertNull(vm.uiState.value.endDate)
+        }
+
+    @Test
+    fun `save with pending photo similar to existing emits CollisionWarning`() =
+        runTest {
+            // Seed: medicamento já cadastrado com embedding idêntico
+            val embedding = FloatArray(4) { 1f }
+            val existingId = medicationRepository.add(Medication(name = "Caltrat"))
+            photoRepository.add(
+                MedicationPhoto(
+                    medicationId = existingId,
+                    filePath = "/f/existing.jpg",
+                    side = PhotoSide.FRONT,
+                    embedding = embedding,
+                    dominantColorLab = floatArrayOf(50f, 0f, 0f),
+                    aspectRatio = 1f,
+                ),
+            )
+
+            // Extrator retorna embedding idêntico para a pending photo
+            val extractor =
+                FakeFeatureExtractor(
+                    PhotoFeatures(
+                        embedding = embedding,
+                        dominantColorLab = floatArrayOf(50f, 0f, 0f),
+                        aspectRatio = 1f,
+                    ),
+                )
+            val vm = viewModel(featureExtractor = extractor)
+            vm.onNameChange("Novo Remédio")
+            vm.addPendingPhoto("/tmp/staged.jpg", PhotoSide.FRONT)
+
+            vm.events.test {
+                vm.save()
+                val event = awaitItem()
+                assertTrue(event is MedicationFormEvent.CollisionWarning)
+                assertEquals("Caltrat", (event as MedicationFormEvent.CollisionWarning).candidateName)
+                cancelAndIgnoreRemainingEvents()
+            }
+            // Medicamento NÃO deve ter sido persistido
+            assertEquals(1, medicationRepository.snapshot().size) // apenas o Caltrat existente
+        }
+
+    @Test
+    fun `saveIgnoringCollision persists after collision warning`() =
+        runTest {
+            val embedding = FloatArray(4) { 1f }
+            val existingId = medicationRepository.add(Medication(name = "Caltrat"))
+            photoRepository.add(
+                MedicationPhoto(
+                    medicationId = existingId,
+                    filePath = "/f/existing.jpg",
+                    side = PhotoSide.FRONT,
+                    embedding = embedding,
+                    dominantColorLab = floatArrayOf(50f, 0f, 0f),
+                    aspectRatio = 1f,
+                ),
+            )
+            val extractor =
+                FakeFeatureExtractor(
+                    PhotoFeatures(
+                        embedding = embedding,
+                        dominantColorLab = floatArrayOf(50f, 0f, 0f),
+                        aspectRatio = 1f,
+                    ),
+                )
+            val vm = viewModel(featureExtractor = extractor)
+            vm.onNameChange("Novo Remédio")
+            vm.addPendingPhoto("/tmp/staged.jpg", PhotoSide.FRONT)
+
+            vm.events.test {
+                vm.save() // emite CollisionWarning
+                awaitItem() // CollisionWarning descartado
+                vm.saveIgnoringCollision() // deve persistir
+                assertEquals(MedicationFormEvent.Saved, awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
+            assertEquals(2, medicationRepository.snapshot().size)
         }
 }

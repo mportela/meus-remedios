@@ -206,7 +206,7 @@ flowchart TD
 > Numeradas a partir de **F10** para não colidir com as fases anteriores.
 
 - **F10** → `fix-duplicate-medication-name` (TD-1) — ✅ feito
-- **F11** → `add-photo-collision-warning` (TD-2) — ainda não iniciada
+- **F11** → `add-photo-collision-warning` (TD-2) — ✅ feito
 
 ### F10 — `fix-duplicate-medication-name` (TD-1)
 

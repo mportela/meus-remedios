@@ -85,8 +85,43 @@ fun MedicationFormScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
+    var collisionCandidateName by remember { mutableStateOf<String?>(null) }
+
     LaunchedEffect(Unit) {
-        viewModel.events.collect { onDone() }
+        viewModel.events.collect { event ->
+            when (event) {
+                is MedicationFormEvent.CollisionWarning -> collisionCandidateName = event.candidateName
+                else -> onDone()
+            }
+        }
+    }
+
+    if (collisionCandidateName != null) {
+        AlertDialog(
+            onDismissRequest = { collisionCandidateName = null },
+            title = { Text(stringResource(R.string.collision_warning_title)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.collision_warning_body,
+                        collisionCandidateName ?: "",
+                    ),
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    collisionCandidateName = null
+                    viewModel.saveIgnoringCollision()
+                }) {
+                    Text(stringResource(R.string.collision_warning_save_anyway))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { collisionCandidateName = null }) {
+                    Text(stringResource(R.string.collision_warning_cancel))
+                }
+            },
+        )
     }
 
     var showDeleteDialog by remember { mutableStateOf(false) }

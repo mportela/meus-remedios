@@ -25,6 +25,16 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   novamente.
 
 ### Adicionado
+- **F11 — TD-2: aviso de colisão visual no cadastro de fotos** (change `add-photo-collision-warning`):
+  ao salvar um medicamento com fotos pendentes, o app compara os features visuais das novas
+  fotos com os de todas as fotos já cadastradas; se `score >= THRESHOLD_CONFIDENT (0.85)`,
+  exibe `AlertDialog` com a opção "Salvar assim mesmo" (ignora o aviso) ou "Cancelar"
+  (retorna ao formulário para outra foto). `CheckPhotoCollisionUseCase` recebe
+  `List<FeatureSet>` + `excludeMedicationId` para cheques puros e testáveis;
+  `MedicationFormViewModel` extrai features antes de persistir e emite `CollisionWarning`;
+  `saveIgnoringCollision()` ignora a verificação após confirmação do usuário.
+  8 novos testes (6 use case + 2 ViewModel); total: 177 testes.
+
 - **F9 — Automação de testes** (change `add-test-automation`):
   infraestrutura de testes expandida com 11 novos testes (total: 161); testes
   Compose/Robolectric para 4 telas críticas (`MedicationListScreen`, `MedicationFormScreen`,

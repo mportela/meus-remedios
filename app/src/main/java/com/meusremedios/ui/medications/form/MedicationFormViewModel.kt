@@ -5,12 +5,15 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.meusremedios.data.media.MedicationImageStore
+import com.meusremedios.data.ml.FeatureExtractor
+import com.meusremedios.data.ml.FeatureSet
 import com.meusremedios.domain.model.Medication
 import com.meusremedios.domain.model.MedicationPhoto
 import com.meusremedios.domain.model.PeriodType
 import com.meusremedios.domain.model.PhotoSide
 import com.meusremedios.domain.model.ScheduleTime
 import com.meusremedios.domain.usecase.AddMedicationPhotoUseCase
+import com.meusremedios.domain.usecase.CheckPhotoCollisionUseCase
 import com.meusremedios.domain.usecase.DeleteMedicationUseCase
 import com.meusremedios.domain.usecase.GetMedicationUseCase
 import com.meusremedios.domain.usecase.MedicationValidationError
@@ -69,6 +72,8 @@ class MedicationFormViewModel
         private val addMedicationPhoto: AddMedicationPhotoUseCase,
         private val removeMedicationPhoto: RemoveMedicationPhotoUseCase,
         private val imageStore: MedicationImageStore,
+        private val checkPhotoCollision: CheckPhotoCollisionUseCase,
+        private val featureExtractor: FeatureExtractor,
     ) : ViewModel() {
         private val medicationId: Long = savedStateHandle.get<Long>(Routes.ARG_MEDICATION_ID) ?: 0L
         private var createdAt: Instant = Instant.now()
@@ -250,6 +255,44 @@ class MedicationFormViewModel
         }
 
         fun save() {
+            viewModelScope.launch {
+                val state = _uiState.value
+                // Verificar colisão visual antes de persistir
+                if (state.pendingPhotos.isNotEmpty()) {
+                    _uiState.value = state.copy(isLoading = true)
+                    val queryFeatures =
+                        state.pendingPhotos.mapNotNull { pending ->
+                            val f = featureExtractor.extract(pending.tempPath)
+                            f.embedding?.let {
+                                FeatureSet(
+                                    embedding = it,
+                                    colorLab = f.dominantColorLab,
+                                    aspectRatio = f.aspectRatio,
+                                    imprintText = f.imprintText,
+                                )
+                            }
+                        }
+                    if (queryFeatures.isNotEmpty()) {
+                        val collisions = checkPhotoCollision(queryFeatures, state.id)
+                        if (collisions.isNotEmpty()) {
+                            _uiState.value = _uiState.value.copy(isLoading = false)
+                            _events.send(
+                                MedicationFormEvent.CollisionWarning(collisions.first().medicationName),
+                            )
+                            return@launch
+                        }
+                    }
+                    _uiState.value = _uiState.value.copy(isLoading = false)
+                }
+                persistSave()
+            }
+        }
+
+        fun saveIgnoringCollision() {
+            viewModelScope.launch { persistSave() }
+        }
+
+        private suspend fun persistSave() {
             val state = _uiState.value
             val medication =
                 Medication(
@@ -263,19 +306,17 @@ class MedicationFormViewModel
                     remindersEnabled = state.remindersEnabled,
                     createdAt = createdAt,
                 )
-            viewModelScope.launch {
-                when (val result = saveMedication(medication, state.schedules)) {
-                    is SaveMedicationResult.Success -> {
-                        removedPhotos.forEach { removeMedicationPhoto(it) }
-                        removedPhotos.clear()
-                        state.pendingPhotos.forEach { pending ->
-                            addMedicationPhoto(result.medicationId, pending.tempPath, pending.side)
-                        }
-                        _events.send(MedicationFormEvent.Saved)
+            when (val result = saveMedication(medication, state.schedules)) {
+                is SaveMedicationResult.Success -> {
+                    removedPhotos.forEach { removeMedicationPhoto(it) }
+                    removedPhotos.clear()
+                    state.pendingPhotos.forEach { pending ->
+                        addMedicationPhoto(result.medicationId, pending.tempPath, pending.side)
                     }
-                    is SaveMedicationResult.Invalid ->
-                        _uiState.value = _uiState.value.copy(validationError = result.error)
+                    _events.send(MedicationFormEvent.Saved)
                 }
+                is SaveMedicationResult.Invalid ->
+                    _uiState.value = _uiState.value.copy(validationError = result.error)
             }
         }
 
@@ -300,4 +341,6 @@ sealed interface MedicationFormEvent {
     data object Saved : MedicationFormEvent
 
     data object Deleted : MedicationFormEvent
+
+    data class CollisionWarning(val candidateName: String) : MedicationFormEvent
 }
