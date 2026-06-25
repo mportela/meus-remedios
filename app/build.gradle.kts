@@ -38,8 +38,8 @@ android {
             buildConfigField("boolean", "DEV_TOOLS_ENABLED", "true")
         }
         release {
-
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             buildConfigField("boolean", "DEV_TOOLS_ENABLED", "false")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
