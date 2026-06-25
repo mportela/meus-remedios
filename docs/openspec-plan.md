@@ -44,7 +44,7 @@ Sugestão de change-ids (verbo + escopo), criados na ordem de dependência:
 - **F4.1–F4.7** → **Reconhecimento inteligente (TF)** — objetivo core; detalhado na seção
   seguinte. **Prioridade imediata, antes de F5.** (F4.1 ✅ feito)
 - **F5** → `add-intake-tracking` (capability 5). ✅ feito
-- **F6** → `add-scheduling-reminders` (capability 4).
+- **F6** → `add-scheduling-reminders` (capability 4). ← próxima
 - **F7** → `add-app-settings-and-retention` (capability 7).
 - **F8** → `add-accessibility-baseline` (capability 8).
 - **F9** → `add-test-automation` (estratégia de testes + CI).
@@ -109,12 +109,12 @@ score = w1·cosine(embedding) + w2·colorSim(Lab) + w3·shapeSim(forma) + w4·im
     embedding + imprint faltantes (rotina no startup/WorkManager, idempotente).
     Segmentação excluída do escopo (F4.2 cancelada).
   - Capability: `medication-photos`.
-- **F4.7** → `enforce-apk-size-budget` — **orçamento de tamanho de APK**.
-  - Definir um **orçamento explícito** de tamanho (modelos em `assets/` + libs) e falhar o
-    build/CI se exceder; **avaliar** quantização int8 caso o orçamento aperte (mantendo
-    float32 como padrão por precisão), e avaliar download opcional do modelo
-    no primeiro uso **só** se permanecer 100% offline (ex.: via app bundle/asset pack, sem
-    rede). Documentar tamanhos por modelo. Capability: transversal (tooling/CI).
+- **F4.7** → `enforce-apk-size-budget` — ❌ **cancelada**.
+  Rationale: o APK atual (~33 MB com MobileNetV3 float32) está dentro de limites aceitáveis
+  para distribuição direta; CI gates de tamanho adicionam fricção sem resolver um problema
+  real no estágio atual. int8 não tem variante publicada para este embedder e sacrificaria
+  acurácia numa tarefa sensível. Reavaliar se/quando o APK ultrapassar ~80 MB ou se houver
+  gate de loja. Prioridade cedeu para F6 (lembretes — impacto direto no usuário).
 
 ### Dependências e impacto técnico
 - **Novas libs (todas on-device/offline):** TensorFlow Lite runtime + support/task-vision;
