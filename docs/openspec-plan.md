@@ -207,6 +207,7 @@ flowchart TD
 
 - **F10** → `fix-duplicate-medication-name` (TD-1) — ✅ feito
 - **F11** → `add-photo-collision-warning` (TD-2) — ✅ feito
+- **F12** → `add-camerax-auto-capture` — ainda não iniciada
 
 ### F10 — `fix-duplicate-medication-name` (TD-1)
 
@@ -274,5 +275,74 @@ que a listagem de candidatos na colisão não retorne duplicatas do próprio cad
 flowchart LR
   F9[F9 add-test-automation ✅] --> F10[F10 fix-duplicate-medication-name TD-1]
   F10 --> F11[F11 add-photo-collision-warning TD-2]
+  F11 --> F12[F12 add-camerax-auto-capture]
 ```
+
+---
+
+## F12 — `add-camerax-auto-capture`
+
+**Objetivo:** implementar a auto-captura inteligente na tela de reconhecimento — quando
+`settings.autoCapture = true`, a câmera dispara automaticamente ao detectar foco estável
+**e** o TFLite confirmar confiança mínima no frame, sem interação manual do usuário.
+
+**Capabilities afetadas:** `visual-recognition`, `app-settings`
+
+**Pré-requisito técnico obrigatório:**  
+A câmera hoje usa `ActivityResultContracts.TakePicture()` (câmera nativa via Intent), que
+não expõe preview ao vivo nem callbacks de foco. Para auto-captura funcionar é necessário
+**migrar para CameraX com preview ao vivo no Compose** (`camera-camera2` + `camera-lifecycle`
++ `camera-view`). Isso é uma mudança arquitetural na `RecognitionScreen`.
+
+**Fluxo de auto-captura (decisão do usuário):**
+1. `RecognitionViewModel` observa `AppSettings.autoCapture` via `SettingsRepository`.
+2. Se `true`, a `RecognitionScreen` usa `PreviewView` (CameraX) em vez de botão/Intent.
+3. `FocusMeteringAction` detecta foco estável na região central do preview.
+4. Ao estabilizar o foco, extrai **uma frame** do `ImageAnalysis` e roda TFLite.
+5. Se `top1 score ≥ RecognitionParams.THRESHOLD_CONFIDENT` → captura automática.
+6. Se score insuficiente → sem ação (usuário pode capturar manualmente pelo botão).
+7. Após auto-captura: **flash branco** (overlay Compose animado) + **vibração háptica**.
+8. **Cooldown de 2 segundos** após qualquer captura automática.
+9. Se `autoCapture = false` → comportamento atual mantido (botão manual, câmera nativa).
+
+**Escopo técnico:**
+- Adicionar dependências CameraX: `camera-camera2`, `camera-lifecycle`, `camera-view`.
+- `CameraXPreviewController` (nova classe em `ui/recognition/`): encapsula `ProcessCameraProvider`,
+  `Preview`, `ImageCapture` e `ImageAnalysis` use cases; expõe `capturePhoto()` e callback
+  de foco.
+- `RecognitionScreen`: quando `autoCapture = true`, renderiza `AndroidView { PreviewView }`;
+  quando `false`, mantém o fluxo atual com `TakePicture` Intent.
+- `RecognitionViewModel`: observar `autoCapture` das settings; expor `autoCaptureEnabled`
+  no `RecognitionUiState`; processar frame do `ImageAnalysis` em `Dispatchers.Default`.
+- Flash: `Box` com `background(Color.White.copy(alpha))` animado com `AnimatedVisibility`.
+- Vibração: `Vibrator` / `VibrationEffect.createOneShot(50ms)` via `HapticFeedbackConstants`.
+
+**Decisões adotadas:**
+- **Trigger:** foco estável + TFLite confirma (híbrido) — equilíbrio entre performance e precisão.
+- **Cooldown:** 2 segundos.
+- **Feedback:** flash branco + vibração háptica.
+- **Compatibilidade retroativa:** `autoCapture = false` preserva o comportamento atual.
+- **Performance:** análise TFLite em `Dispatchers.Default`; frame rate do `ImageAnalysis`
+  limitado a 5 fps (suficiente para detectar foco; economiza bateria).
+- **Sem câmera nativa removida:** o Intent `TakePicture` continua sendo o caminho padrão
+  quando auto-captura está desligada.
+
+**Testes planejados:**
+- `RecognitionViewModelTest`: com `autoCapture = true` e frame com score ≥ limiar →
+  estado muda para `ANALYZING`; com score < limiar → sem mudança.
+- `RecognitionViewModelTest`: cooldown bloqueia segunda auto-captura em menos de 2s.
+- Compose test (`RecognitionScreenTest`): com `autoCapture = false` → botão de captura
+  visível; com `true` → `PreviewView` presente no layout.
+
+**Dependências novas:**
+```toml
+[libraries]
+androidx-camera-camera2 = { module = "androidx.camera:camera-camera2", version.ref = "camerax" }
+androidx-camera-lifecycle = { module = "androidx.camera:camera-lifecycle", version.ref = "camerax" }
+androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "camerax" }
+# camerax = "1.3.4" (já compatível com minSdk 24)
+```
+
+**Estimativa de esforço:** alto — migração de câmera + integração TFLite em preview ao vivo
++ UI condicional + testes.
 
