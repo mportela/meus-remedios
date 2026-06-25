@@ -23,7 +23,6 @@ import javax.inject.Singleton
 @Module
 @TestInstallIn(components = [SingletonComponent::class], replaces = [RepositoryModule::class])
 object FakeRepositoryModule {
-
     @Provides
     @Singleton
     fun provideMedicationRepository(): MedicationRepository = FakeMedicationRepository()

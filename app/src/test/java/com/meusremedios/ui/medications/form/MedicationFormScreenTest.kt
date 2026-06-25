@@ -29,7 +29,6 @@ import org.robolectric.RobolectricTestRunner
  */
 @RunWith(RobolectricTestRunner::class)
 class MedicationFormScreenTest {
-
     @get:Rule
     val composeRule = createComposeRule()
 
@@ -38,16 +37,17 @@ class MedicationFormScreenTest {
     private val photoRepository = FakeMedicationPhotoRepository()
     private val imageStore = FakeMedicationImageStore()
 
-    private fun viewModel() = MedicationFormViewModel(
-        savedStateHandle = SavedStateHandle(mapOf(Routes.ARG_MEDICATION_ID to 0L)),
-        getMedication = GetMedicationUseCase(medicationRepository, scheduleRepository),
-        saveMedication = SaveMedicationUseCase(medicationRepository, scheduleRepository, mockk(relaxed = true)),
-        deleteMedication = DeleteMedicationUseCase(medicationRepository),
-        observeMedicationPhotos = ObserveMedicationPhotosUseCase(photoRepository),
-        addMedicationPhoto = AddMedicationPhotoUseCase(imageStore, FakeFeatureExtractor(), photoRepository),
-        removeMedicationPhoto = RemoveMedicationPhotoUseCase(imageStore, photoRepository),
-        imageStore = imageStore,
-    )
+    private fun viewModel() =
+        MedicationFormViewModel(
+            savedStateHandle = SavedStateHandle(mapOf(Routes.ARG_MEDICATION_ID to 0L)),
+            getMedication = GetMedicationUseCase(medicationRepository, scheduleRepository),
+            saveMedication = SaveMedicationUseCase(medicationRepository, scheduleRepository, mockk(relaxed = true)),
+            deleteMedication = DeleteMedicationUseCase(medicationRepository),
+            observeMedicationPhotos = ObserveMedicationPhotosUseCase(photoRepository),
+            addMedicationPhoto = AddMedicationPhotoUseCase(imageStore, FakeFeatureExtractor(), photoRepository),
+            removeMedicationPhoto = RemoveMedicationPhotoUseCase(imageStore, photoRepository),
+            imageStore = imageStore,
+        )
 
     @Test
     fun formScreen_rendersNameField() {

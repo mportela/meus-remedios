@@ -18,14 +18,14 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class OfflineConstraintTest {
-
     @Test
     fun manifest_doesNotDeclareInternetPermission() {
         val context = ApplicationProvider.getApplicationContext<android.content.Context>()
-        val packageInfo = context.packageManager.getPackageInfo(
-            context.packageName,
-            PackageManager.GET_PERMISSIONS,
-        )
+        val packageInfo =
+            context.packageManager.getPackageInfo(
+                context.packageName,
+                PackageManager.GET_PERMISSIONS,
+            )
         val permissions = packageInfo.requestedPermissions?.toList() ?: emptyList()
 
         assertFalse(

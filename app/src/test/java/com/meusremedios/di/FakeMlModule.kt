@@ -18,16 +18,16 @@ import javax.inject.Singleton
 @Module
 @TestInstallIn(components = [SingletonComponent::class], replaces = [MediaModule::class])
 object FakeMlModule {
-
     @Provides
     @Singleton
     fun provideFeatureExtractor(): FeatureExtractor = FakeFeatureExtractor()
 
     @Provides
     @Singleton
-    fun provideImprintReader(): ImprintReader = object : ImprintReader {
-        override suspend fun read(imagePath: String): String? = null
-    }
+    fun provideImprintReader(): ImprintReader =
+        object : ImprintReader {
+            override suspend fun read(imagePath: String): String? = null
+        }
 
     @Provides
     @Singleton

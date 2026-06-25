@@ -26,7 +26,6 @@ import java.time.LocalTime
  */
 @RunWith(RobolectricTestRunner::class)
 class TodayScreenTest {
-
     @get:Rule
     val composeRule = createComposeRule()
 
@@ -35,12 +34,13 @@ class TodayScreenTest {
     private val schedules = FakeScheduleRepository()
     private val intakeLogs = FakeIntakeLogRepository()
 
-    private fun viewModel() = TodayViewModel(
-        observeDailyReport = ObserveDailyReportUseCase(medications, schedules, intakeLogs, clock),
-        markIntakeTakenUseCase = MarkIntakeTakenUseCase(intakeLogs, clock),
-        markIntakeSkippedUseCase = MarkIntakeSkippedUseCase(intakeLogs, clock),
-        clock = clock,
-    )
+    private fun viewModel() =
+        TodayViewModel(
+            observeDailyReport = ObserveDailyReportUseCase(medications, schedules, intakeLogs, clock),
+            markIntakeTakenUseCase = MarkIntakeTakenUseCase(intakeLogs, clock),
+            markIntakeSkippedUseCase = MarkIntakeSkippedUseCase(intakeLogs, clock),
+            clock = clock,
+        )
 
     @Test
     fun todayScreen_rendersTitleHoje() {

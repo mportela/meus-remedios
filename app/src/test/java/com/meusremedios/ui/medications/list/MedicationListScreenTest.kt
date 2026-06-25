@@ -19,7 +19,6 @@ import org.robolectric.RobolectricTestRunner
  */
 @RunWith(RobolectricTestRunner::class)
 class MedicationListScreenTest {
-
     @get:Rule
     val composeRule = createComposeRule()
 

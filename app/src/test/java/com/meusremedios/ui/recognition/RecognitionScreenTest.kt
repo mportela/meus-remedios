@@ -31,7 +31,6 @@ import java.time.Clock
  */
 @RunWith(RobolectricTestRunner::class)
 class RecognitionScreenTest {
-
     @get:Rule
     val composeRule = createComposeRule()
 
@@ -43,9 +42,10 @@ class RecognitionScreenTest {
     private val imageStore = FakeMedicationImageStore()
 
     private fun viewModel(): RecognitionViewModel {
-        val extractor = FakeFeatureExtractor(
-            PhotoFeatures(embedding = null, dominantColorLab = floatArrayOf(50f, 0f, 0f), aspectRatio = 1f),
-        )
+        val extractor =
+            FakeFeatureExtractor(
+                PhotoFeatures(embedding = null, dominantColorLab = floatArrayOf(50f, 0f, 0f), aspectRatio = 1f),
+            )
         val recognizeUseCase = RecognizeMedicationUseCase(photos, medications, extractor)
         val getPending = GetPendingDosesTodayForMedicationUseCase(medications, schedules, intakeLogs, clock)
         val markTaken = MarkIntakeTakenUseCase(intakeLogs, clock)
