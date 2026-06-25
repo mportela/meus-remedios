@@ -92,6 +92,7 @@ private fun SettingsScreenContent(
                 onCheckedChange = { auto ->
                     onSettingsChange(settings.copy(autoCapture = auto))
                 },
+                modifier = Modifier.padding(start = 8.dp),
             )
         }
 
@@ -126,6 +127,43 @@ private fun SettingsScreenContent(
                 onSelected = { mins ->
                     onSettingsChange(settings.copy(reminderLeadMinutes = mins))
                 },
+            )
+        }
+
+        // Acessibilidade
+        Text(
+            stringResource(R.string.settings_section_accessibility),
+            fontSize = 18.sp,
+            modifier = Modifier.padding(top = 24.dp, bottom = 8.dp),
+        )
+        AccessibilityFontDropdown(
+            currentValue = settings.fontScale,
+            onSelected = { scale ->
+                onSettingsChange(settings.copy(fontScale = scale))
+            },
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    stringResource(R.string.settings_high_contrast_label),
+                    fontSize = 16.sp,
+                )
+                Text(
+                    stringResource(R.string.settings_high_contrast_desc),
+                    fontSize = 14.sp,
+                )
+            }
+            Switch(
+                checked = settings.highContrast == true,
+                onCheckedChange = { hc ->
+                    onSettingsChange(settings.copy(highContrast = hc))
+                },
+                modifier = Modifier.padding(start = 8.dp),
             )
         }
 
@@ -234,6 +272,54 @@ private fun ReminderLeadDropdown(
                     },
                     onClick = {
                         onSelected(mins)
+                        expanded = false
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun AccessibilityFontDropdown(
+    currentValue: Float?,
+    onSelected: (Float?) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val options: List<Pair<Float?, Int>> = listOf(
+        null to R.string.settings_font_size_default,
+        1.15f to R.string.settings_font_size_large,
+        1.30f to R.string.settings_font_size_larger,
+    )
+    var expanded by remember { mutableStateOf(false) }
+    val currentLabel = options.firstOrNull { it.first == currentValue }?.second
+        ?: R.string.settings_font_size_default
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            stringResource(R.string.settings_font_size_label),
+            fontSize = 16.sp,
+            modifier = Modifier.weight(1f),
+        )
+        androidx.compose.material3.Button(
+            onClick = { expanded = true },
+        ) {
+            Text(stringResource(currentLabel), fontSize = 14.sp)
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            options.forEach { (scale, labelRes) ->
+                DropdownMenuItem(
+                    text = { Text(stringResource(labelRes)) },
+                    onClick = {
+                        onSelected(scale)
                         expanded = false
                     },
                 )

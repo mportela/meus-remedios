@@ -46,7 +46,7 @@ Sugestão de change-ids (verbo + escopo), criados na ordem de dependência:
 - **F5** → `add-intake-tracking` (capability 5). ✅ feito
 - **F6** → `add-scheduling-reminders` (capability 4). ✅ feito
 - **F7** → `add-app-settings-and-retention` (capability 7). ✅ feito
-- **F8** → `add-accessibility-baseline` (capability 8).
+- **F8** → `add-accessibility-baseline` (capability 8). ✅ feito
 - **F9** → `add-test-automation` (estratégia de testes + CI).
 
 ## Reconhecimento inteligente (TF) — fases faltantes (objetivo core)

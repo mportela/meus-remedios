@@ -165,4 +165,29 @@
     <string name="settings_section_about">Sobre</string>
     <string name="settings_about_disclaimer">Este app é um auxílio de confirmação visual e não substitui orientação médica.</string>
     <string name="settings_about_offline">Funciona 100% offline. Nenhum dado é enviado para a internet.</string>
+
+    <!-- Configurações — Acessibilidade -->
+    <string name="settings_section_accessibility">Acessibilidade</string>
+    <string name="settings_font_size_label">Tamanho de fonte</string>
+    <string name="settings_font_size_default">Padrão (sistema)</string>
+    <string name="settings_font_size_large">Grande (1.15×)</string>
+    <string name="settings_font_size_larger">Maior (1.30×)</string>
+    <string name="settings_high_contrast_label">Alto contraste</string>
+    <string name="settings_high_contrast_desc">Aumenta o contraste de cores para melhor legibilidade</string>
+
+    <!-- contentDescription — ações -->
+    <string name="cd_action_capture">Capturar foto</string>
+    <string name="cd_action_gallery">Escolher da galeria</string>
+    <string name="cd_medication_photo_front">Foto da frente de %1$s</string>
+    <string name="cd_medication_photo_back">Foto do verso de %1$s</string>
+    <string name="cd_action_add_schedule">Adicionar horário</string>
+    <string name="cd_action_remove_schedule">Remover horário</string>
+    <string name="cd_action_add_photo">Adicionar foto</string>
+    <string name="cd_action_remove_photo">Remover foto</string>
+
+    <!-- contentDescription — reconhecimento (TalkBack) -->
+    <string name="cd_recognition_confident">Reconhecido: %1$s</string>
+    <string name="cd_recognition_ambiguous">Resultado incerto. Fotografe o verso do comprimido.</string>
+    <string name="cd_recognition_no_match">Comprimido não reconhecido. Tente uma nova foto.</string>
+    <string name="cd_recognition_result_icon">Ícone de confirmação do reconhecimento</string>
 </resources>

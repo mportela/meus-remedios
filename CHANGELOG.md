@@ -17,6 +17,19 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   F4.6 (`migrate-existing-photo-features`) atualizado para excluir segmentação do escopo.
 
 ### Adicionado
+- **F8 — Acessibilidade baseline** (change `add-accessibility-baseline`):
+  correcões de layout com fonte grande (font_scale 1.3x) confirmadas no emulador:
+  label "Configurações" da NavigationBar com `maxLines=1`+ellipsis; `SummaryCard`
+  na tela Hoje com `heightIn(min=88dp)` e `maxLines=2`; Row de Auto-captura e
+  "Avise-me nos horários" com `weight(1f)`+`padding` no Switch; `SegmentedButton`
+  "Por período" com `maxLines=1`; `BigConfirmButton` com `maxLines=1`;
+  `OutlinedButton` de horário/foto com `fillMaxWidth`; `TimePicker` (relógio analógico
+  inutilizável com fonte grande) substituído por `TimeInput` (campos HH/MM).
+  Tema dinâmico: `MeusRemediosTheme` agora aceita `fontScale` e `highContrast`;
+  paleta `HighContrastColors` adicionada; `MainActivity` coleta `AppSettings` via
+  `SettingsRepository` e injeta no tema. Seção "Acessibilidade" na SettingsScreen
+  com selector de fonte (padrão/Grande/Maior) e toggle de alto contraste.
+  `contentDescription` e `liveRegion = Polite` no resultado do reconhecimento.
 - **F7 — Configurações do app** (change `add-app-settings-and-retention`):
   tela de Configurações como 4º tab da `NavigationBar`. Preferências disponíveis:
   retenção de histórico (30/60/90/180/365 dias, default 90), auto-captura da câmera,

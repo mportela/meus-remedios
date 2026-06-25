@@ -24,13 +24,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.meusremedios.R
+import com.meusremedios.data.repository.SettingsRepository
 import com.meusremedios.ui.navigation.MeusRemediosNavHost
 import com.meusremedios.ui.theme.MeusRemediosTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject lateinit var settingsRepository: SettingsRepository
 
     var navigateToRecognition by mutableStateOf(false)
         private set
@@ -53,7 +58,13 @@ class MainActivity : ComponentActivity() {
         requestNotificationPermissionIfNeeded()
         handleNavigationIntent(intent)
         setContent {
-            MeusRemediosTheme {
+            val settings by settingsRepository.observe().collectAsStateWithLifecycle(
+                initialValue = null,
+            )
+            MeusRemediosTheme(
+                fontScale = settings?.fontScale,
+                highContrast = settings?.highContrast == true,
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background,
@@ -135,16 +146,14 @@ private fun MeusRemediosApp(
     navigateToRecognition: Boolean,
     onRecognitionNavigated: () -> Unit,
 ) {
-    MeusRemediosTheme {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background,
-        ) {
-            MeusRemediosNavHost(
-                navigateToRecognition = navigateToRecognition,
-                onRecognitionNavigated = onRecognitionNavigated,
-            )
-        }
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background,
+    ) {
+        MeusRemediosNavHost(
+            navigateToRecognition = navigateToRecognition,
+            onRecognitionNavigated = onRecognitionNavigated,
+        )
     }
 }
 

@@ -41,7 +41,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TimePicker
+import androidx.compose.material3.TimeInput
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
@@ -59,6 +59,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -213,10 +214,12 @@ fun MedicationFormScreen(
                 Text(
                     text = stringResource(R.string.medication_form_reminders_label),
                     style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.weight(1f),
                 )
                 Switch(
                     checked = uiState.remindersEnabled,
                     onCheckedChange = viewModel::onRemindersChange,
+                    modifier = Modifier.padding(start = 8.dp),
                 )
             }
 
@@ -285,14 +288,22 @@ private fun PeriodSection(
                 onClick = { onPeriodTypeChange(PeriodType.CONTINUOUS) },
                 shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2),
             ) {
-                Text(stringResource(R.string.medication_form_period_continuous))
+                Text(
+                    stringResource(R.string.medication_form_period_continuous),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
             SegmentedButton(
                 selected = periodType == PeriodType.RANGED,
                 onClick = { onPeriodTypeChange(PeriodType.RANGED) },
                 shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2),
             ) {
-                Text(stringResource(R.string.medication_form_period_ranged))
+                Text(
+                    stringResource(R.string.medication_form_period_ranged),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
             }
         }
         if (periodType == PeriodType.RANGED) {
@@ -430,7 +441,10 @@ private fun SchedulesSection(
                 )
             }
         }
-        OutlinedButton(onClick = { showTimePicker = true }) {
+        OutlinedButton(
+            onClick = { showTimePicker = true },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
             Icon(Icons.Default.Add, contentDescription = null)
             Text(
                 text = stringResource(R.string.medication_form_add_schedule),
@@ -459,7 +473,7 @@ private fun SchedulesSection(
                     Text(stringResource(R.string.medication_delete_cancel))
                 }
             },
-            text = { TimePicker(state = state) },
+            text = { TimeInput(state = state) },
         )
     }
 }
@@ -565,7 +579,10 @@ private fun PhotosSection(
             }
         }
 
-        OutlinedButton(onClick = { showChooser = true }) {
+        OutlinedButton(
+            onClick = { showChooser = true },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
             Icon(Icons.Default.Add, contentDescription = null)
             Text(
                 text = stringResource(R.string.medication_form_add_photo),

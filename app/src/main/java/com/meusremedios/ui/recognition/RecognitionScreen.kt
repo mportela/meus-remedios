@@ -34,16 +34,20 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.meusremedios.BuildConfig
 import com.meusremedios.R
+import androidx.compose.ui.unit.sp
 import com.meusremedios.domain.model.RecognitionCandidate
 import com.meusremedios.domain.model.RecognitionOutcome
 import com.meusremedios.domain.model.ScheduledDose
@@ -184,6 +188,8 @@ private fun BigConfirmButton(onClick: () -> Unit) {
             text = stringResource(R.string.recognition_confirm_button),
             style = MaterialTheme.typography.headlineSmall,
             modifier = Modifier.padding(start = 16.dp),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
@@ -208,28 +214,46 @@ private fun ResultContent(
     onReset: () -> Unit,
     onMarkTaken: () -> Unit,
 ) {
-    when (outcome) {
-        is RecognitionOutcome.Confident -> ConfidentResult(
-            outcome = outcome,
-            intakeRegistered = intakeRegistered,
-            onMarkTaken = onMarkTaken,
-        )
-        is RecognitionOutcome.Ambiguous -> AmbiguousResult(
-            outcome = outcome,
-            canAddSecondPhoto = canAddSecondPhoto,
-            onCapture = onCapture,
-            onPickFromGallery = onPickFromGallery,
-        )
-        RecognitionOutcome.NoMatch -> MessageResult(stringResource(R.string.recognition_no_match))
-        RecognitionOutcome.NoPhotosRegistered ->
-            MessageResult(stringResource(R.string.recognition_no_photos))
-        null -> MessageResult(stringResource(R.string.recognition_error))
+    val resultDescription = when (outcome) {
+        is RecognitionOutcome.Confident -> stringResource(R.string.cd_recognition_confident, outcome.best.medicationName)
+        is RecognitionOutcome.Ambiguous -> stringResource(R.string.cd_recognition_ambiguous)
+        RecognitionOutcome.NoMatch -> stringResource(R.string.cd_recognition_no_match)
+        RecognitionOutcome.NoPhotosRegistered -> stringResource(R.string.recognition_no_photos)
+        null -> stringResource(R.string.recognition_error)
     }
-    OutlinedButton(
-        onClick = onReset,
-        modifier = Modifier.fillMaxWidth(),
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .semantics {
+                liveRegion = LiveRegionMode.Polite
+                contentDescription = resultDescription
+            },
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Text(stringResource(R.string.recognition_restart))
+        when (outcome) {
+            is RecognitionOutcome.Confident -> ConfidentResult(
+                outcome = outcome,
+                intakeRegistered = intakeRegistered,
+                onMarkTaken = onMarkTaken,
+            )
+            is RecognitionOutcome.Ambiguous -> AmbiguousResult(
+                outcome = outcome,
+                canAddSecondPhoto = canAddSecondPhoto,
+                onCapture = onCapture,
+                onPickFromGallery = onPickFromGallery,
+            )
+            RecognitionOutcome.NoMatch -> MessageResult(stringResource(R.string.recognition_no_match))
+            RecognitionOutcome.NoPhotosRegistered ->
+                MessageResult(stringResource(R.string.recognition_no_photos))
+            null -> MessageResult(stringResource(R.string.recognition_error))
+        }
+        OutlinedButton(
+            onClick = onReset,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(R.string.recognition_restart))
+        }
     }
 }
 
@@ -241,7 +265,7 @@ private fun ConfidentResult(
 ) {
     Icon(
         Icons.Default.CheckCircle,
-        contentDescription = null,
+        contentDescription = stringResource(R.string.cd_recognition_result_icon),
         tint = MaterialTheme.colorScheme.primary,
         modifier = Modifier.size(72.dp),
     )
