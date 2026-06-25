@@ -346,3 +346,11 @@ androidx-camera-view = { module = "androidx.camera:camera-view", version.ref = "
 **Estimativa de esforço:** alto — migração de câmera + integração TFLite em preview ao vivo
 + UI condicional + testes.
 
+---
+
+## Visão de futuro
+
+O roadmap pós-MVP (definições estratégicas, inventário de backlog e itens fora de escopo)
+fica em [`docs/product/roadmap.md`](product/roadmap.md). Este arquivo mantém apenas o
+**histórico de implementação** das fases F0–F12.
+

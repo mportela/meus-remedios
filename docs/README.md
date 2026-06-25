@@ -14,6 +14,7 @@ pré-cadastrado é o comprimido em mãos — pensado para idosos.
 - [PRD-4 — Lembretes e Avisos](product/prd-4-lembretes.md) · Fase F6
 - [PRD-5 — Registro de Tomadas](product/prd-5-registro-tomadas.md) · Fase F5
 - [PRD-6 — Configurações](product/prd-6-configuracoes.md) · Fase F7
+- [Roadmap (pós-MVP)](product/roadmap.md) · backlog e direção futura
 
 ## Técnico
 - [TECH-1 — Arquitetura](technical/tech-1-arquitetura.md)
