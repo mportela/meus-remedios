@@ -27,9 +27,10 @@ SRC         ?= $(HOME)/Downloads
 # Pasta de destino na galeria do device.
 DEVICE_DIR  ?= /sdcard/Pictures
 
-APP_ID    := com.meusremedios
-MAIN_ACT  := $(APP_ID)/.ui.MainActivity
-APK_DEBUG := app/build/outputs/apk/debug/app-debug.apk
+APP_ID      := com.meusremedios
+MAIN_ACT    := $(APP_ID)/.ui.MainActivity
+APK_DEBUG   := app/build/outputs/apk/debug/meus-remedios-1.0.0-debug.apk
+APK_RELEASE := app/build/outputs/apk/release/meus-remedios-1.0.0-release.apk
 
 # Exporta variáveis de ambiente para os comandos do Gradle/SDK.
 export ANDROID_HOME
@@ -51,6 +52,10 @@ help: ## Lista os alvos disponíveis
 .PHONY: build
 build: ## Compila o APK de debug
 	$(GRADLE) assembleDebug
+
+.PHONY: release
+release: ## Compila o APK de release (minificado)
+	$(GRADLE) assembleRelease
 
 .PHONY: test
 test: ## Roda os testes unitários (JVM)
