@@ -7,6 +7,21 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.1.0] - 2026-06-25
+
+### Adicionado
+- **F12 — Auto-captura inteligente por CameraX** (change `add-camerax-auto-capture`):
+  quando `autoCapture = true`, a tela de reconhecimento exibe preview ao vivo via
+  `CameraXPreviewController`; frames são analisados ~5fps pela `TfliteEmbedder`; ao
+  detectar score ≥ `THRESHOLD_CONFIDENT (0.85)` contra qualquer foto cadastrada, a
+  câmera captura automaticamente com flash branco (`AnimatedVisibility`) e vibração
+  háptica (`HapticFeedbackConstants.CONFIRM`); cooldown de 2s evita disparos múltiplos;
+  `autoCapture = false` preserva o fluxo manual original. `TfliteEmbedder` tornada
+  `open class` para testabilidade; `computationDispatcher` injetável via propriedade
+  `@VisibleForTesting`; 4 novos testes de ViewModel (total: 181 testes).
+
+## [1.0.0] - 2026-06-25
+
 ### Decisões de arquitetura
 - **F4.2 cancelada — segmentação de comprimido descartada**: a calibração empírica da F4.5
   confirmou que a limitação do reconhecimento está na **identidade do embedding** (MobileNetV3
@@ -25,16 +40,6 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   novamente.
 
 ### Adicionado
-- **F12 — Auto-captura inteligente por CameraX** (change `add-camerax-auto-capture`):
-  quando `autoCapture = true`, a tela de reconhecimento exibe preview ao vivo via
-  `CameraXPreviewController`; frames são analisados ~5fps pela `TfliteEmbedder`; ao
-  detectar score ≥ `THRESHOLD_CONFIDENT (0.85)` contra qualquer foto cadastrada, a
-  câmera captura automaticamente com flash branco (`AnimatedVisibility`) e vibração
-  háptica (`HapticFeedbackConstants.CONFIRM`); cooldown de 2s evita disparos múltiplos;
-  `autoCapture = false` preserva o fluxo manual original. `TfliteEmbedder` tornada
-  `open class` para testabilidade; `computationDispatcher` injetável via propriedade
-  `@VisibleForTesting`; 4 novos testes de ViewModel (total: 181 testes).
-
 - **F11 — TD-2: aviso de colisão visual no cadastro de fotos** (change `add-photo-collision-warning`):
   ao salvar um medicamento com fotos pendentes, o app compara os features visuais das novas
   fotos com os de todas as fotos já cadastradas; se `score >= THRESHOLD_CONFIDENT (0.85)`,
