@@ -1,4 +1,4 @@
-## MODIFIED Requirements
+## ADDED Requirements
 
 ### Requirement: Salvar medicamento aciona reagendamento de alarmes
 
