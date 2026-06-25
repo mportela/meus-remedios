@@ -1,7 +1,7 @@
 # local-data-layer Specification
 
 ## Purpose
-TBD - created by archiving change add-local-data-layer. Update Purpose after archive.
+Especificar o esquema Room (entidades, DAOs, banco) e a camada de repositórios que isola o acesso a dados locais para medicamentos, horários, registro de tomadas, fotos e configurações.
 ## Requirements
 ### Requirement: Persistência local de medicamentos
 O sistema SHALL persistir medicamentos com seus atributos (nome, dosagem opcional,

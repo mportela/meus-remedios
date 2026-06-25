@@ -1,7 +1,7 @@
 # project-foundation Specification
 
 ## Purpose
-TBD - created by archiving change add-project-scaffolding. Update Purpose after archive.
+Definir o scaffolding inicial do projeto Android: módulo único `app`, minSdk 24, Kotlin + Compose, Hilt, Room e estrutura de pacotes MVVM adotada pelo projeto.
 ## Requirements
 ### Requirement: Projeto Android compilável
 O projeto SHALL ser um aplicativo Android baseado em Gradle (Kotlin DSL) com um

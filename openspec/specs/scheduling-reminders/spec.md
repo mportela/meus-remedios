@@ -1,7 +1,7 @@
 # scheduling-reminders Specification
 
 ## Purpose
-TBD - created by archiving change add-scheduling-reminders. Update Purpose after archive.
+Definir o agendamento de lembretes de tomada via AlarmManager, incluindo criação, cancelamento, reagendamento e entrega de notificações com ação de confirmação rápida.
 ## Requirements
 ### Requirement: Agendamento de lembretes por horário
 

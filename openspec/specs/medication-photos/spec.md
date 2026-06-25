@@ -1,7 +1,7 @@
 # medication-photos Specification
 
 ## Purpose
-TBD - created by archiving change add-medication-photos. Update Purpose after archive.
+Especificar como fotos de comprimidos são capturadas (câmera/galeria), armazenadas em diretório privado e vinculadas a um medicamento, viabilizando o reconhecimento visual.
 ## Requirements
 ### Requirement: Adicionar fotos ao medicamento
 O sistema SHALL permitir adicionar uma ou mais fotos do comprimido a um

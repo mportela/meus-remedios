@@ -1,7 +1,7 @@
 # visual-recognition Specification
 
 ## Purpose
-TBD - created by archiving change add-visual-recognition. Update Purpose after archive.
+Definir o motor de reconhecimento on-device que compara a foto do comprimido em mãos com as fotos cadastradas, usando embeddings TFLite + similaridade de cor (Lab) + forma, com limiares de confiança e fluxo de segunda foto em caso de dúvida.
 ## Requirements
 ### Requirement: Reconhecimento de medicamento pela câmera
 O sistema SHALL permitir capturar a foto de um comprimido pela câmera e identificar, entre os

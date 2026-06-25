@@ -1,7 +1,7 @@
 # app-settings Specification
 
 ## Purpose
-TBD - created by archiving change add-app-settings-and-retention. Update Purpose after archive.
+Especificar a tela de Configurações (4ª tab), incluindo retenção de histórico configurável, auto-captura da câmera, lembretes globais, antecedência de aviso, job de limpeza periódica (WorkManager), seção "Sobre" e controles de acessibilidade (fonte e alto contraste).
 ## Requirements
 ### Requirement: Tela de configurações acessível
 O sistema SHALL expor uma tela de Configurações como 4º item da NavigationBar inferior,

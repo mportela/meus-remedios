@@ -1,7 +1,7 @@
 # intake-tracking Specification
 
 ## Purpose
-TBD - created by archiving change add-intake-tracking. Update Purpose after archive.
+Especificar o registro de tomadas (confirmadas, puladas ou atrasadas), a tela "Hoje" com cards de dose e o fluxo de confirmação via reconhecimento visual ou toque direto.
 ## Requirements
 ### Requirement: Registrar tomada de dose
 

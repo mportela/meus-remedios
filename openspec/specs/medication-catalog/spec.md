@@ -1,7 +1,7 @@
 # medication-catalog Specification
 
 ## Purpose
-TBD - created by archiving change add-medication-catalog. Update Purpose after archive.
+Definir os requisitos de cadastro, edição e exclusão de medicamentos (nome, dosagem, cor, forma, horários), incluindo fotos e fluxo de câmera para captura de imagem do comprimido.
 ## Requirements
 ### Requirement: Cadastro de medicamento
 O sistema SHALL permitir cadastrar um medicamento com nome (obrigatório) e

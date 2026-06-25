@@ -1,7 +1,7 @@
 # test-infrastructure Specification
 
 ## Purpose
-TBD - created by archiving change add-test-automation. Update Purpose after archive.
+Especificar a infraestrutura de testes automatizados: módulos Hilt fake com `@TestInstallIn`, testes Compose/Robolectric para telas críticas, `OfflineConstraintTest` e linting com ktlint integrado ao build e ao CI.
 ## Requirements
 ### Requirement: Testes de UI Compose com Hilt fakes
 O sistema de build SHALL executar testes Compose/Robolectric (JVM) para os 4 fluxos

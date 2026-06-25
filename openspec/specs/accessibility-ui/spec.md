@@ -1,7 +1,7 @@
 # accessibility-ui Specification
 
 ## Purpose
-TBD - created by archiving change add-accessibility-baseline. Update Purpose after archive.
+Definir os requisitos de acessibilidade do app: tamanhos mínimos de fonte e área de toque, alto contraste, suporte a TalkBack, linguagem simples e escala de fonte configurável pelo usuário.
 ## Requirements
 ### Requirement: NavigationBar resistente a fonte grande
 O sistema SHALL exibir os labels da NavigationBar sem quebra de linha em

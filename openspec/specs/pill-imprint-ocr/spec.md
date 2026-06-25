@@ -1,7 +1,7 @@
 # pill-imprint-ocr Specification
 
 ## Purpose
-TBD - created by archiving change add-imprint-ocr. Update Purpose after archive.
+Especificar a leitura de texto impresso no comprimido via ML Kit OCR, usado como dado auxiliar ao reconhecimento visual para aumentar a precisão da identificação.
 ## Requirements
 ### Requirement: Leitura on-device do texto gravado no comprimido
 O sistema SHALL ler, ao processar a foto de um comprimido, o texto eventualmente gravado

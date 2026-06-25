@@ -1,7 +1,7 @@
 # reporting Specification
 
 ## Purpose
-TBD - created by archiving change add-reporting-and-browsing. Update Purpose after archive.
+Definir as telas de histórico e relatórios de aderência: listagem de tomadas passadas, filtros por período e medicamento, e indicadores de aderência ao tratamento.
 ## Requirements
 ### Requirement: Relatório do dia
 
