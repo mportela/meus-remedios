@@ -26,7 +26,7 @@ android {
         minSdk = 24
         targetSdk = 35
         versionCode = 1
-        versionName = "0.1.0"
+        versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -38,6 +38,7 @@ android {
             buildConfigField("boolean", "DEV_TOOLS_ENABLED", "true")
         }
         release {
+
             isMinifyEnabled = false
             buildConfigField("boolean", "DEV_TOOLS_ENABLED", "false")
             proguardFiles(
@@ -78,6 +79,16 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+
+    applicationVariants.all {
+        val variant = this
+        outputs
+            .map { it as com.android.build.gradle.internal.api.BaseVariantOutputImpl }
+            .forEach { output ->
+                output.outputFileName =
+                    "meus-remedios-${variant.versionName}-${variant.buildType.name}.apk"
+            }
     }
 }
 
