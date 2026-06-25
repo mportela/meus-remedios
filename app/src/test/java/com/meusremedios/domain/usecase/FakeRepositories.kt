@@ -88,6 +88,8 @@ class FakeIntakeLogRepository : IntakeLogRepository {
         items.value = logs
     }
 
+    fun snapshot(): List<IntakeLog> = items.value
+
     override fun observeByDate(date: LocalDate): Flow<List<IntakeLog>> =
         items.map { list -> list.filter { it.date == date } }
 

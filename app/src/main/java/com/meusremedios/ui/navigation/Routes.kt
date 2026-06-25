@@ -10,6 +10,9 @@ object Routes {
 
     const val MEDICATIONS_LIST = "medications"
 
+    /** Aba: configurações. */
+    const val SETTINGS = "settings"
+
     /** Detalhe de consulta de um medicamento. */
     const val MEDICATION_DETAIL = "medications/detail"
 

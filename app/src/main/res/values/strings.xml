@@ -149,4 +149,20 @@
     <string name="notification_permission_rationale">Ative as notificações para receber lembretes nos horários cadastrados.</string>
     <string name="notification_permission_open_settings">Abrir configurações</string>
     <string name="notification_exact_alarm_warning">Notificações podem chegar com atraso. Toque para corrigir.</string>
+
+    <!-- Configurações -->
+    <string name="nav_settings">Configurações</string>
+    <string name="settings_section_history">Histórico</string>
+    <string name="settings_history_retention_label">Manter histórico por</string>
+    <string name="settings_history_retention_days">%1$d dias</string>
+    <string name="settings_section_camera">Câmera</string>
+    <string name="settings_auto_capture_label">Auto-captura</string>
+    <string name="settings_auto_capture_desc">A câmera tira foto ao focar o comprimido</string>
+    <string name="settings_section_reminders">Lembretes</string>
+    <string name="settings_reminders_global_label">Ativar lembretes</string>
+    <string name="settings_reminder_lead_label">Avisar com antecedência</string>
+    <string name="settings_reminder_lead_minutes">%1$d min</string>
+    <string name="settings_section_about">Sobre</string>
+    <string name="settings_about_disclaimer">Este app é um auxílio de confirmação visual e não substitui orientação médica.</string>
+    <string name="settings_about_offline">Funciona 100% offline. Nenhum dado é enviado para a internet.</string>
 </resources>

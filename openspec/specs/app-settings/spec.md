@@ -1,0 +1,71 @@
+# app-settings Specification
+
+## Purpose
+TBD - created by archiving change add-app-settings-and-retention. Update Purpose after archive.
+## Requirements
+### Requirement: Tela de configurações acessível
+O sistema SHALL expor uma tela de Configurações como 4º item da NavigationBar inferior,
+acessível a partir de qualquer tab de nível superior.
+
+#### Scenario: Navegação para Configurações
+- **WHEN** o usuário toca no item "Configurações" da barra de navegação
+- **THEN** a tela de Configurações é exibida com todas as preferências atuais carregadas
+
+### Requirement: Retenção de histórico configurável
+O sistema SHALL permitir que o usuário configure quantos dias de histórico de tomadas
+serão retidos (opções: 30, 60, 90, 180, 365 dias; default 90).
+
+#### Scenario: Alterar retenção e persistir
+- **WHEN** o usuário seleciona um valor de retenção diferente
+- **THEN** o valor é salvo imediatamente e persiste entre sessões
+
+#### Scenario: Limpeza automática não apaga cadastros
+- **WHEN** o job de limpeza periódica executa
+- **THEN** somente `IntakeLog` mais antigos que o período configurado são removidos
+- **AND** medicamentos e horários cadastrados permanecem intactos
+
+### Requirement: Auto-captura configurável
+O sistema SHALL permitir ativar/desativar a auto-captura da câmera (focar o comprimido
+dispara foto automaticamente); default desativado.
+
+#### Scenario: Ativar auto-captura
+- **WHEN** o usuário ativa o toggle "Auto-captura"
+- **THEN** a câmera passa a disparar foto automaticamente ao focar um comprimido
+
+#### Scenario: Desativar auto-captura
+- **WHEN** o usuário desativa o toggle "Auto-captura"
+- **THEN** a câmera exige toque manual para capturar
+
+### Requirement: Lembretes globais e antecedência configuráveis
+O sistema SHALL permitir ligar/desligar lembretes globais e ajustar a antecedência do
+aviso (opções: 0, 1, 5, 10, 15, 30 minutos; default 1 min).
+
+#### Scenario: Desligar lembretes globais
+- **WHEN** o usuário desativa "Lembretes"
+- **THEN** todos os alarmes existentes são cancelados e nenhum novo é agendado
+
+#### Scenario: Alterar antecedência com lembretes ativos
+- **WHEN** o usuário altera a antecedência (e lembretes globais estão ativos)
+- **THEN** todos os alarmes do dia são reagendados com o novo offset
+
+### Requirement: Job de limpeza periódica de histórico
+O sistema SHALL executar um job periódico (diário, via WorkManager) que remove
+`IntakeLog` com `date` anterior ao corte definido por `historyRetentionDays`.
+
+#### Scenario: Job executado diariamente
+- **WHEN** o WorkManager aciona o `RetentionWorker`
+- **THEN** `IntakeLog` com `date < hoje - historyRetentionDays` são deletados do banco
+
+#### Scenario: Job agendado no startup
+- **WHEN** o app é iniciado
+- **THEN** o `RetentionWorker` é agendado (ou reusado se já existe) como trabalho periódico único
+
+### Requirement: Tela "Sobre"
+O sistema SHALL exibir na tela de Configurações uma seção "Sobre" com: versão do app,
+disclaimer que o app é auxílio de confirmação visual e não substitui médico, e confirmação
+de que o app funciona 100% offline sem envio de dados.
+
+#### Scenario: Exibição do disclaimer
+- **WHEN** o usuário rola até a seção "Sobre" na tela de Configurações
+- **THEN** o texto de disclaimer e a confirmação offline são visíveis
+

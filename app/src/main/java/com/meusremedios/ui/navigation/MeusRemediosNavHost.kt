@@ -6,6 +6,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -30,6 +31,7 @@ import com.meusremedios.ui.medications.detail.MedicationDetailScreen
 import com.meusremedios.ui.medications.form.MedicationFormScreen
 import com.meusremedios.ui.medications.list.MedicationListScreen
 import com.meusremedios.ui.recognition.RecognitionScreen
+import com.meusremedios.ui.settings.SettingsScreen
 import com.meusremedios.ui.today.TodayScreen
 
 /** Destinos exibidos na barra de navegação inferior. */
@@ -41,6 +43,7 @@ private enum class TopLevelDestination(
     RECOGNITION(Routes.RECOGNITION, Icons.Default.Search, R.string.nav_recognition),
     TODAY(Routes.TODAY, Icons.Default.DateRange, R.string.nav_today),
     MEDICATIONS(Routes.MEDICATIONS_LIST, Icons.AutoMirrored.Filled.List, R.string.nav_medications),
+    SETTINGS(Routes.SETTINGS, Icons.Default.Settings, R.string.nav_settings),
 }
 
 /** Grafo de navegação principal do app. */
@@ -138,6 +141,9 @@ fun MeusRemediosNavHost(
                 MedicationFormScreen(
                     onDone = { navController.popBackStack() },
                 )
+            }
+            composable(Routes.SETTINGS) {
+                SettingsScreen()
             }
         }
     }

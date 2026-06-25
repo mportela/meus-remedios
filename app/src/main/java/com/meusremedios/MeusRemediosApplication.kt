@@ -2,16 +2,21 @@ package com.meusremedios
 
 import android.app.Application
 import android.graphics.Bitmap
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.meusremedios.data.ml.TfliteEmbedder
 import com.meusremedios.domain.usecase.MigratePhotoFeaturesUseCase
 import com.meusremedios.domain.usecase.RescheduleAllAlarmsUseCase
 import com.meusremedios.notifications.NotificationChannels
+import com.meusremedios.work.RetentionWorker
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
 /**
  * Application root do app. Habilita o grafo de dependências do Hilt para todas
@@ -32,6 +37,7 @@ class MeusRemediosApplication : Application() {
         warmUpTflite()
         runPhotoMigration()
         rescheduleAlarms()
+        scheduleRetentionWorker()
     }
 
     // Dispara a carga de libtensorflowlite.so e a criação do Interpreter em
@@ -54,6 +60,19 @@ class MeusRemediosApplication : Application() {
     private fun rescheduleAlarms() {
         appScope.launch(Dispatchers.IO) {
             runCatching { rescheduleAllAlarmsUseCase() }
+        }
+    }
+
+    private fun scheduleRetentionWorker() {
+        runCatching {
+            val retentionWork = PeriodicWorkRequestBuilder<RetentionWorker>(
+                1, TimeUnit.DAYS,
+            ).build()
+            WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                "retention",
+                ExistingPeriodicWorkPolicy.KEEP,
+                retentionWork,
+            )
         }
     }
 }

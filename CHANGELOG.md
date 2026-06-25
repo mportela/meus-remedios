@@ -17,6 +17,15 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
   F4.6 (`migrate-existing-photo-features`) atualizado para excluir segmentação do escopo.
 
 ### Adicionado
+- **F7 — Configurações do app** (change `add-app-settings-and-retention`):
+  tela de Configurações como 4º tab da `NavigationBar`. Preferências disponíveis:
+  retenção de histórico (30/60/90/180/365 dias, default 90), auto-captura da câmera,
+  lembretes globais e antecedência do aviso (0/1/5/10/15/30 min). Seção "Sobre" com
+  versão do app, disclaimer e confirmação offline. `SaveSettingsUseCase` persiste
+  as preferências e dispara `RescheduleAllAlarmsUseCase` automaticamente quando
+  configurações de lembrete mudam. `RetentionWorker` (WorkManager, diário, via
+  `EntryPointAccessors`) remove `IntakeLog` mais antigos que o período configurado.
+  Novos testes: `SaveSettingsUseCaseTest` e `CleanupOldIntakesUseCaseTest`.
 - **F6 — Lembretes de medicamentos** (change `add-scheduling-reminders`):
   alarmes exatos (`setExactAndAllowWhileIdle`) por dose ativa do dia, respeitando
   `remindersGlobal` e `remindersEnabled` por medicamento. Notificação com 3 ações:
