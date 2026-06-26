@@ -7,6 +7,8 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+## [1.2.1] - 2026-06-25
+
 ### Alterado
 - **Visor circular na auto-captura** (change `circular-camera-preview`): o preview ao vivo da
   câmera na tela de reconhecimento deixa de ser um retângulo 3:4 e passa a ser um **visor
