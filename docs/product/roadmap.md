@@ -60,7 +60,8 @@ Continua sendo o principal investimento de qualidade do reconhecimento.
 - Modo voz-first para baixa visão severa.
 
 **Comunidade**
-- Governança open-source (contribuição, licença, CONTRIBUTING) — alinhado ao modelo aberto.
+- ✅ Governança open-source (contribuição, licença, CONTRIBUTING) — `LICENSE` (GPL-3.0),
+  `CONTRIBUTING.md` e `CODE_OF_CONDUCT.md` adicionados.
 
 ## O que está fora de escopo (decidido)
 - Nuvem, backup remoto, sincronização ou cuidador remoto (viola offline — item 2).
