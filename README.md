@@ -13,6 +13,7 @@
   <img src="https://img.shields.io/badge/TensorFlow%20Lite-on--device-FF6F00?logo=tensorflow&logoColor=white" alt="TFLite">
   <img src="https://img.shields.io/badge/internet-NENHUMA-critical?logo=shield" alt="Sem internet">
   <img src="https://img.shields.io/badge/gratuito-open--source-success" alt="Gratuito">
+  <img src="https://img.shields.io/badge/licença-GPL--3.0-blue" alt="Licença GPL-3.0">
 </p>
 
 ---
@@ -137,6 +138,10 @@ O projeto segue **OpenSpec SDD** — especificar antes de implementar:
 4. Arquivar com `openspec archive`
 
 Convenções completas em [`AGENTS.md`](AGENTS.md).
+
+## Licença
+
+Distribuído sob a licença **GNU GPL-3.0**. Veja [`LICENSE`](LICENSE) para o texto completo.
 
 ---
 

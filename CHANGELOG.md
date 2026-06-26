@@ -7,6 +7,11 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Adicionado
+- **Licença GNU GPL-3.0** (`LICENSE` na raiz): formaliza o projeto como open-source,
+  alinhando ao que o README/roadmap já declaravam. README atualizado com seção e badge
+  de licença.
+
 ## [1.2.1] - 2026-06-25
 
 ### Alterado
