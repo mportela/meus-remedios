@@ -119,6 +119,42 @@ class RecognitionViewModelTest {
         }
 
     @Test
+    fun `prepareAutoCapture entrega arquivo e onCaptured leva a resultado`() =
+        runTest {
+            val id = seedMatchingMedication()
+            val vm = viewModel()
+
+            var captured: java.io.File? = null
+            vm.prepareAutoCapture { captured = it }
+            mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+            assertEquals("/tmp/camera.jpg", captured?.path)
+
+            vm.onCaptured()
+            mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+
+            val state = vm.uiState.value
+            assertEquals(RecognitionPhase.RESULT, state.phase)
+            assertEquals(
+                id,
+                (state.outcome as RecognitionOutcome.Confident).best.medicationId,
+            )
+        }
+
+    @Test
+    fun `onAutoCaptureFailed limpa flash e mantem IDLE`() =
+        runTest {
+            val vm = viewModel()
+            vm.prepareAutoCapture { }
+            mainDispatcherRule.dispatcher.scheduler.advanceUntilIdle()
+
+            vm.onAutoCaptureFailed()
+
+            val state = vm.uiState.value
+            assertFalse(state.showCaptureFlash)
+            assertEquals(RecognitionPhase.IDLE, state.phase)
+        }
+
+    @Test
     fun `reiniciar volta ao estado inicial e descarta temporarios`() =
         runTest {
             seedMatchingMedication()
@@ -239,6 +275,7 @@ class RecognitionViewModelTest {
             advanceUntilIdle()
 
             assertTrue(eventReceived)
+            assertTrue(vm.uiState.value.showCaptureFlash)
             job.cancel()
         }
 

@@ -12,6 +12,13 @@
         android:name="android.permission.INTERNET"
         tools:node="remove" />
 
+    <!--
+      Necessária para o preview ao vivo do CameraX usado na auto-captura.
+      Continua 100% offline: câmera não acessa rede. A captura manual usa Intent
+      e não depende desta permissão; o preview ao vivo, sim.
+    -->
+    <uses-permission android:name="android.permission.CAMERA" />
+
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />

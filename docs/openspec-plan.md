@@ -208,6 +208,8 @@ flowchart TD
 - **F10** → `fix-duplicate-medication-name` (TD-1) — ✅ feito
 - **F11** → `add-photo-collision-warning` (TD-2) — ✅ feito
 - **F12** → `add-camerax-auto-capture` — ✅ feito
+- **F13** → `fix-auto-capture-flow` — correção: detecção do preview passa a capturar e
+  analisar (antes só vibrava/piscava). ✅ feito
 
 ### F10 — `fix-duplicate-medication-name` (TD-1)
 

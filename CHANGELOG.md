@@ -7,6 +7,27 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Corrigido
+- **Auto-captura por câmera que não concluía o fluxo** (change `fix-auto-capture-flow`):
+  ao detectar um comprimido confiante no preview ao vivo, o app apenas emitia flash e
+  vibração háptica, mas **nunca capturava a foto nem iniciava a análise** — o usuário
+  ficava preso no preview e só a captura manual reconhecia. Agora a detecção dispara a
+  captura real via `CameraXPreviewController.capturePhoto()` (antes código morto) e
+  encadeia `onCaptured()`/análise, exibindo o resultado como na captura manual.
+  Correções de robustez: o frame ao vivo passa a ser rotacionado conforme o sensor antes
+  do embedding (`ImageProxy.imageInfo.rotationDegrees`), e o gate do preview usa um limiar
+  próprio embedding-only (`RecognitionParams.PREVIEW_EMBEDDING_THRESHOLD`) em vez de
+  misturar `aspectRatio` espúrio no score multimodal.
+  Durante a validação em device descobriu-se que **o preview ao vivo nunca aparecia**: o app
+  não declarava nem solicitava a permissão `CAMERA` (a captura manual mascarava isso por usar
+  Intent externo) e o `PreviewView` colapsava para altura 0 por usar `weight(1f)` dentro de um
+  contêiner com `verticalScroll`. Agora a permissão `CAMERA` é declarada e pedida em runtime
+  (com fallback para o fluxo manual se negada) e o preview usa altura concreta (`aspectRatio`).
+  Por fim, a foto da auto-captura era gravada deitada (1280×960, orientação de sensor, sem
+  EXIF) enquanto as fotos cadastradas ficam em pé, derrubando o score para ~0.73 e levando a
+  resultados "não tenho certeza" indevidos; `capturePhoto` passa a capturar em memória e assar
+  a rotação do sensor nos pixels antes de salvar, deixando a consulta alinhada ao cadastro.
+
 ## [1.2.0] - 2026-06-25
 
 ### Adicionado

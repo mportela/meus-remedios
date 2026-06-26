@@ -1,5 +1,7 @@
 package com.meusremedios.ui.recognition
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.view.HapticFeedbackConstants
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -13,6 +15,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -39,6 +42,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -60,6 +64,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.meusremedios.BuildConfig
@@ -90,10 +95,37 @@ fun RecognitionScreen(
     val cameraController = remember { CameraXPreviewController(context) }
     DisposableEffect(Unit) { onDispose { cameraController.shutdown() } }
 
-    // Vibração háptica ao auto-capturar.
+    // Permissão CAMERA: exigida pelo preview ao vivo do CameraX (a captura manual
+    // usa Intent e não precisa). Pedida só quando a auto-captura está ativa; se
+    // negada, a tela cai no fluxo manual.
+    var hasCameraPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) ==
+                PackageManager.PERMISSION_GRANTED,
+        )
+    }
+    val cameraPermissionLauncher =
+        rememberLauncherForActivityResult(
+            ActivityResultContracts.RequestPermission(),
+        ) { granted -> hasCameraPermission = granted }
+    LaunchedEffect(uiState.autoCaptureEnabled, hasCameraPermission) {
+        if (uiState.autoCaptureEnabled && !hasCameraPermission) {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    // Ao detectar match confiante no preview: vibra, captura a foto real pelo
+    // ImageCapture do controller e encadeia a análise (mesmo fluxo da captura manual).
     LaunchedEffect(Unit) {
         viewModel.autoCaptureEvents.collect {
             view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+            viewModel.prepareAutoCapture { file ->
+                coroutineScope.launch {
+                    runCatching { cameraController.capturePhoto(file) }
+                        .onSuccess { viewModel.onCaptured() }
+                        .onFailure { viewModel.onAutoCaptureFailed() }
+                }
+            }
         }
     }
 
@@ -148,7 +180,7 @@ fun RecognitionScreen(
         ) {
             when (uiState.phase) {
                 RecognitionPhase.IDLE ->
-                    if (uiState.autoCaptureEnabled) {
+                    if (uiState.autoCaptureEnabled && hasCameraPermission) {
                         AutoCaptureContent(
                             cameraController = cameraController,
                             lifecycleOwner = lifecycleOwner,
@@ -219,7 +251,7 @@ private fun AutoCaptureContent(
     onManualCapture: () -> Unit,
 ) {
     androidx.compose.foundation.layout.Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -233,10 +265,12 @@ private fun AutoCaptureContent(
                     )
                 }
             },
+            // Altura concreta (3:4) — não usar weight(): este conteúdo vive numa
+            // Column com verticalScroll (altura não-limitada), onde weight colapsa a 0.
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .weight(1f),
+                    .aspectRatio(3f / 4f),
         )
         Text(
             text = stringResource(R.string.recognition_auto_capture_hint),

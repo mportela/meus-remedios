@@ -39,6 +39,17 @@ object RecognitionParams {
     const val THRESHOLD_CONFIDENT: Float = 0.85f
 
     /**
+     * Limiar para disparar a auto-captura no preview ao vivo.
+     *
+     * O frame ao vivo só carrega embedding (cor/forma/imprint não são extraídos a
+     * ~5 fps), então o gate do preview usa a similaridade de embedding já mapeada em
+     * `[0, 1]` e um limiar próprio, **desacoplado** do [THRESHOLD_CONFIDENT]
+     * multimodal. É apenas um gatilho: a decisão final de identidade ainda passa
+     * pelo pipeline completo em `RecognizeMedicationUseCase` após a captura.
+     */
+    const val PREVIEW_EMBEDDING_THRESHOLD: Float = 0.85f
+
+    /**
      * Diferença mínima entre top-1 e top-2 para afirmar (evita ambiguidade).
      * Com cadastro de 2 lados, é o principal guardião contra falso CONFIANTE:
      * comprimidos diferentes sempre competem frente e verso, mantendo a margem baixa.

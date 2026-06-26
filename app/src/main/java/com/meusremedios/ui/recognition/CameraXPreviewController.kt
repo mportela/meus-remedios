@@ -2,12 +2,14 @@ package com.meusremedios.ui.recognition
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Matrix
 import android.net.Uri
 import android.util.Size
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
@@ -15,6 +17,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.File
+import java.io.FileOutputStream
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -67,7 +70,8 @@ class CameraXPreviewController(private val context: Context) {
                     .build()
                     .also { ia ->
                         ia.setAnalyzer(analysisExecutor) { imageProxy ->
-                            val bitmap = imageProxy.toBitmap()
+                            val rotation = imageProxy.imageInfo.rotationDegrees
+                            val bitmap = imageProxy.toBitmap().rotated(rotation)
                             imageProxy.close()
                             onFrameReady(bitmap)
                         }
@@ -85,23 +89,13 @@ class CameraXPreviewController(private val context: Context) {
     }
 
     /**
-     * Dispara foco na região central do preview e agenda auto-foco contínuo.
-     * Deve ser chamado após [start].
-     */
-    fun triggerFocus(previewView: PreviewView) {
-        val camera =
-            cameraProvider?.let {
-                // Acesso ao Camera object via cameraControl não é exposto diretamente;
-                // usamos a instância bindada pelo lifecycleOwner.
-                // O foco automático contínuo é suficiente para o caso de uso.
-            }
-        // Foco contínuo automático é o comportamento padrão do CameraX;
-        // não é necessário triggerFocus explícito para o fluxo de auto-captura.
-    }
-
-    /**
      * Captura uma foto e salva no [outputFile] fornecido.
      * Retorna o [Uri] do arquivo salvo, ou lança exceção em caso de falha.
+     *
+     * Captura em memória e **assa a rotação do sensor nos pixels** antes de gravar o
+     * JPEG. Necessário porque o `ImageCapture` grava em orientação de sensor (deitada)
+     * sem tag EXIF; as fotos cadastradas (câmera nativa) ficam em pé. Sem isso, a foto
+     * de consulta entra girada 90°, derrubando embedding e forma no reconhecimento.
      */
     suspend fun capturePhoto(outputFile: File): Uri =
         suspendCancellableCoroutine { cont ->
@@ -110,13 +104,21 @@ class CameraXPreviewController(private val context: Context) {
                     cont.resumeWithException(IllegalStateException("ImageCapture não inicializado"))
                     return@suspendCancellableCoroutine
                 }
-            val outputOptions = ImageCapture.OutputFileOptions.Builder(outputFile).build()
             capture.takePicture(
-                outputOptions,
                 ContextCompat.getMainExecutor(context),
-                object : ImageCapture.OnImageSavedCallback {
-                    override fun onImageSaved(output: ImageCapture.OutputFileResults) {
-                        cont.resume(Uri.fromFile(outputFile))
+                object : ImageCapture.OnImageCapturedCallback() {
+                    override fun onCaptureSuccess(image: ImageProxy) {
+                        try {
+                            val bitmap = image.toBitmap().rotated(image.imageInfo.rotationDegrees)
+                            FileOutputStream(outputFile).use { out ->
+                                bitmap.compress(Bitmap.CompressFormat.JPEG, JPEG_QUALITY, out)
+                            }
+                            cont.resume(Uri.fromFile(outputFile))
+                        } catch (t: Throwable) {
+                            cont.resumeWithException(t)
+                        } finally {
+                            image.close()
+                        }
                     }
 
                     override fun onError(exception: ImageCaptureException) {
@@ -125,6 +127,20 @@ class CameraXPreviewController(private val context: Context) {
                 },
             )
         }
+
+    /**
+     * Aplica a rotação do sensor ([degrees]) para que o bitmap fique na mesma
+     * orientação das fotos cadastradas, evitando degradar a similaridade do embedding.
+     */
+    private fun Bitmap.rotated(degrees: Int): Bitmap {
+        if (degrees == 0) return this
+        val matrix = Matrix().apply { postRotate(degrees.toFloat()) }
+        return Bitmap.createBitmap(this, 0, 0, width, height, matrix, true)
+    }
+
+    private companion object {
+        const val JPEG_QUALITY = 95
+    }
 
     /** Libera recursos. Deve ser chamado quando a composição for descartada. */
     fun shutdown() {

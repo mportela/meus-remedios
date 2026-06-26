@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
 import java.time.Clock
 import java.time.LocalDate
 import javax.inject.Inject
@@ -94,6 +95,29 @@ class RecognitionViewModel
                 pendingTempPath = target.tempPath
                 onReady(target.uri)
             }
+        }
+
+        /**
+         * Cria o arquivo de saída para a auto-captura e o entrega como [File] via
+         * [onReady]. Equivalente a [prepareCapture], mas retorna o arquivo direto
+         * para o `CameraXPreviewController.capturePhoto` (que escreve o JPEG nele).
+         */
+        fun prepareAutoCapture(onReady: (File) -> Unit) {
+            viewModelScope.launch {
+                val target = imageStore.createCameraTarget()
+                pendingTempPath = target.tempPath
+                onReady(File(target.tempPath))
+            }
+        }
+
+        /**
+         * Chamado quando a auto-captura falha (ex.: `ImageCapture` indisponível).
+         * Descarta o alvo pendente e apaga o flash, mantendo a tela em IDLE para que
+         * o usuário possa tentar de novo (o botão manual segue disponível).
+         */
+        fun onAutoCaptureFailed() {
+            pendingTempPath = null
+            _uiState.update { it.copy(showCaptureFlash = false) }
         }
 
         /** Confirma a captura da câmera e dispara a análise com todas as fotos. */
@@ -216,27 +240,23 @@ class RecognitionViewModel
             viewModelScope.launch(computationDispatcher) {
                 try {
                     val embedding = embedder.embed(bitmap) ?: return@launch
+                    // O frame ao vivo só tem embedding; gate compara apenas embedding
+                    // (sem aspectRatio/cor espúrios) contra um limiar próprio do preview.
                     val queryFeature =
                         FeatureSet(
                             embedding = embedding,
                             colorLab = null,
-                            aspectRatio = 1f,
+                            aspectRatio = null,
                             imprintText = null,
                         )
                     val registeredPhotos = medicationPhotoRepository.getAll()
                     val hasConfidentMatch =
                         registeredPhotos.any { photo ->
-                            val refFeature =
-                                FeatureSet(
-                                    embedding = photo.embedding,
-                                    colorLab = photo.dominantColorLab,
-                                    aspectRatio = photo.aspectRatio,
-                                    imprintText = photo.imprintText,
-                                )
+                            val refFeature = FeatureSet(embedding = photo.embedding)
                             com.meusremedios.data.ml.RecognitionScorer.score(
                                 query = queryFeature,
                                 candidate = refFeature,
-                            ) >= RecognitionParams.THRESHOLD_CONFIDENT
+                            ) >= RecognitionParams.PREVIEW_EMBEDDING_THRESHOLD
                         }
                     if (hasConfidentMatch) {
                         lastAutoCaptureMs = SystemClock.elapsedRealtime()
