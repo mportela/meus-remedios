@@ -12,6 +12,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
@@ -48,6 +50,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
@@ -265,12 +268,21 @@ private fun AutoCaptureContent(
                     )
                 }
             },
-            // Altura concreta (3:4) — não usar weight(): este conteúdo vive numa
-            // Column com verticalScroll (altura não-limitada), onde weight colapsa a 0.
+            // Visor circular: quadrado (1:1) recortado em círculo com moldura. O recorte
+            // é apenas visual — detecção (ImageAnalysis) e captura (ImageCapture) usam o
+            // frame completo do sensor. Diâmetro concreto via aspectRatio(1f); não usar
+            // weight(): este conteúdo vive numa Column com verticalScroll (altura
+            // não-limitada), onde weight colapsa a 0.
             modifier =
                 Modifier
                     .fillMaxWidth()
-                    .aspectRatio(3f / 4f),
+                    .aspectRatio(1f)
+                    .clip(CircleShape)
+                    .border(
+                        width = 4.dp,
+                        color = MaterialTheme.colorScheme.primary,
+                        shape = CircleShape,
+                    ),
         )
         Text(
             text = stringResource(R.string.recognition_auto_capture_hint),

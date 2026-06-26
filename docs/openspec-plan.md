@@ -210,6 +210,8 @@ flowchart TD
 - **F12** → `add-camerax-auto-capture` — ✅ feito
 - **F13** → `fix-auto-capture-flow` — correção: detecção do preview passa a capturar e
   analisar (antes só vibrava/piscava). ✅ feito
+- **F14** → `circular-camera-preview` — UI: preview ao vivo da auto-captura passa a ser um
+  visor circular com moldura (antes retângulo 3:4); recorte apenas visual.
 
 ### F10 — `fix-duplicate-medication-name` (TD-1)
 

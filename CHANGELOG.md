@@ -7,6 +7,13 @@ e este projeto adere ao [Versionamento Semântico](https://semver.org/lang/pt-BR
 
 ## [Não lançado]
 
+### Alterado
+- **Visor circular na auto-captura** (change `circular-camera-preview`): o preview ao vivo da
+  câmera na tela de reconhecimento deixa de ser um retângulo 3:4 e passa a ser um **visor
+  circular com moldura**, centralizado. O recorte é apenas visual (`clip(CircleShape)` +
+  `border`): a detecção por frame (`ImageAnalysis`) e a captura (`ImageCapture`) continuam
+  usando o frame completo do sensor, sem perda de área para o reconhecimento.
+
 ### Corrigido
 - **Auto-captura por câmera que não concluía o fluxo** (change `fix-auto-capture-flow`):
   ao detectar um comprimido confiante no preview ao vivo, o app apenas emitia flash e
